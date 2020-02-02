@@ -134,6 +134,8 @@ void DBFile::Add(Record &rec) {
 }
 
 int DBFile::GetNext(Record &fetchme) {
+    if (f==NULL)
+        return 1;
 //    cout << "current index is:"+to_string(curPageIndex)<<endl;
     if (0 == curPage.GetFirst(&fetchme)) // 0 is empty
     { // page is empty, get next page, if available, and return a record from it.

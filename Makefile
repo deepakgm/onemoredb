@@ -11,7 +11,13 @@ test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.ta
 
 main: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o DBFile.o lex.yy.o main.o
 	$(CC) -o main Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o main.o -lfl
-	
+
+gtest.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o y.tab.o DBFile.o lex.yy.o gtest.o
+	$(CC) -o gtest.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o y.tab.o lex.yy.o gtest.o -lfl -lpthread -lgtest
+
+gtest.o: gtest.cc
+	$(CC) -g -c gtest.cc
+
 test.o: test.cc
 	$(CC) -g -c test.cc
 
