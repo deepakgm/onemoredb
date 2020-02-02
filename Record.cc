@@ -317,6 +317,11 @@ void Record :: MergeRecords (Record *left, Record *right, int numAttsLeft, int n
 
 void Record :: Print (Schema *mySchema) {
 
+    if(bits== nullptr){
+        cerr << "empty record"<<endl;
+        return;
+    }
+
 	int n = mySchema->GetNumAtts();
 	Attribute *atts = mySchema->GetAtts();
 
@@ -337,18 +342,18 @@ void Record :: Print (Schema *mySchema) {
 		// first is integer
 		if (atts[i].myType == Int) {
 			int *myInt = (int *) &(bits[pointer]);
-			cout << *myInt;	
+			cout << *myInt;
 
 		// then is a double
 		} else if (atts[i].myType == Double) {
 			double *myDouble = (double *) &(bits[pointer]);
-			cout << *myDouble;	
+			cout << *myDouble;
 
 		// then is a character string
 		} else if (atts[i].myType == String) {
 			char *myString = (char *) &(bits[pointer]);
-			cout << myString;	
-		} 
+			cout << myString;
+		}
 
 		cout << "]";
 
