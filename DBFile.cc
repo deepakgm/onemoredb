@@ -1,27 +1,19 @@
 #include <cstdlib>
 #include <iostream>
-#include <fstream>
 #include <string.h>
-#include "TwoWayList.h"
 #include "Record.h"
 #include "Schema.h"
 #include "File.h"
 #include "Comparison.h"
-#include "ComparisonEngine.h"
 #include "DBFile.h"
-#include "Defs.h"
-
 
 using namespace std;
-
-const string meta_file_loc = "/home/gurpreet/Desktop/dbi/onemoredb/metafile";
-const char *db_dump_loc = "/home/gurpreet/Desktop/temp/t";
-bool isDirty= false;
+bool isDirty = false;
 
 DBFile::DBFile() {
     f = new File();
     curPage = new Page;
-    isDirty= false;
+    isDirty = false;
 }
 
 DBFile::~DBFile() {
@@ -39,7 +31,7 @@ int DBFile::Create(const char *f_path, fType f_type, void *startup) {
 
 int DBFile::Open(const char *f_path) {
     f->Open(1, strdup(f_path));
-    cout << "file length: " << f->GetLength()<<endl;;
+    clog << "opening file of length: " << f->GetLength() << endl;;
 
     if (0 != f->GetLength()) {
         f->GetPage(curPage, f->GetLength() - 2);
@@ -47,10 +39,8 @@ int DBFile::Open(const char *f_path) {
     return 0;
 }
 
+//todo deal with page loads that are called in between add and gets
 void DBFile::Load(Schema &f_schema, const char *loadpath) {
-
-//    isDirty= true;
-
     FILE *tableFile = fopen(loadpath, "r");
     if (tableFile == nullptr) {
         cerr << "invalid table file" << endl;
@@ -65,7 +55,7 @@ void DBFile::Load(Schema &f_schema, const char *loadpath) {
         recordCount++;
 
         int isFull = curPage->Append(&tempRecord);
-        isDirty=true;
+        isDirty = true;
         if (isFull == 0) {
             f->AddPage(curPage, pageCount++);
             curPageIndex++;
@@ -74,14 +64,19 @@ void DBFile::Load(Schema &f_schema, const char *loadpath) {
         }
     }
     f->AddPage(curPage, pageCount++);
-    isDirty= false;
+    isDirty = false;
     cout << "loaded " << recordCount << " records into " << pageCount << " pages." << endl;
 }
 
 
 void DBFile::MoveFirst() {
+    if (isDirty) {
+        f->AddPage(curPage, f->GetLength() - 1);
+        isDirty = false;
+    }
+
     curPageIndex = (off_t) 0;
-    if (0 != f->GetLength()) {;
+    if (0 != f->GetLength()) { ;
         f->GetPage(curPage, 0);
     } else {
         curPage->EmptyItOut();
@@ -89,55 +84,53 @@ void DBFile::MoveFirst() {
 }
 
 int DBFile::Close() {
-    if(isDirty)
-        f->AddPage(curPage,f->GetLength()-1 );
+    if (isDirty)
+        f->AddPage(curPage, f->GetLength() - 1);
     auto r = f->Close();
     delete f;
     return r;
 }
 
 void DBFile::Add(Record &record) {
-    isDirty=true;
+    isDirty = true;
     int isFull = curPage->Append(&record);
     if (isFull == 0) {
-        if(f->GetLength()==0)
+        if (f->GetLength() == 0)
             f->AddPage(curPage, 0);
-        else
-            f->AddPage(curPage, f->GetLength()-1);
+        else {
+            f->AddPage(curPage, f->GetLength() - 1);
+        }
         curPage->EmptyItOut();
         curPage->Append(&record);
     }
 }
 
 int DBFile::GetNext(Record &fetchme) {
-    if(isDirty){
-        f->AddPage(curPage,f->GetLength()-1);
-        isDirty= false;
+    if (isDirty) {
+        f->AddPage(curPage, f->GetLength()-1);
+        isDirty = false;
     }
 
-    if(curPage->GetFirst(&fetchme) == 0){
-           ++curPageIndex;
-        if(curPageIndex <= f->GetLength()-2){
-            f->GetPage(curPage,curPageIndex);
+    if (curPage->GetFirst(&fetchme) == 0) {
+        ++curPageIndex;
+        if (curPageIndex <= f->GetLength() - 2) {
+            f->GetPage(curPage, curPageIndex);
             curPage->GetFirst(&fetchme);
             return 1;
-        }else{
-            //read buffer has the one not in page
-            //add to page and then read again
+        } else {
             return 0;
         }
-    }else{
+    } else {
         return 1;
     }
 }
 
 int DBFile::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
-    while(GetNext(fetchme))
-        if(comparisonEngine.Compare(&fetchme,&literal,&cnf)){
+    while (GetNext(fetchme))
+        if (comparisonEngine.Compare(&fetchme, &literal, &cnf)) {
             return 1;
         }
     return 0;
 }
-
 
 //11,0 12,35   2,3 1,1 2,3

@@ -49,12 +49,9 @@ int main () {
     }
 
 clog << "rec count: " << recordCount <<endl;
-//    dbFile->Load(lineitem,"/home/gurpreet/Desktop/temp/git/tpch-dbgen/lineitem.tbl");
-//    dbFile->Close();
-//    dbFile->Open("/home/gurpreet/Desktop/temp/t");
 
-//
-//
+//    dbFile->Load(lineitem,"/home/gurpreet/Desktop/temp/git/tpch-dbgen/lineitem.tbl");
+
 
 
     dbFile->MoveFirst();
