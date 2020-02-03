@@ -16,12 +16,12 @@ const char *dbfile_dir = "/home/gurpreet/Desktop/dbi/onemoredb/test";
 const char *tpch_dir ="/home/gurpreet/Desktop/test/"; // dir where dbgen tpch files (extension *.tbl) can be found
 const char *catalog_path = "/home/gurpreet/Desktop/dbi/onemoredb/catalog"; // full path of the catalog file
 
-class MockDBFile : public DBFile
-{
-public:
-    MOCK_METHOD0(void,MoveFirst, ());
-
-};
+//class MockDBFile : public DBFile
+//{
+//public:
+//    MOCK_METHOD0(void,MoveFirst, ());
+//
+//};
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
@@ -85,13 +85,13 @@ TEST_F(DBFileTest,createTest2){
     ASSERT_EQ(res,1);
 }
 
-TEST_F(DBFileTest,openTest3){
-    MockDBFile mockDbFile;
-
-//    EXPECT_CALL(mockDbFile,MoveFirst() )
-//            .Times(1);
-//    mockDbFile.MoveFirst();
-
-}
+//TEST_F(DBFileTest,openTest3){
+//    MockDBFile mockDbFile;
+//
+////    EXPECT_CALL(mockDbFile,MoveFirst() )
+////            .Times(1);
+////    mockDbFile.MoveFirst();
+//
+//}
 
 

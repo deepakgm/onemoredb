@@ -28,20 +28,27 @@ int main () {
 //    myComparison.GrowFromParseTree (final, &lineitem, literal);
 //    myComparison.Print ();
 
-    DBFile *dbFile=new DBFile();
+    DBFile *dbFile=new DBFile;
 
     dbFile->Open("/home/gurpreet/Desktop/temp/t");
 
-    cout<<"here"<<endl;
-
-
+//    cout<<"here"<<endl;
+//
+//
 //    dbFile->Load(lineitem,"/home/gurpreet/Desktop/temp/git/tpch-dbgen/lineitem.tbl");
+//    dbFile->Close();
+//    dbFile->Open("/home/gurpreet/Desktop/temp/t");
 
-
+//
+//
 
     Record temp;
-
+//////
     dbFile->MoveFirst();
+////
+//    dbFile->GetNext(temp);
+////
+//    temp.Print(&lineitem);
 
     int counter = 0;
     while (dbFile->GetNext (temp) == 1) {
@@ -52,9 +59,10 @@ int main () {
         }
     }
     cout << " scanned " << counter << " recs \n";
-    dbFile->Close ();
 
-    literal.Print(&lineitem);
+    dbFile->Close ();
+//
+//    literal.Print(&lineitem);
 
 
 

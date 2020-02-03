@@ -14,16 +14,16 @@ typedef enum {heap, sorted, tree} fType;
 
 class DBFile {
     File *f;
-    Page curPage;
+    Page *curPage;
     off_t curPageIndex;
 
 public:
 	DBFile (); 
-
+	~DBFile();
 	int Create (const char *fpath, fType file_type, void *startup);
 	int Open (const char *fpath);
 	int Close ();
-
+    ComparisonEngine comparisonEngine;
 	void Load (Schema &myschema, const char *loadpath);
 
 	void MoveFirst ();
