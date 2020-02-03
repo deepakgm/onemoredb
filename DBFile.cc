@@ -76,39 +76,13 @@ void DBFile::Load(Schema &f_schema, const char *loadpath) {
     f->AddPage(curPage, pageCount++);
     isDirty= false;
     cout << "loaded " << recordCount << " records into " << pageCount << " pages." << endl;
-
-//    FILE *tableFile = fopen(loadpath, "r");
-//    if (tableFile == nullptr) {
-//        cerr << "invalid table file" << endl;
-//        exit(-1);
-//    }
-//
-//    Record tempRecord;
-//    int recordCount = 0;
-//    Page tempPage;
-//    int pageCount = 0;
-//
-//    while (tempRecord.SuckNextRecord(&f_schema, tableFile) == 1) {
-//        recordCount++;
-//
-//        int isFull = tempPage.Append(&tempRecord);
-//        if (isFull == 0) {
-//            f->AddPage(&tempPage, pageCount++);
-//            tempPage.EmptyItOut();
-//            tempPage.Append(&tempRecord);
-//        }
-//    }
-//
-//    f->AddPage(&tempPage, pageCount++);
-//    cout << "loaded " << recordCount << " records into " << pageCount << " pages." << endl;
 }
 
 
 void DBFile::MoveFirst() {
     curPageIndex = (off_t) 0;
-    if (0 != f->GetLength()) {
-        cout<<curPageIndex<<endl;
-        f->GetPage(curPage, curPageIndex);
+    if (0 != f->GetLength()) {;
+        f->GetPage(curPage, 0);
     } else {
         curPage->EmptyItOut();
     }
@@ -116,47 +90,31 @@ void DBFile::MoveFirst() {
 
 int DBFile::Close() {
     if(isDirty)
-        f->AddPage(curPage,f->GetLength() );
+        f->AddPage(curPage,f->GetLength()-1 );
     auto r = f->Close();
     delete f;
     return r;
 }
 
-void DBFile::Add(Record &rec) {
-//    if (writePage->Append(&rec)==0) {
-//        f->AddPage(writePage,f->GetLength() - 1);
-//        writePage->EmptyItOut();
-//        writePage->Append(&rec);
-//    } else {
-//        //            f->AddPage(&tempPage, f->GetLength() - 2); // same final page
-//        //todo verify not full then also it writes to cur page
-//    }
-
-
-
-    Page tempPage;
-    cout << "getting page " << f->GetLength() << endl;
-    if (0 != f->GetLength()) {
-        f->GetPage(&tempPage, f->GetLength() - 2);
-        if (0 == tempPage.Append(&rec)) {
-            tempPage.EmptyItOut();
-            tempPage.Append(&rec);
-            f->AddPage(&tempPage, f->GetLength() - 1);
-        } else {
-            //            f->AddPage(&tempPage, f->GetLength() - 2); // same final page
-            //todo verify not full then also it writes to cur page
-        }
-    } else {
-        if (1 == tempPage.Append(&rec)) {
-            f->AddPage(&tempPage, 0);
-        } else {
-            cerr << "New file created; but fails appending" << endl;
-            exit(-1);
-        }
+void DBFile::Add(Record &record) {
+    isDirty=true;
+    int isFull = curPage->Append(&record);
+    if (isFull == 0) {
+        if(f->GetLength()==0)
+            f->AddPage(curPage, 0);
+        else
+            f->AddPage(curPage, f->GetLength()-1);
+        curPage->EmptyItOut();
+        curPage->Append(&record);
     }
 }
 
 int DBFile::GetNext(Record &fetchme) {
+    if(isDirty){
+        f->AddPage(curPage,f->GetLength()-1);
+        isDirty= false;
+    }
+
     if(curPage->GetFirst(&fetchme) == 0){
            ++curPageIndex;
         if(curPageIndex <= f->GetLength()-2){
@@ -171,33 +129,6 @@ int DBFile::GetNext(Record &fetchme) {
     }else{
         return 1;
     }
-
-    if (f == NULL)
-        return 1;
-//    cout << "current index is:"+to_string(curPageIndex)<<endl;
-    if (0 == curPage->GetFirst(&fetchme)) // 0 is empty
-    { // page is empty, get next page, if available, and return a record from it.
-        // cout << "page " << curPageIndex + 1 << " was depleted." << endl;
-        curPageIndex++;
-
-//        clog << "attempting to read page " << curPageIndex  << " out of " << (f->GetLength() - 1) << "... " << endl;++curPageIndex;
-        if (curPageIndex + 1 <= (f->GetLength() - 1)) {
-            f->GetPage(curPage, curPageIndex-1);
-            int ret = curPage->GetFirst(&fetchme);
-            if (ret != 1) {
-                cout << "something is not right!!";
-                exit(-1);
-            }
-            return 1;
-        } else {
-//        cout << "curPageIndex"  << curPageIndex << " "<<f->GetLength()<< endl;
-//            cout << "something is not right!!";
-            return 0;
-        }
-    } else {
-//        clog << "fetched a record from current page"<<endl;
-        return 1;
-    }
 }
 
 int DBFile::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
@@ -206,18 +137,6 @@ int DBFile::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
             return 1;
         }
     return 0;
-
-
-    //    ComparisonEngine comp;
-//    Record temp;
-//
-//    while (this->GetNext(temp)) {
-//        if (comp.Compare(&temp, &literal, &cnf)) {
-////            fetchme.Consume(&temp);
-//            return 1;
-//        }
-//    }
-//    return 0;
 }
 
 

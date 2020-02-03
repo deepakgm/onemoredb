@@ -30,11 +30,25 @@ int main () {
 
     DBFile *dbFile=new DBFile;
 
-    dbFile->Open("/home/gurpreet/Desktop/temp/t");
+    dbFile->Create("/home/gurpreet/Desktop/temp/t.bin",heap, nullptr);
+//    dbFile->Open("/home/gurpreet/Desktop/temp/t.bin");
+//
+    Record tempRecord;
+    int recordCount = 0;
+    int pageCount = 0;
 
-//    cout<<"here"<<endl;
-//
-//
+    FILE *tableFile = fopen("/home/gurpreet/Desktop/temp/git/tpch-dbgen/lineitem.tbl", "r");
+    if (tableFile == nullptr) {
+        cerr << "invalid table file" << endl;
+        exit(-1);
+    }
+
+    while (tempRecord.SuckNextRecord(&lineitem, tableFile) == 1) {
+        recordCount++;
+        dbFile->Add(tempRecord);
+    }
+
+clog << "rec count: " << recordCount <<endl;
 //    dbFile->Load(lineitem,"/home/gurpreet/Desktop/temp/git/tpch-dbgen/lineitem.tbl");
 //    dbFile->Close();
 //    dbFile->Open("/home/gurpreet/Desktop/temp/t");
@@ -42,13 +56,10 @@ int main () {
 //
 //
 
-    Record temp;
-//////
+
     dbFile->MoveFirst();
-////
-//    dbFile->GetNext(temp);
-////
-//    temp.Print(&lineitem);
+//
+    Record temp;
 
     int counter = 0;
     while (dbFile->GetNext (temp) == 1) {
@@ -61,7 +72,7 @@ int main () {
     cout << " scanned " << counter << " recs \n";
 
     dbFile->Close ();
-//
+
 //    literal.Print(&lineitem);
 
 
