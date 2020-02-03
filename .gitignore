@@ -1,3 +1,5 @@
 cmake-build-debug/
 *.o
+*.out
+*.bin
 .idea/
