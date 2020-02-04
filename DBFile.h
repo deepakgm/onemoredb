@@ -25,7 +25,7 @@ public:
 	int Close ();
     ComparisonEngine comparisonEngine;
 	void Load (Schema &myschema, const char *loadpath);
-
+	bool GetIsDirty();
 	void MoveFirst ();
 	void Add (Record &record);
 	int GetNext (Record &fetchme);

@@ -317,7 +317,7 @@ void Record :: MergeRecords (Record *left, Record *right, int numAttsLeft, int n
 
 void Record :: Print (Schema *mySchema) {
 
-    if(bits== nullptr){
+    if(bits== NULL){
         cerr << "empty record"<<endl;
         return;
     }
