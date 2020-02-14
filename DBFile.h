@@ -18,18 +18,18 @@ class DBFile {
     off_t curPageIndex;
 
 public:
-	DBFile (); 
-	~DBFile();
-	int Create (const char *fpath, fType file_type, void *startup);
-	int Open (const char *fpath);
-	int Close ();
+    DBFile ();
+    ~DBFile();
+    int Create (const char *fpath, fType file_type, void *startup);
+    int Open (const char *fpath);
+    int Close ();
     ComparisonEngine comparisonEngine;
-	void Load (Schema &myschema, const char *loadpath);
-	bool GetIsDirty();
-	void MoveFirst ();
-	void Add (Record &record);
-	int GetNext (Record &fetchme);
-	int GetNext (Record &fetchme, CNF &cnf, Record &literal);
+    void Load (Schema &myschema, const char *loadpath);
+    bool GetIsDirty();
+    void MoveFirst ();
+    void Add (Record &record);
+    int GetNext (Record &fetchme);
+    int GetNext (Record &fetchme, CNF &cnf, Record &literal);
 
 };
 #endif

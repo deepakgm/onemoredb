@@ -101,8 +101,8 @@ int Record :: SuckNextRecord (Schema *mySchema, FILE *textFile) {
 			strcpy (&(recSpace[currentPosInRec]), space); 
 			currentPosInRec += len;
 
-		}
-
+		} 
+		
 	}
 
 	// the last thing is to set up the pointer to just past the end of the reocrd
@@ -230,6 +230,7 @@ void Record :: Project (int *attsToKeep, int numAttsToKeep, int numAttsNow) {
 
 	// and attach the new ones
 	bits = newBits;
+
 }
 
 
@@ -317,11 +318,6 @@ void Record :: MergeRecords (Record *left, Record *right, int numAttsLeft, int n
 
 void Record :: Print (Schema *mySchema) {
 
-    if(bits== NULL){
-        cerr << "empty record"<<endl;
-        return;
-    }
-
 	int n = mySchema->GetNumAtts();
 	Attribute *atts = mySchema->GetAtts();
 
@@ -342,18 +338,18 @@ void Record :: Print (Schema *mySchema) {
 		// first is integer
 		if (atts[i].myType == Int) {
 			int *myInt = (int *) &(bits[pointer]);
-			cout << *myInt;
+			cout << *myInt;	
 
 		// then is a double
 		} else if (atts[i].myType == Double) {
 			double *myDouble = (double *) &(bits[pointer]);
-			cout << *myDouble;
+			cout << *myDouble;	
 
 		// then is a character string
 		} else if (atts[i].myType == String) {
 			char *myString = (char *) &(bits[pointer]);
-			cout << myString;
-		}
+			cout << myString;	
+		} 
 
 		cout << "]";
 

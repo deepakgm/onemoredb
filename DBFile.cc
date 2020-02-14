@@ -140,9 +140,12 @@ void DBFile::MoveFirst() {
 int DBFile::Close() {
     if (isDirty)
         f->AddPage(curPage, f->GetLength() - 1);
-    auto r = f->Close();
+    if(f->Close()>=0){
+        delete f;
+        return 0;
+    }
     delete f;
-    return r;
+    return 1;
 }
 
 void DBFile::Add(Record &record) {

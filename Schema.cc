@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <iostream>
 
-int Schema :: Find (const char *attName) {
+int Schema :: Find (char *attName) {
 
 	for (int i = 0; i < numAtts; i++) {
 		if (!strcmp (attName, myAtts[i].name)) {
@@ -16,7 +16,7 @@ int Schema :: Find (const char *attName) {
 	return -1;
 }
 
-Type Schema :: FindType (const char *attName) {
+Type Schema :: FindType (char *attName) {
 
 	for (int i = 0; i < numAtts; i++) {
 		if (!strcmp (attName, myAtts[i].name)) {
@@ -36,8 +36,10 @@ Attribute *Schema :: GetAtts () {
 	return myAtts;
 }
 
-Schema :: Schema (const char *fName, const char *relName) {
+Schema :: Schema (char *fName, char *relName) {
+
 	FILE *foo = fopen (fName, "r");
+	
 	// this is enough space to hold any tokens
 	char space[200];
 
