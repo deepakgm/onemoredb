@@ -134,6 +134,9 @@ char* Record :: GetBits (void) {
 	return bits;
 }
 
+long Record :: GetLength() {
+    return  (long)bits;
+}
 
 void Record :: CopyBits(char *bits, int b_len) {
 

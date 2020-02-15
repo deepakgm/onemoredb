@@ -16,28 +16,34 @@ class BigQ
 
 public:
 
-    BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen);
+    BigQ (Pipe &in, Pipe &out, OrderMaker &orderMaker, int runlen);
     ~ BigQ();
 
     static void* workerThread(void* arg);
 
 private:
 
-    Pipe& in;
-    Pipe& out;
-    OrderMaker& sortorder;
+    Pipe* inPipe;
+    Pipe* outPipe;
+    OrderMaker* maker;
     int runlen;
-
+    void phaseOne();
+    void PhaseTwoPriorityQueue();
     File file;  // Used to store sorted run.
     int run_num = 0;  // Number of runs.
 
-    vector<off_t> curOffset;  // Start offset of each run.
-    vector<off_t> endOffset;  // End offset of each run.
+    vector<off_t> startOffset;
+    vector<off_t> endOffset;
+
+    std::vector <pair <off_t, off_t> > runLocations;
 
     pthread_t worker_thread;
+    int pageOffset=0;
+    int totalRecords=0;
 
-    void sortAndSaveRun(std::vector<Record*>& sorting);  // Used for internal sorting and storing run to file
+    void sortAndSaveRun(std::vector<Record*>& recordList);  // Used for internal recordList and storing run to file
     string randomStrGen(int length);
+    int dumpSortedList(vector<Record> & recordList);
 
     // Used for internal sort.
     class Compare
@@ -48,11 +54,7 @@ private:
     public:
 
         Compare(OrderMaker& sortorder): CmpOrder(sortorder) {}
-
-        bool operator()(Record* a, Record* b)
-        {
-            return CmpEng.Compare(a, b, &CmpOrder) < 0;
-        }
+        bool operator()(Record* a, Record* b){return CmpEng.Compare(a, b, &CmpOrder) < 0;}
     };
 
     // When removing an element from priority queue, we need to know which run it belongs to.

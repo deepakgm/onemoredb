@@ -1,24 +1,174 @@
+#include <climits>
+#include <unistd.h>
+#include <cstring>
 #include "BigQ.h"
 
 using namespace std;
 
-BigQ::BigQ (Pipe &in, Pipe &out, OrderMaker &sortorder, int runlen): in(in), out(out), sortorder(sortorder), runlen(runlen)
-{
-    pthread_create(&worker_thread, NULL, workerThread, (void*)this);
+BigQ::BigQ(Pipe &in, Pipe &out, OrderMaker &orderMaker, int runlen) {
+    inPipe = &in;
+    outPipe = &out;
+    runlen = runlen;
+    maker = &orderMaker;
+    pthread_create(&worker_thread, NULL, workerThread, (void *) this);
 }
 
-BigQ::~BigQ () {
+BigQ::~BigQ() {
 }
 
-void* BigQ::workerThread(void* arg)
-{
-    BigQ* bq = (BigQ*) arg;
+int BigQ :: dumpSortedList(vector<Record> & recordList){
+    int startOffSet = pageOffset;
+    Page page;
+    Record record;
+    for (vector<Record>::iterator it = recordList.begin(); it < recordList.end(); it++)
+    {
+        totalRecords++;
+        record.Consume(&(*it));
+        if(0 == page.Append(&record))
+        {
+            file.AddPage(&page, pageOffset++);
+            page.EmptyItOut();
+            page.Append(&record);
+        }
+    }
+    file.AddPage(&page, pageOffset++);
 
-    string tmpSortFileName = "/home/gurpreet/Desktop/temp/" + bq->randomStrGen(10);
-    // read data from in pipe sort them into runlen pages
-    bq->file.Open(0,(char *) tmpSortFileName.c_str());  // Used to store sorted run.
-    bq->file.AddPage(new Page(), -1);
+    off_t pageEnd = pageOffset;
+    // cout << "inserted " <<  pageEnd - pageStart << " pages" << endl;
+    runLocations.push_back(make_pair(startOffSet,pageEnd));
+    return (int)(pageEnd-startOffSet);
+}
 
+void BigQ::phaseOne() {
+    vector<Record *> sorting;
+    Record record;
+
+    const long maxSize = PAGE_SIZE * runlen;
+    long curSize=0;
+
+    while (inPipe->Remove(&record)) {
+        Record *rec = new Record();
+        rec->Copy(&record);
+
+        curSize+=rec->GetLength();
+
+        if(curSize>=maxSize){
+            curSize=0;
+            sortAndSaveRun(sorting);
+        }
+
+//        if (!page.Append(&record)) {
+//            // If this is the last page, then start sorting process.
+//            if (++page_index == bigQ->runlen) {
+//                bigQ->sortAndSaveRun(sorting);
+//
+//                // Restore default states.
+//                page_index = 0;
+//            }
+//            page.EmptyItOut();
+//            page.Append(&record);
+//        }
+
+        sorting.emplace_back(rec);
+    }
+
+    // If sorting is empty, there isn't any record read from input pipe. Exit immediately
+    if (sorting.empty()) {
+        outPipe->ShutDown();
+        file.Close();
+//        remove(tempFilePath);
+        pthread_exit(NULL);
+    }
+    sortAndSaveRun(sorting);
+
+}
+
+
+
+//void BigQ::PhaseTwoPriorityQueue(void){
+//    cout << endl << endl << "Priority Queue Merge of sorted runs" << endl;
+//    {
+//        vector<Run> runs;
+//        runs.reserve(runCount);
+//        // cout << "initializing runs" << endl;
+//        for (int i = 0; i < runCount; i++)
+//        {
+//            // cout << "Run " << i;
+//            runs.push_back(Run(i,runLocations[i].first,runLocations[i].second, &partiallySortedFile));
+//            // cout << " initialized" << endl;
+//        }
+//
+//        for (int i = 0; i < runCount; i++)
+//        {
+//            // runs[i].print();
+//        }
+//
+//        std::priority_queue<TaggedRecord, vector<TaggedRecord>, TaggedRecordCompare> mins (sortorder);
+//
+//        // initialize minimums
+//        // for each run, get the first guy.
+//        // cout << "initializing minimums" << endl;
+//        // minimums.reserve(runCount);
+//        for (int i = 0; i < runCount; i++)
+//        {
+//            // cout << "minimum " << i;
+//            Record tr;
+//            runs[i].getNextRecord(tr);
+//            // minimums.push_back(tr);
+//            // cout << "push" << endl;
+//            mins.push(TaggedRecord(tr,i));
+//            // cout << "initialized " << endl;
+//        }
+//        // now find the minimum guy and put it in the pipe
+//        // do this totalRecords times
+//        // cout << "putting stuff in the pipe" << endl;
+//        // Compare c = Compare(sortorder);
+//        {
+//            int runsLeft = runCount;
+//            int recordsOut = 0;
+//            for (int r = totalRecords ; r > 0; r--)
+//            {
+//                TaggedRecord TRtr(mins.top());
+//                Record tr(TRtr.r);
+//
+//                int run = TRtr.getRun();
+//
+//                recordsOut++;
+//                out.Insert(&tr);
+//                mins.pop();
+//                bool valid = runs[run].getNextRecord(tr);
+//                if (valid)
+//                {
+//                    mins.push(TaggedRecord(tr,run));
+//                }
+//                else
+//                {
+//                    // cout << "run empty, got to get rid of it" << endl;
+//                    runsLeft--;
+//                }
+//            }
+//            assert(recordsOut == totalRecords);
+//            // cout << "runs left = "<< runsLeft << endl;
+//            assert (0 == runsLeft);
+//        }
+//    }
+//    // cout << runCount << " runs in " << partiallySortedFile.GetLength() << " total pages" << endl;
+//    // cout << "runlen of " << runlen << endl;
+//    // cout << "phase two complete" << endl;
+//}
+
+void *BigQ::workerThread(void *arg) {
+    BigQ *bigQ = (BigQ *) arg;
+    char tempFilePath[PATH_MAX];
+    if (getcwd(tempFilePath, sizeof(tempFilePath)) != NULL) {
+        strcat(tempFilePath, "/temp/myfile");
+    } else {
+        cerr << "error while getting curent dir" << endl;
+        exit(-1);
+    }
+
+    bigQ->file.Open(0, tempFilePath);
+    bigQ->file.AddPage(new Page(), -1);
 
     // Used to temporarily store records read from pipe and measure runlen before sorting.
     vector<Record*> sorting;  //  Used to temporarily store all records and then sort.
@@ -27,7 +177,7 @@ void* BigQ::workerThread(void* arg)
     Record record;  // Used to record read from pipe.
     Page page;  // Used to temporarily store records.
 
-    while (bq->in.Remove(&record))
+    while (bigQ->inPipe->Remove(&record))
     {
         Record* rec = new Record();
         rec->Copy(&record);  // Pushed into vector to sort
@@ -36,9 +186,9 @@ void* BigQ::workerThread(void* arg)
         if (!page.Append(&record))
         {
             // If this is the last page, then start sorting process.
-            if (++page_index == bq->runlen)
+            if (++page_index == bigQ->runlen)
             {
-                bq->sortAndSaveRun(sorting);
+                bigQ->sortAndSaveRun(sorting);
 
                 // Restore default states.
                 page_index = 0;
@@ -52,25 +202,25 @@ void* BigQ::workerThread(void* arg)
 
     // If sorting is empty, there isn't any record read from input pipe. Exit immediately
     if (sorting.empty()) {
-        bq->out.ShutDown();
-        bq->file.Close();
-        remove(tmpSortFileName.c_str());
+        bigQ->outPipe->ShutDown();
+        bigQ->file.Close();
+        remove(tempFilePath);
         pthread_exit(NULL);
     }
     // Sort last records that don't fill up a page.
-    bq->sortAndSaveRun(sorting);
+    bigQ->sortAndSaveRun(sorting);
 
     // construct priority queue over sorted runs and dump sorted data
     // into the out pipe
 
-    vector<Page> tmpPage(bq->run_num);  // Used to store current page of each run.
-    priority_queue<SortRec*, vector<SortRec*>, SortRecCmp> sortPriQueue(bq->sortorder);
+    vector<Page> tmpPage(bigQ->run_num);  // Used to store current page of each run.
+    priority_queue<SortRec*, vector<SortRec*>, SortRecCmp> sortPriQueue(*bigQ->maker);
 
     // Get the first record of each run and push them into priority queue.
-    for(int i = 0; i < bq->run_num; i++)
+    for(int i = 0; i < bigQ->run_num; i++)
     {
         //Get the first page of run
-        bq->file.GetPage(&tmpPage[i], bq->curOffset[i]++);
+        bigQ->file.GetPage(&tmpPage[i], bigQ->startOffset[i]++);
         //Get the first record of page
         SortRec* sortRec = new SortRec();
         sortRec->run_index = i;
@@ -85,17 +235,17 @@ void* BigQ::workerThread(void* arg)
         SortRec* sortRec = sortPriQueue.top();
         sortPriQueue.pop();
         int run_index = sortRec->run_index;
-        bq->out.Insert(&(sortRec->rec));
+        bigQ->outPipe->Insert(&(sortRec->rec));
 
         //Read other records from page
         if(tmpPage[run_index].GetFirst(&(sortRec->rec)))
         {
             sortPriQueue.emplace(sortRec);
         }
-        else if(bq->curOffset[run_index] < bq->endOffset[run_index])
+        else if(bigQ->startOffset[run_index] < bigQ->endOffset[run_index])
         {
             //Finsh this page, Get record from another page
-            bq->file.GetPage(&tmpPage[run_index], bq->curOffset[run_index]++);
+            bigQ->file.GetPage(&tmpPage[run_index], bigQ->startOffset[run_index]++);
             tmpPage[run_index].GetFirst(&(sortRec->rec));
             sortPriQueue.emplace(sortRec);
         }
@@ -106,37 +256,32 @@ void* BigQ::workerThread(void* arg)
     }
 
     // finally shut down the out pipe
-    bq->out.ShutDown();
-    bq->file.Close();
-    remove(tmpSortFileName.c_str());
+    bigQ->outPipe->ShutDown();
+    bigQ->file.Close();
+    remove(tempFilePath);
     pthread_exit(NULL);
 }
 
-void BigQ::sortAndSaveRun(vector<Record*> &sorting)
-{
-    sort(sorting.begin(), sorting.end(), Compare(sortorder));
-
+void BigQ::sortAndSaveRun(vector<Record *> &recordList) {
+    sort(recordList.begin(), recordList.end(), Compare(*maker));
     Page outPage;
-    curOffset.push_back(file.GetLength() - 1);  // Offset of a new page in file is the start offset of next run.
-    for (auto rec : sorting)
-    {
-        if (!outPage.Append(rec))
-        {
+    startOffset.push_back(file.GetLength() - 1);
+    for (auto rec : recordList) {
+        if (!outPage.Append(rec)) {
             file.AddPage(&outPage, file.GetLength() - 1);
             outPage.EmptyItOut();
             outPage.Append(rec);
             delete rec;
-            rec = nullptr;
+            rec = NULL;
         }
     }
     file.AddPage(&outPage, file.GetLength() - 1);
-    endOffset.push_back(file.GetLength() - 1);  // Offset of a new page in file is the end offset of just writen run.
+    endOffset.push_back(file.GetLength() - 1);
     ++run_num;
-    sorting.clear();
+    recordList.clear();
 }
 
-string BigQ::randomStrGen(int length)
-{
+string BigQ::randomStrGen(int length) {
     static string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
     string result;
     result.resize(length);
