@@ -30,43 +30,31 @@ void BigQ::phaseOne() {
     {
         Record* rec = new Record();
         rec->Copy(&record);  // Pushed into vector to sort
+        curSize+=rec->GetLength();
 
-        // Keep reading records from pipe and append to current page until current page is full.
-        if (!page.Append(&record))
-        {
-            // If this is the last page, then start recordList process.
-            if (++page_index == runlen)
-            {
+        if(curSize>=maxSize){
+            curSize=0;
                 sort(recordList.begin(), recordList.end(), comparator);
                 dumpSortedList(recordList);
-
-                // Restore default states.
-                page_index = 0;
-            }
-            page.EmptyItOut();
-            page.Append(&record);
         }
-
         recordList.emplace_back(rec);
     }
 
-    // If recordList is empty, there isn't any record read from input pipe. Exit immediately
     if (recordList.empty()) {
         outPipe->ShutDown();
         file.Close();
-//        remove(tempFilePath);
         pthread_exit(NULL);
     }
-    // Sort last records that don't fill up a page.
+
     sort(recordList.begin(), recordList.end(), comparator);
     dumpSortedList(recordList);
 }
 
 void BigQ::phaseTwo() {
-    vector<Page> tempPage(run_num);
+    vector<Page> tempPage(blockNum);
     priority_queue<IndexedRecord*, vector<IndexedRecord*>, IndexedRecordCompare> priorityQueue(*maker);
 
-    for(int i = 0; i < run_num; i++){
+    for(int i = 0; i < blockNum; i++){
         file.GetPage(&tempPage[i], blockStartOffset[i]++);
         IndexedRecord* indexedRecord = new IndexedRecord();
         indexedRecord->blockIndex = i;
@@ -108,7 +96,7 @@ void BigQ::dumpSortedList(vector<Record *> &recordList) {
     }
     file.AddPage(&outPage, file.GetLength() - 1);
     blockEndOffset.push_back(file.GetLength() - 1);
-    ++run_num;
+    ++blockNum;
     recordList.clear();
 }
 

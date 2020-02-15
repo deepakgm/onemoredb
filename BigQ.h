@@ -22,28 +22,22 @@ public:
     static void* workerThread(void* arg);
 
 private:
-
     Pipe* inPipe;
     Pipe* outPipe;
     OrderMaker* maker;
     int runlen;
-    void phaseOne();
-    void phaseTwo();
-    File file;  // Used to store sorted run.
-    int run_num = 0;  // Number of runs.
+    File file;
+    int blockNum = 0;
 
     vector<off_t> blockStartOffset;
     vector<off_t> blockEndOffset;
 
     pthread_t worker_thread;
-    int pageOffset=0;
-    int totalRecords=0;
 
-    void dumpSortedList(std::vector<Record*>& recordList);  // Used for internal recordList and storing run to file
-    string randomStrGen(int length);
+    void dumpSortedList(std::vector<Record*>& recordList);
+    void phaseOne();
+    void phaseTwo();
 
-
-    // Used for internal sort.
     class Compare{
         ComparisonEngine CmpEng;
         OrderMaker& CmpOrder;
@@ -54,7 +48,6 @@ private:
     };
 
     class IndexedRecord{
-
     public:
         Record record;
         int blockIndex;
