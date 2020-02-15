@@ -45,41 +45,42 @@ void BigQ::phaseOne() {
 
     const long maxSize = PAGE_SIZE * runlen;
     long curSize=0;
+    vector<Record*> recordList;
+    int page_index = 0;  // Used to indicate which page to store next record read from pipe.
+    Page page;  // Used to temporarily store records.
 
-    while (inPipe->Remove(&record)) {
-        Record *rec = new Record();
-        rec->Copy(&record);
+    while (inPipe->Remove(&record))
+    {
+        Record* rec = new Record();
+        rec->Copy(&record);  // Pushed into vector to sort
 
-        curSize+=rec->GetLength();
+        // Keep reading records from pipe and append to current page until current page is full.
+        if (!page.Append(&record))
+        {
+            // If this is the last page, then start recordList process.
+            if (++page_index == runlen)
+            {
+                sortAndSaveRun(recordList);
 
-        if(curSize>=maxSize){
-            curSize=0;
-            sortAndSaveRun(sorting);
+                // Restore default states.
+                page_index = 0;
+            }
+            page.EmptyItOut();
+            page.Append(&record);
         }
 
-//        if (!page.Append(&record)) {
-//            // If this is the last page, then start sorting process.
-//            if (++page_index == bigQ->runlen) {
-//                bigQ->sortAndSaveRun(sorting);
-//
-//                // Restore default states.
-//                page_index = 0;
-//            }
-//            page.EmptyItOut();
-//            page.Append(&record);
-//        }
-
-        sorting.emplace_back(rec);
+        recordList.emplace_back(rec);
     }
 
-    // If sorting is empty, there isn't any record read from input pipe. Exit immediately
-    if (sorting.empty()) {
+    // If recordList is empty, there isn't any record read from input pipe. Exit immediately
+    if (recordList.empty()) {
         outPipe->ShutDown();
         file.Close();
 //        remove(tempFilePath);
         pthread_exit(NULL);
     }
-    sortAndSaveRun(sorting);
+    // Sort last records that don't fill up a page.
+    sortAndSaveRun(recordList);
 
 }
 
@@ -170,46 +171,7 @@ void *BigQ::workerThread(void *arg) {
     bigQ->file.Open(0, tempFilePath);
     bigQ->file.AddPage(new Page(), -1);
 
-    // Used to temporarily store records read from pipe and measure runlen before sorting.
-    vector<Record*> sorting;  //  Used to temporarily store all records and then sort.
-    int page_index = 0;  // Used to indicate which page to store next record read from pipe.
-
-    Record record;  // Used to record read from pipe.
-    Page page;  // Used to temporarily store records.
-
-    while (bigQ->inPipe->Remove(&record))
-    {
-        Record* rec = new Record();
-        rec->Copy(&record);  // Pushed into vector to sort
-
-        // Keep reading records from pipe and append to current page until current page is full.
-        if (!page.Append(&record))
-        {
-            // If this is the last page, then start sorting process.
-            if (++page_index == bigQ->runlen)
-            {
-                bigQ->sortAndSaveRun(sorting);
-
-                // Restore default states.
-                page_index = 0;
-            }
-            page.EmptyItOut();
-            page.Append(&record);
-        }
-
-        sorting.emplace_back(rec);
-    }
-
-    // If sorting is empty, there isn't any record read from input pipe. Exit immediately
-    if (sorting.empty()) {
-        bigQ->outPipe->ShutDown();
-        bigQ->file.Close();
-        remove(tempFilePath);
-        pthread_exit(NULL);
-    }
-    // Sort last records that don't fill up a page.
-    bigQ->sortAndSaveRun(sorting);
-
+    bigQ->phaseOne();
     // construct priority queue over sorted runs and dump sorted data
     // into the out pipe
 
