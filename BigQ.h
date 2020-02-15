@@ -28,22 +28,20 @@ private:
     OrderMaker* maker;
     int runlen;
     void phaseOne();
-    void PhaseTwoPriorityQueue();
+    void phaseTwo();
     File file;  // Used to store sorted run.
     int run_num = 0;  // Number of runs.
 
-    vector<off_t> startOffset;
-    vector<off_t> endOffset;
-
-    std::vector <pair <off_t, off_t> > runLocations;
+    vector<off_t> blockStartOffset;
+    vector<off_t> blockEndOffset;
 
     pthread_t worker_thread;
     int pageOffset=0;
     int totalRecords=0;
 
-    void sortAndSaveRun(std::vector<Record*>& recordList);  // Used for internal recordList and storing run to file
+    void dumpSortedList(std::vector<Record*>& recordList);  // Used for internal recordList and storing run to file
     string randomStrGen(int length);
-    int dumpSortedList(vector<Record> & recordList);
+
 
     // Used for internal sort.
     class Compare
