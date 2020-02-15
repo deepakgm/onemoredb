@@ -17,27 +17,26 @@ BigQ::~BigQ() {
 }
 
 void BigQ::phaseOne() {
-    Record record;
+    Record tempRecord;
     Compare comparator=Compare(*maker);
     const long maxSize = PAGE_SIZE * runlen;
     long curSize=0;
 
     vector<Record*> recordList;
-    int page_index = 0;  // Used to indicate which page to store next record read from pipe.
-    Page page;  // Used to temporarily store records.
+    Page page;
 
-    while (inPipe->Remove(&record))
+    while (inPipe->Remove(&tempRecord))
     {
-        Record* rec = new Record();
-        rec->Copy(&record);  // Pushed into vector to sort
-        curSize+=rec->GetLength();
+        Record* record = new Record();
+        record->Copy(&tempRecord);
+        curSize+=record->GetLength();
 
         if(curSize>=maxSize){
             curSize=0;
                 sort(recordList.begin(), recordList.end(), comparator);
                 dumpSortedList(recordList);
         }
-        recordList.emplace_back(rec);
+        recordList.emplace_back(record);
     }
 
     if (recordList.empty()) {

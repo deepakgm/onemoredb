@@ -20,30 +20,29 @@ public:
     ~ BigQ();
 
     static void* workerThread(void* arg);
+    void dumpSortedList(std::vector<Record*>& recordList);
+    void phaseOne();
+    void phaseTwo();
+    int blockNum = 0;
+    vector<off_t> blockStartOffset;
+    vector<off_t> blockEndOffset;
+    File file;
+
 
 private:
     Pipe* inPipe;
     Pipe* outPipe;
     OrderMaker* maker;
     int runlen;
-    File file;
-    int blockNum = 0;
-
-    vector<off_t> blockStartOffset;
-    vector<off_t> blockEndOffset;
 
     pthread_t worker_thread;
-
-    void dumpSortedList(std::vector<Record*>& recordList);
-    void phaseOne();
-    void phaseTwo();
 
     class Compare{
         ComparisonEngine CmpEng;
         OrderMaker& CmpOrder;
 
     public:
-        Compare(OrderMaker& sortorder): CmpOrder(sortorder) {}
+        Compare(OrderMaker& orderMaker): CmpOrder(orderMaker) {}
         bool operator()(Record* a, Record* b){return CmpEng.Compare(a, b, &CmpOrder) < 0;}
     };
 
@@ -58,7 +57,7 @@ private:
         OrderMaker& orderMaker;
 
     public:
-        IndexedRecordCompare(OrderMaker& sortorder): orderMaker(sortorder) {}
+        IndexedRecordCompare(OrderMaker& orderMaker): orderMaker(orderMaker) {}
 
         bool operator()(IndexedRecord* a, IndexedRecord* b){return comparisonEngine.Compare(&(a->record), &(b->record), &orderMaker) > 0;}
     };
