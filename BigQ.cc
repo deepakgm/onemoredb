@@ -64,32 +64,31 @@ void BigQ::phaseOne() {
 
 void BigQ::phaseTwo() {
     vector<Page> tempPage(run_num);
-    priority_queue<SortRec*, vector<SortRec*>, SortRecCmp> priorityQueue(*maker);
+    priority_queue<IndexedRecord*, vector<IndexedRecord*>, IndexedRecordCompare> priorityQueue(*maker);
 
     for(int i = 0; i < run_num; i++){
         file.GetPage(&tempPage[i], blockStartOffset[i]++);
-        SortRec* sortRec = new SortRec();
-        sortRec->run_index = i;
-        tempPage[i].GetFirst(&(sortRec->rec));
-        priorityQueue.emplace(sortRec);
+        IndexedRecord* indexedRecord = new IndexedRecord();
+        indexedRecord->blockIndex = i;
+        tempPage[i].GetFirst(&(indexedRecord->record));
+        priorityQueue.emplace(indexedRecord);
     }
 
     while(!priorityQueue.empty()){
-        SortRec* sortRec = priorityQueue.top();
+        IndexedRecord* indexedRecord = priorityQueue.top();
         priorityQueue.pop();
-        int run_index = sortRec->run_index;
-        outPipe->Insert(&(sortRec->rec));
+        int blockIndex = indexedRecord->blockIndex;
+        outPipe->Insert(&(indexedRecord->record));
 
-        if(tempPage[run_index].GetFirst(&(sortRec->rec))){
-            priorityQueue.emplace(sortRec);
+        if(tempPage[blockIndex].GetFirst(&(indexedRecord->record))){
+            priorityQueue.emplace(indexedRecord);
         }
-        else if(blockStartOffset[run_index] < blockEndOffset[run_index]){
-            //Finsh this page, Get record from another page
-            file.GetPage(&tempPage[run_index], blockStartOffset[run_index]++);
-            tempPage[run_index].GetFirst(&(sortRec->rec));
-            priorityQueue.emplace(sortRec);
+        else if(blockStartOffset[blockIndex] < blockEndOffset[blockIndex]){
+            file.GetPage(&tempPage[blockIndex], blockStartOffset[blockIndex]++);
+            tempPage[blockIndex].GetFirst(&(indexedRecord->record));
+            priorityQueue.emplace(indexedRecord);
         }else{
-            delete sortRec;
+            delete indexedRecord;
         }
     }
 }

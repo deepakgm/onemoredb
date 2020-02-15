@@ -44,41 +44,30 @@ private:
 
 
     // Used for internal sort.
-    class Compare
-    {
+    class Compare{
         ComparisonEngine CmpEng;
         OrderMaker& CmpOrder;
 
     public:
-
         Compare(OrderMaker& sortorder): CmpOrder(sortorder) {}
         bool operator()(Record* a, Record* b){return CmpEng.Compare(a, b, &CmpOrder) < 0;}
     };
 
-    // When removing an element from priority queue, we need to know which run it belongs to.
-    class SortRec
-    {
+    class IndexedRecord{
 
     public:
-
-        Record rec;
-        int run_index;
+        Record record;
+        int blockIndex;
     };
 
-    // Used for priority queue.
-    class SortRecCmp
-    {
-        ComparisonEngine CmpEng;
-        OrderMaker& CmpOrder;
+    class IndexedRecordCompare{
+        ComparisonEngine comparisonEngine;
+        OrderMaker& orderMaker;
 
     public:
+        IndexedRecordCompare(OrderMaker& sortorder): orderMaker(sortorder) {}
 
-        SortRecCmp(OrderMaker& sortorder): CmpOrder(sortorder) {}
-
-        bool operator()(SortRec* a, SortRec* b)
-        {
-            return CmpEng.Compare(&(a->rec), &(b->rec), &CmpOrder) > 0;
-        }
+        bool operator()(IndexedRecord* a, IndexedRecord* b){return comparisonEngine.Compare(&(a->record), &(b->record), &orderMaker) > 0;}
     };
 };
 
