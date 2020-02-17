@@ -11,9 +11,12 @@ using namespace std;
 
 // make sure that the information below is correct
 
-char *catalog_path = "/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/backup/catalog";
-char *tpch_dir ="/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/backup/tpch-dbgen/"; // dir where dbgen tpch files (extension *.tbl) can be found
-char *dbfile_dir = "/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/backup/temp/";
+//char *catalog_path = "/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/backup/catalog";
+//char *tpch_dir ="/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/backup/tpch-dbgen/data/"; // dir where dbgen tpch files (extension *.tbl) can be found
+//char *dbfile_dir = "/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/backup/temp/";
+char *catalog_path = "catalog";
+char *tpch_dir ="/home/gurpreet/Desktop/temp/git/tpch-dbgen/10M/";
+char *dbfile_dir = "/home/gurpreet/Desktop/temp/";
 
 
 extern "C" {
