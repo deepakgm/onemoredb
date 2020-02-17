@@ -15,6 +15,7 @@ using ::testing::_;
 
 using namespace std;
 
+char cur_dir[PATH_MAX];
 char dbfile_dir[PATH_MAX];
 char table_path[PATH_MAX];
 char catalog_path[PATH_MAX];
@@ -23,10 +24,12 @@ char tempfile_path[PATH_MAX];
 
 int main(int argc, char **argv) {
     // get the current dir
-    if (getcwd(dbfile_dir, sizeof(dbfile_dir)) != NULL) {
-        clog <<"current working dir:" << dbfile_dir << endl;
-        strcpy(table_path,dbfile_dir);
-        strcpy(catalog_path,dbfile_dir);
+    if (getcwd(cur_dir, sizeof(cur_dir)) != NULL) {
+        clog <<"current working dir:" << cur_dir << endl;
+        strcpy(dbfile_dir,cur_dir);
+        strcpy(table_path,cur_dir);
+        strcpy(catalog_path,cur_dir);
+        strcpy(tempfile_path,cur_dir);
         strcat(dbfile_dir,"/test/test.bin");
         strcat(table_path,"/test/nation.tbl");
         strcat(catalog_path,"/test/catalog");
@@ -75,17 +78,15 @@ TEST_F(BigQTest,dumpSortedList1){
         record->Copy(&temp);
         recordList.emplace_back(record);
     }
-    Schema nation (catalog_path, "nation");
-    recordList.at(5)->Print(&nation);
 
-//    OrderMaker orderMaker;
-//    BigQ bigQ (*inPipe, *outPipe, orderMaker, 2);
-//    bigQ.file.Open(0, tempfile_path);
-//    bigQ.file.AddPage(new Page(), -1);
+    OrderMaker orderMaker;
+    BigQ bigQ (*inPipe, *outPipe, orderMaker, 2);
+    bigQ.file.Open(0, tempfile_path);
+    bigQ.file.AddPage(new Page(), -1);
 
-//    bigQ.dumpSortedList(recordList);
-    cout<< "here" <<endl;
-//    inPipe->ShutDown();
+    ASSERT_EQ(bigQ.blockNum,0);
+    bigQ.dumpSortedList(recordList);
+    ASSERT_EQ(bigQ.blockNum,1);
 }
 
 //workerThread()
