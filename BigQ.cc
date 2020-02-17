@@ -10,6 +10,7 @@ BigQ::BigQ(Pipe &in, Pipe &out, OrderMaker &orderMaker, int runlen) {
     outPipe = &out;
     runlen = runlen;
     maker = &orderMaker;
+//    cout<<"calling worker thread"<<endl;
     pthread_create(&worker_thread, NULL, workerThread, (void *) this);
 }
 
@@ -19,16 +20,25 @@ BigQ::~BigQ() {
 void BigQ::phaseOne() {
     Record tempRecord;
     Compare comparator=Compare(*maker);
-    const long maxSize = PAGE_SIZE * runlen;
+//    const long maxSize = PAGE_SIZE * runlen;
+
+    const long maxSize = PAGE_SIZE;
+
     long curSize=0;
 
     vector<Record*> recordList;
     Page page;
-
+//    cout<<"InPipe: "<<inPipe<<endl;
+//    cout<<"1"<<endl;
+//    cout<<"Record GetLength: "<<(&tempRecord)->GetLength();
+//    cout<<"2"<<endl;
+//    cout<<"MAxsize "<<maxSize<<endl;
+//    cout<<"Runlen: "<<runlen<<endl;
     while (inPipe->Remove(&tempRecord))
     {
         Record* record = new Record();
         record->Copy(&tempRecord);
+//        cout<<"Record Length: "<<record->GetLength()<<endl;
         curSize+=record->GetLength();
 
         if(curSize>=maxSize){
@@ -38,7 +48,7 @@ void BigQ::phaseOne() {
         }
         recordList.emplace_back(record);
     }
-
+//    cout<<"Current Record Size: "<<curSize<<endl;
     if (recordList.empty()) {
         outPipe->ShutDown();
         file.Close();
@@ -46,7 +56,9 @@ void BigQ::phaseOne() {
     }
 
     sort(recordList.begin(), recordList.end(), comparator);
+//    cout<<"RecordList: "<<recordList.size()<<endl;
     dumpSortedList(recordList);
+//    cout<<"Sucess of Dumping Sorted List"<<endl;
 }
 
 void BigQ::phaseTwo() {
@@ -84,6 +96,7 @@ void BigQ::phaseTwo() {
 void BigQ::dumpSortedList(vector<Record *> &recordList) {
     Page outPage;
     blockStartOffset.push_back(file.GetLength() - 1);
+//    cout<<"Record List size inside Dump"<<endl;
     for (auto rec : recordList) {
         if (!outPage.Append(rec)) {
             file.AddPage(&outPage, file.GetLength() - 1);
@@ -96,8 +109,14 @@ void BigQ::dumpSortedList(vector<Record *> &recordList) {
     file.AddPage(&outPage, file.GetLength() - 1);
     blockEndOffset.push_back(file.GetLength() - 1);
     ++blockNum;
+//    cout<<"Block num inside dump: "<<blockNum<<endl;
     recordList.clear();
 }
+
+//int testWorkerThread(){
+//    workerThread();
+//    return 1;
+//}
 
 void *BigQ::workerThread(void *arg) {
     BigQ *bigQ = (BigQ *) arg;
@@ -108,13 +127,14 @@ void *BigQ::workerThread(void *arg) {
         cerr << "error while getting curent dir" << endl;
         exit(-1);
     }
-
+//    cout<<"tempfilePath : "<<tempFilePath<<endl;
     bigQ->file.Open(0, tempFilePath);
     bigQ->file.AddPage(new Page(), -1);
 
     bigQ->phaseOne();
-    bigQ->phaseTwo();
 
+    bigQ->phaseTwo();
+//    cout<<"Sucess after phaseTwo"<<endl;
     bigQ->outPipe->ShutDown();
     bigQ->file.Close();
     remove(tempFilePath);

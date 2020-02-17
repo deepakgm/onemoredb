@@ -81,111 +81,15 @@ TEST_F(BigQTest,dumpSortedList1){
 
     bigQ.dumpSortedList(recordList);
     cout<< "here" <<endl;
-
 //    inPipe->ShutDown();
 }
 
+//workerThread()
+TEST_F(BigQTest,workerThread1){
+
+}
 
 
+//phaseOne
 
-
-
-
-
-
-//// test DBFile::Create method for positive scenario
-//TEST_F(BigQTest,createTest1){
-//    int res=0;
-//    res=dbFile->Create(dbfile_dir,heap, NULL);
-//    ASSERT_EQ(res,0);
-//}
-//
-//// test DBFile::Create method for negative scenario (with unsupported file_type)
-//TEST_F(BigQTest,createTest2){
-//    int res=0;
-//    res=dbFile->Create(dbfile_dir,sorted, NULL);
-//    ASSERT_EQ(res,1);
-//}
-//
-//// test DBFile::Open method for negative scenario (with non-existing file)
-//TEST_F(BigQTest,openTest1){
-//    int res=0;
-//    res=dbFile->Open(dbfile_dir);
-//    ASSERT_EQ(res,1);
-//}
-//
-//// test DBFile::Open method for positive scenario
-//TEST_F(BigQTest,openTest2){
-//    int res=0;
-//    dbFile->Create(dbfile_dir,heap,NULL);
-//    res=dbFile->Open(dbfile_dir);
-//    ASSERT_EQ(res,0);
-//}
-//
-//// test DBFile::Open method for positive scenario
-//TEST_F(BigQTest,closeTest1){
-//    int res=0;
-//    dbFile->Create(dbfile_dir,heap,NULL);
-//    res=dbFile->Close();
-//    ASSERT_EQ(res,0);
-//}
-//
-////// test DBFile::Close method for negative scenario (with DbFile that is not opened)
-////TEST_F(BigQTest,closeTest2){
-////    int res=0;
-////    res=dbFile->Close();
-////    //assert
-////    ASSERT_EQ(res,1);
-////}
-//
-//// test isDirty flag behaviour before and after executing DBFile::Add
-//TEST_F(BigQTest,addTest){
-//    bool res=false;
-//
-//    dbFile->Create(dbfile_dir,heap,NULL);
-//
-//    res=dbFile->GetIsDirty();
-//    ASSERT_EQ(res, false);
-//
-//    Record record;
-//    Schema schema ("catalog", "nation");
-//
-//    FILE *tableFile = fopen(table_path, "r");
-//    record.SuckNextRecord(&schema,tableFile);
-//
-//    dbFile->Add(record);
-//    res=dbFile->GetIsDirty();
-//    ASSERT_EQ(res, true);
-//}
-//
-//
-//// test DBFile::GetNext method with no data
-//TEST_F(BigQTest,getNextTest1){
-//    int res=false;
-//
-//    dbFile->Create(dbfile_dir,heap,NULL);
-//
-//    Record record;
-//    Schema schema ("catalog", "nation");
-//
-//
-//    res=dbFile->GetNext(record);
-//    ASSERT_EQ(res, 0);
-//}
-//
-//// test DBFile::GetNext method with data
-//TEST_F(BigQTest,getNextTest2){
-//    int res=false;
-//
-//    dbFile->Create(dbfile_dir,heap,NULL);
-//
-//    Record record;
-//    Schema schema (catalog_path, "nation");
-//
-//    FILE *tableFile = fopen(table_path, "r");
-//    record.SuckNextRecord(&schema,tableFile);
-//
-//    dbFile->Add(record);
-//    res=dbFile->GetNext(record);
-//    ASSERT_EQ(res, 1);
-//}
+//phasetwo
