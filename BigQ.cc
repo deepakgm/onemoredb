@@ -5,10 +5,10 @@
 
 using namespace std;
 
-BigQ::BigQ(Pipe &in, Pipe &out, OrderMaker &orderMaker, int runlen) {
+BigQ::BigQ(Pipe &in, Pipe &out, OrderMaker &orderMaker, int runlen1) {
     inPipe = &in;
     outPipe = &out;
-    runlen = runlen;
+    runlen = runlen1;
     maker = &orderMaker;
 //    cout<<"calling worker thread"<<endl;
     pthread_create(&worker_thread, NULL, workerThread, (void *) this);
@@ -20,25 +20,17 @@ BigQ::~BigQ() {
 void BigQ::phaseOne() {
     Record tempRecord;
     Compare comparator=Compare(*maker);
-//    const long maxSize = PAGE_SIZE * runlen;
 
-    const long maxSize = PAGE_SIZE;
+    const long maxSize = PAGE_SIZE * runlen;
 
     long curSize=0;
 
     vector<Record*> recordList;
     Page page;
-//    cout<<"InPipe: "<<inPipe<<endl;
-//    cout<<"1"<<endl;
-//    cout<<"Record GetLength: "<<(&tempRecord)->GetLength();
-//    cout<<"2"<<endl;
-//    cout<<"MAxsize "<<maxSize<<endl;
-//    cout<<"Runlen: "<<runlen<<endl;
     while (inPipe->Remove(&tempRecord))
     {
         Record* record = new Record();
         record->Copy(&tempRecord);
-        cout<<"Record Length: "<<record->GetLength()<<endl;
         curSize+=record->GetLength();
 
         if(curSize>=maxSize){

@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
         strcat(dbfile_dir,"/test/test.bin");
         strcat(table_path,"/test/nation.tbl");
         strcat(catalog_path,"/test/catalog");
-        strcat(catalog_path,"/test/tempfile");
+        strcat(tempfile_path,"/test/tempfile");
     } else {
         cerr << "error while getting curent dir" << endl;
         return 1;
@@ -50,6 +50,7 @@ protected:
     virtual void SetUp() {
         clog << "creating DBFile instance.." << endl;
         dbFile=new DBFile();
+        dbFile->Create(dbfile_dir,heap,NULL);
         Schema nation (catalog_path, "nation");
         dbFile->Load(nation,table_path);
 //        dbFile->MoveFirst();
@@ -74,12 +75,15 @@ TEST_F(BigQTest,dumpSortedList1){
         record->Copy(&temp);
         recordList.emplace_back(record);
     }
-    OrderMaker orderMaker;
-    BigQ bigQ (*inPipe, *outPipe, orderMaker, 2);
-    bigQ.file.Open(0, tempfile_path);
-    bigQ.file.AddPage(new Page(), -1);
+    Schema nation (catalog_path, "nation");
+    recordList.at(5)->Print(&nation);
 
-    bigQ.dumpSortedList(recordList);
+//    OrderMaker orderMaker;
+//    BigQ bigQ (*inPipe, *outPipe, orderMaker, 2);
+//    bigQ.file.Open(0, tempfile_path);
+//    bigQ.file.AddPage(new Page(), -1);
+
+//    bigQ.dumpSortedList(recordList);
     cout<< "here" <<endl;
 //    inPipe->ShutDown();
 }

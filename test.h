@@ -72,11 +72,14 @@ public:
 			exit (1);
 		}
 		cout << " \n";
+
 		Record literal;
 		CNF sort_pred;
 		sort_pred.GrowFromParseTree (final, schema (), literal); // constructs CNF predicate
-		OrderMaker dummy;
+        OrderMaker dummy;
+        sort_pred.Print();
 		sort_pred.GetSortOrders (sortorder, dummy);
+		sortorder.Print();
 	}
 };
 
