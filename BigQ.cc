@@ -38,7 +38,7 @@ void BigQ::phaseOne() {
     {
         Record* record = new Record();
         record->Copy(&tempRecord);
-//        cout<<"Record Length: "<<record->GetLength()<<endl;
+        cout<<"Record Length: "<<record->GetLength()<<endl;
         curSize+=record->GetLength();
 
         if(curSize>=maxSize){

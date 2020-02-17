@@ -7,9 +7,10 @@
 #include "Record.h"
 using namespace std;
 
-char *catalog_path = "/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/onemoredb/catalog";
-char *tpch_dir ="/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/onemoredb/git/tpch-dbgen/"; // dir where dbgen tpch files (extension *.tbl) can be found
-char *dbfile_dir = "/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/onemoredb/temp/";
+
+char *catalog_path = "/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/backup/catalog";
+char *tpch_dir ="/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/backup/tpch-dbgen/data/"; // dir where dbgen tpch files (extension *.tbl) can be found
+char *dbfile_dir = "/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/backup/temp/";
 
 extern "C" {
 	int yyparse(void);   // defined in y.tab.c
