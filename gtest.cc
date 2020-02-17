@@ -49,6 +49,8 @@ public:
     DBFile *dbFile;
     Pipe* inPipe;
     Pipe* outPipe;
+    OrderMaker orderMaker;
+    BigQ* bigQ;
 protected:
     virtual void SetUp() {
         clog << "creating DBFile instance.." << endl;
@@ -58,12 +60,15 @@ protected:
         dbFile->Load(nation,table_path);
 //        dbFile->MoveFirst();
 
+        BigQ bigQ (*inPipe, *outPipe, orderMaker, 2);
+        bigQ.file.Open(0, tempfile_path);
     }
 
     virtual void TearDown() {
         clog << "clearing memory.." << endl;
-        delete dbFile;
-        remove(dbfile_dir);
+
+//        delete dbFile;
+//        remove(dbfile_dir);
     }
 };
 
@@ -82,14 +87,33 @@ TEST_F(BigQTest,dumpSortedList1){
     OrderMaker orderMaker;
     BigQ bigQ (*inPipe, *outPipe, orderMaker, 2);
     bigQ.file.Open(0, tempfile_path);
-    bigQ.file.AddPage(new Page(), -1);
+//    bigQ.file.AddPage(new Page(), -1);
+    ASSERT_EQ(bigQ.file.GetLength(),0);
+    bigQ.dumpSortedList(recordList);
+    ASSERT_EQ(bigQ.file.GetLength(),1);
+}
 
+
+//test BigQ::dumpSortedList
+TEST_F(BigQTest,dumpSortedList2){
+    vector<Record*> recordList;
+    recordList.reserve(10);
+    Record temp;
+    while (dbFile->GetNext (temp) == 1) {
+        Record* record = new Record();
+        record->Copy(&temp);
+        recordList.emplace_back(record);
+    }
+
+    OrderMaker orderMaker;
+    BigQ bigQ (*inPipe, *outPipe, orderMaker, 2);
+    bigQ.file.Open(0, tempfile_path);
     ASSERT_EQ(bigQ.blockNum,0);
     bigQ.dumpSortedList(recordList);
     ASSERT_EQ(bigQ.blockNum,1);
 }
 
-//workerThread()
+//test BigQ::phaseOne
 TEST_F(BigQTest,workerThread1){
 
 }
