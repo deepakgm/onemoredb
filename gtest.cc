@@ -131,17 +131,18 @@ TEST_F(BigQTest,dumpSortedList3){
 // close
 TEST_F(BigQTest,close1){
     BigQ bigQ;
-    Pipe* input=Pipe(100);
-    Pipe* output=Pipe(100);
     bigQ.file.Open(0, tempfile_path);
-
-    bigQ.file.
-        ASSERT_NE(recordList.size(),0);
-    bigQ.dumpSortedList(recordList);
-    ASSERT_EQ(recordList.size(),0);
+    Pipe* output=new Pipe(100);
+    bigQ.outPipe=output;
+    bigQ.close();
+    ASSERT_EQ(bigQ.file.Close(),0);
 }
 
 
-//phaseOne
-
-//phasetwo
+// open
+TEST_F(BigQTest,open1){
+    BigQ bigQ;
+    bigQ.init();
+    int file_length=bigQ.file.GetLength();
+    ASSERT_EQ(file_length,1);
+}

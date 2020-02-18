@@ -109,30 +109,30 @@ void BigQ::dumpSortedList(vector<Record *> &recordList) {
 
 void *BigQ::workerThread(void *arg) {
     BigQ *bigQ = (BigQ *) arg;
+
+    bigQ->init();
+
+    bigQ->phaseOne();
+
+    bigQ->phaseTwo();
+
+    bigQ->close();
+    remove(tempFilePath);
+    pthread_exit(NULL);
+}
+
+void BigQ::init() {
     if (getcwd(tempFilePath, sizeof(tempFilePath)) != NULL) {
         strcat(tempFilePath, "/temp/myfile");
     } else {
         cerr << "error while getting curent dir" << endl;
         exit(-1);
     }
-//    cout<<"tempfilePath : "<<tempFilePath<<endl;
-    bigQ->file.Open(0, tempFilePath);
-    bigQ->file.AddPage(new Page(), -1);
-
-    cout<<"calling phase 1"<<endl;
-
-    bigQ->phaseOne();
-
-    cout<<"calling phase 2"<<endl;
-
-    bigQ->phaseTwo();
-
-    bigQ->close();
-    pthread_exit(NULL);
+    file.Open(0, tempFilePath);
+    file.AddPage(new Page(), -1);
 }
 
 void BigQ::close() {
     outPipe->ShutDown();
     file.Close();
-    remove(tempFilePath);
 }
