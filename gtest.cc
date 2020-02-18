@@ -47,10 +47,6 @@ int main(int argc, char **argv) {
 class BigQTest : public ::testing::Test {
 public:
     DBFile *dbFile;
-    Pipe* inPipe;
-    Pipe* outPipe;
-    OrderMaker orderMaker;
-    BigQ* bigQ;
 protected:
     virtual void SetUp() {
         clog << "creating DBFile instance.." << endl;
@@ -60,15 +56,12 @@ protected:
         dbFile->Load(nation,table_path);
 //        dbFile->MoveFirst();
 
-        BigQ bigQ (*inPipe, *outPipe, orderMaker, 2);
-        bigQ.file.Open(0, tempfile_path);
     }
 
     virtual void TearDown() {
         clog << "clearing memory.." << endl;
-
-//        delete dbFile;
-//        remove(dbfile_dir);
+       delete dbFile;
+       remove(dbfile_dir);
     }
 };
 
@@ -78,19 +71,19 @@ TEST_F(BigQTest,dumpSortedList1){
     vector<Record*> recordList;
     recordList.reserve(10);
     Record temp;
+
     while (dbFile->GetNext (temp) == 1) {
         Record* record = new Record();
         record->Copy(&temp);
         recordList.emplace_back(record);
     }
 
-    OrderMaker orderMaker;
-    BigQ bigQ (*inPipe, *outPipe, orderMaker, 2);
+    BigQ bigQ;
     bigQ.file.Open(0, tempfile_path);
-//    bigQ.file.AddPage(new Page(), -1);
-    ASSERT_EQ(bigQ.file.GetLength(),0);
+
+    ASSERT_EQ(bigQ.blockNum,0);
     bigQ.dumpSortedList(recordList);
-    ASSERT_EQ(bigQ.file.GetLength(),1);
+    ASSERT_EQ(bigQ.blockNum,1);
 }
 
 
@@ -99,23 +92,53 @@ TEST_F(BigQTest,dumpSortedList2){
     vector<Record*> recordList;
     recordList.reserve(10);
     Record temp;
+
     while (dbFile->GetNext (temp) == 1) {
         Record* record = new Record();
         record->Copy(&temp);
         recordList.emplace_back(record);
     }
 
-    OrderMaker orderMaker;
-    BigQ bigQ (*inPipe, *outPipe, orderMaker, 2);
+    BigQ bigQ;
     bigQ.file.Open(0, tempfile_path);
-    ASSERT_EQ(bigQ.blockNum,0);
+
+    ASSERT_EQ(bigQ.file.GetLength(),0);
     bigQ.dumpSortedList(recordList);
-    ASSERT_EQ(bigQ.blockNum,1);
+    ASSERT_EQ(bigQ.file.GetLength(),1);
 }
 
-//test BigQ::phaseOne
-TEST_F(BigQTest,workerThread1){
 
+//test BigQ::dumpSortedList
+TEST_F(BigQTest,dumpSortedList3){
+    vector<Record*> recordList;
+    recordList.reserve(10);
+    Record temp;
+
+    while (dbFile->GetNext (temp) == 1) {
+        Record* record = new Record();
+        record->Copy(&temp);
+        recordList.emplace_back(record);
+    }
+
+    BigQ bigQ;
+    bigQ.file.Open(0, tempfile_path);
+
+    ASSERT_NE(recordList.size(),0);
+    bigQ.dumpSortedList(recordList);
+    ASSERT_EQ(recordList.size(),0);
+}
+
+// close
+TEST_F(BigQTest,close1){
+    BigQ bigQ;
+    Pipe* input=Pipe(100);
+    Pipe* output=Pipe(100);
+    bigQ.file.Open(0, tempfile_path);
+
+    bigQ.file.
+        ASSERT_NE(recordList.size(),0);
+    bigQ.dumpSortedList(recordList);
+    ASSERT_EQ(recordList.size(),0);
 }
 
 

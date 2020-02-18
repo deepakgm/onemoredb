@@ -106,9 +106,6 @@ void test1 (int option, int runlen) {
 		tutil.write = true;
 	}
 	pthread_create (&thread2, NULL, consumer, (void *)&tutil);
-
-	cout<< "debug 1"<< endl;
-	sortorder.Print();
 	BigQ bq (input, output, sortorder, runlen);
 
 	pthread_join (thread1, NULL);
