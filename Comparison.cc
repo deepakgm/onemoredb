@@ -104,7 +104,7 @@ OrderMaker :: OrderMaker(Schema *schema) {
 
 
 void OrderMaker :: Print () {
-	printf("NumAtts = %5d\n", numAtts);
+//	printf("NumAtts = %5d\n", numAtts);
 	for (int i = 0; i < numAtts; i++)
 	{
 		printf("%3d: %5d ", i, whichAtts[i]);
@@ -152,7 +152,7 @@ int CNF :: GetSortOrders (OrderMaker &left, OrderMaker &right) {
 		if (orList[i][0].operand1 == Left) {
 			left.whichAtts[left.numAtts] = orList[i][0].whichAtt1;
 			left.whichTypes[left.numAtts] = orList[i][0].attType;	
-		}
+		}	
 
 		if (orList[i][0].operand1 == Right) {
                         right.whichAtts[right.numAtts] = orList[i][0].whichAtt1;
