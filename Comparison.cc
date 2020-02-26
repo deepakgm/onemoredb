@@ -104,7 +104,7 @@ OrderMaker :: OrderMaker(Schema *schema) {
 
 
 void OrderMaker :: Print () {
-//	printf("NumAtts = %5d\n", numAtts);
+	printf("NumAtts = %5d\n", numAtts);
 	for (int i = 0; i < numAtts; i++)
 	{
 		printf("%3d: %5d ", i, whichAtts[i]);
@@ -116,7 +116,6 @@ void OrderMaker :: Print () {
 			printf("String\n");
 	}
 }
-
 
 
 int CNF :: GetSortOrders (OrderMaker &left, OrderMaker &right) {
@@ -143,7 +142,7 @@ int CNF :: GetSortOrders (OrderMaker &left, OrderMaker &right) {
 		// now verify that it operates over atts from both tables
 		if (!((orList[i][0].operand1 == Left && orList[i][0].operand2 == Right) ||
 		      (orList[i][0].operand2 == Left && orList[i][0].operand1 == Right))) {
-//			continue;
+			//continue;		
 		}
 
 		// since we are here, we have found a join attribute!!!
@@ -175,7 +174,6 @@ int CNF :: GetSortOrders (OrderMaker &left, OrderMaker &right) {
 	}
 	
 	return left.numAtts;
-
 }
 
 

@@ -2,9 +2,8 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <iostream>
-
+#include<stdlib.h>
 
 Record :: Record () {
 	bits = NULL;
@@ -134,9 +133,6 @@ char* Record :: GetBits (void) {
 	return bits;
 }
 
-long Record :: GetLength() {
-    return  (long(*bits));
-}
 
 void Record :: CopyBits(char *bits, int b_len) {
 
