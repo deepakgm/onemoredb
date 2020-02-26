@@ -32,14 +32,6 @@ public:
     vector<off_t> blockStartOffset;
     vector<off_t> blockEndOffset;
     File file;
-
-
-private:
-    OrderMaker* maker;
-    int runlen;
-
-    pthread_t worker_thread;
-
     class Compare{
         ComparisonEngine CmpEng;
         OrderMaker& CmpOrder;
@@ -64,6 +56,14 @@ private:
 
         bool operator()(IndexedRecord* a, IndexedRecord* b){return comparisonEngine.Compare(&(a->record), &(b->record), &orderMaker) > 0;}
     };
+
+    Compare* compare;
+    IndexedRecordCompare* indexedRecordCompare;
+
+private:
+    OrderMaker* maker;
+    int runlen;
+    pthread_t worker_thread;
 };
 
 

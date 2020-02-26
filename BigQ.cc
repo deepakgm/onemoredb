@@ -12,6 +12,8 @@ BigQ::BigQ(Pipe &in, Pipe &out, OrderMaker &orderMaker, int runlen1) {
     outPipe = &out;
     runlen = runlen1;
     maker = &orderMaker;
+    compare= new Compare(orderMaker);
+    indexedRecordCompare= new IndexedRecordCompare(orderMaker);
     pthread_create(&worker_thread, NULL, workerThread, (void *) this);
 }
 BigQ::BigQ(){
@@ -23,7 +25,6 @@ BigQ::~BigQ() {
 
 void BigQ::phaseOne() {
     Record tempRecord;
-    Compare comparator = Compare(*maker);
 
     const long maxSize = PAGE_SIZE * runlen;
 
@@ -39,7 +40,7 @@ void BigQ::phaseOne() {
 
         if (curSize >= maxSize) {
             curSize = 0;
-            sort(recordList.begin(), recordList.end(), comparator);
+            sort(recordList.begin(), recordList.end(), *compare);
             dumpSortedList(recordList);
         }
         recordList.emplace_back(record);
@@ -51,7 +52,7 @@ void BigQ::phaseOne() {
         pthread_exit(NULL);
     }
 
-    sort(recordList.begin(), recordList.end(), comparator);
+    sort(recordList.begin(), recordList.end(), *compare);
 //    cout<<"RecordList: "<<recordList.size()<<endl;
     dumpSortedList(recordList);
 //    cout<<"Sucess of Dumping Sorted List"<<endl;

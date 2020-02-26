@@ -146,3 +146,29 @@ TEST_F(BigQTest,open1){
     int file_length=bigQ.file.GetLength();
     ASSERT_EQ(file_length,1);
 }
+
+
+
+// phaseOne
+TEST_F(BigQTest,phaseOne1){
+class MockCompare : public BigQ::Compare{
+public:
+    MockCompare(OrderMaker& orderMaker): Compare(orderMaker) {}
+    bool operator()(Record* a, Record* b){return true;}
+};
+    BigQ bigQ;
+    bigQ.file.Open(0, tempfile_path);
+    OrderMaker orderMaker;
+    bigQ.compare=new MockCompare(orderMaker);
+    Pipe* input=new Pipe(100);
+    Pipe* output=new Pipe(100);
+    bigQ.inPipe=input;
+    bigQ.outPipe=output;
+    cout << "here" <<endl;
+    pthread_t thread1;
+    pthread_create (&thread1, NULL, bigQ.phaseOne(), (void *)&input);
+
+    cout << "here" <<endl;
+    input->ShutDown();
+    ASSERT_EQ(bigQ.blockNum,1);
+}
