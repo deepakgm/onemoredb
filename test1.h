@@ -7,14 +7,6 @@
 #include "Record.h"
 using namespace std;
 
-
-//char *catalog_path = "/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/backup/catalog";
-//char *tpch_dir ="/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/backup/tpch-dbgen/data/"; // dir where dbgen tpch files (extension *.tbl) can be found
-//char *dbfile_dir = "/home/floura/Desktop/Floura/uflorida/DBI/projects/proj2/mine/backup/temp/";
-char *catalog_path = "catalog";
-char *tpch_dir ="/home/gurpreet/Desktop/temp/git/tpch-dbgen/10M/";
-char *dbfile_dir = "/home/gurpreet/Desktop/temp/";
-
 extern "C" {
 	int yyparse(void);   // defined in y.tab.c
 }
@@ -52,18 +44,18 @@ public:
 	}
 };
 
-char *supplier = "supplier";
-char *partsupp = "partsupp";
-char *part = "part";
-char *nation = "nation";
-char *customer = "customer";
-char *orders = "orders";
-char *region = "region";
-char *lineitem = "lineitem";
+ char *supplier = "supplier";
+ char *partsupp = "partsupp";
+ char *part = "part";
+ char *nation = "nation";
+ char *customer = "customer";
+ char *orders = "orders";
+ char *region = "region";
+ char *lineitem = "lineitem";
 
 relation *s, *p, *ps, *n, *li, *r, *o, *c;
 
-void setup (char *catalog_path, char *dbfile_dir, char *tpch_dir) {
+void setup (const char *catalog_path, const char *dbfile_dir, const char *tpch_dir) {
 	cout << " \n** IMPORTANT: MAKE SURE THE INFORMATION BELOW IS CORRECT **\n";
 	cout << " catalog location: \t" << catalog_path << endl;
 	cout << " tpch files dir: \t" << tpch_dir << endl;
@@ -77,7 +69,7 @@ void setup (char *catalog_path, char *dbfile_dir, char *tpch_dir) {
 	li = new relation (lineitem, new Schema (catalog_path, lineitem), dbfile_dir);
 	r = new relation (region, new Schema (catalog_path, region), dbfile_dir);
 	o = new relation (orders, new Schema (catalog_path, orders), dbfile_dir);
-    c = new relation (customer, new Schema (catalog_path, customer), dbfile_dir);
+	c = new relation (customer, new Schema (catalog_path, customer), dbfile_dir);
 }
 
 void cleanup () {

@@ -17,12 +17,17 @@ class BigQ
 public:
 
     BigQ (Pipe &in, Pipe &out, OrderMaker &orderMaker, int runlen);
+    BigQ();
     ~ BigQ();
 
     static void* workerThread(void* arg);
     void dumpSortedList(std::vector<Record*>& recordList);
     void phaseOne();
     void phaseTwo();
+    void init();
+    void close();
+    Pipe* inPipe;
+    Pipe* outPipe;
     int blockNum = 0;
     vector<off_t> blockStartOffset;
     vector<off_t> blockEndOffset;
@@ -30,8 +35,6 @@ public:
 
 
 private:
-    Pipe* inPipe;
-    Pipe* outPipe;
     OrderMaker* maker;
     int runlen;
 

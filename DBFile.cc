@@ -22,7 +22,7 @@ DBFile::DBFile() {
     string bin_path;
 
     if (getcwd(metafile_path, sizeof(metafile_path)) != NULL) {
-        clog << "current working dir:" << metafile_path << endl;
+//        clog << "current working dir:" << metafile_path << endl;
         strcat(metafile_path, "/metafile");
     } else {
         cerr << "error while getting curent dir" << endl;
@@ -64,7 +64,7 @@ int DBFile::Create(const char *f_path, fType f_type, void *startup) {
         return 1;
     }
     f->Open(0, strdup(f_path));
-    clog << "writing bin_path to metafile:" << f_path << endl;
+//    clog << "writing bin_path to metafile:" << f_path << endl;
     WriteToMeta(f_path);
     return 0;
 }
@@ -79,13 +79,15 @@ int DBFile::Open(const char *f_path) {
         WriteToMeta(f_path);
     }
 
-    if (FILE *file = fopen(f_path, "r")) {
+    if (FILE *file = fopen(f_path, "rw")) {
         fclose(file);
     } else {
+        cout<<"Already open"<<endl;
         return 1;
     }
     f->Open(1, strdup(f_path));
-    clog << "opening file of length: " << f->GetLength() << endl;;
+//    cout<<"Opening file: "<<f_path<<endl;
+//    clog << "opening file of length: " << f->GetLength() << endl;;
 
     if (0 != f->GetLength()) {
         f->GetPage(curPage, f->GetLength() - 2);
