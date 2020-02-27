@@ -17,6 +17,9 @@ Record :: ~Record () {
 
 }
 
+long Record :: GetLength() {
+    return  (long(*bits));
+}
 
 int Record :: SuckNextRecord (Schema *mySchema, FILE *textFile) {
 

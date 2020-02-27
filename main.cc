@@ -3,81 +3,45 @@
 #include <stdlib.h>
 #include "DBFile.h"
 #include "Schema.h"
-
+#include <limits.h>
+#include <cstring>
+#include <unistd.h>
 
 using namespace std;
 
-extern "C" {
-int yyparse(void);   // defined in y.tab.c
-}
-
-extern struct AndList *final;
-
 int main() {
-    // try to parse the CNF
-    cout << "Enter in your CNF: ";
-    if (yyparse() != 0) {
-        cout << "Can't parse your CNF.\n";
-        exit (1);
+    cout << "hello" <<endl;
+    char cur_dir[PATH_MAX];
+    char dbfile_dir[PATH_MAX];
+    char table_path[PATH_MAX];
+    char catalog_path[PATH_MAX];
+    char tempfile_path[PATH_MAX];
+    if (getcwd(cur_dir, sizeof(cur_dir)) != NULL) {
+        clog <<"current working dir:" << cur_dir << endl;
+        strcpy(dbfile_dir,cur_dir);
+        strcpy(table_path,cur_dir);
+        strcpy(catalog_path,cur_dir);
+        strcpy(tempfile_path,cur_dir);
+        strcat(dbfile_dir,"/test/test.bin");
+        strcat(table_path,"/test/nation.tbl");
+        strcat(catalog_path,"/test/catalog");
+        strcat(tempfile_path,"/test/tempfile");
+    } else {
+        cerr << "error while getting curent dir" << endl;
+        return 1;
     }
 
-    // suck up the schema from the file
-    Schema lineitem ("/home/gurpreet/Desktop/dbi/onemoredb/catalog", "lineitem");
+    DBFile* dbFile=new DBFile();
+    dbFile->Create(dbfile_dir,heap,NULL);
+    Schema nation (catalog_path, (char*)"nation");
+    dbFile->Load(nation,table_path);
 
-    // grow the CNF expression from the parse tree
-    CNF myComparison;
-    Record literal;
-    myComparison.GrowFromParseTree (final, &lineitem, literal);
-
-    // print out the comparison to the screen
-    myComparison.Print ();
-
-    // now open up the text file and start procesing it
-    FILE *tableFile = fopen ("/home/gurpreet/Desktop/temp/git/tpch-dbgen/lineitem.tbl", "r");
-
-    Record temp;
-    Schema mySchema ("catalog", "lineitem");
-
-    //char *bits = literal.GetBits ();
-    //cout << " numbytes in rec " << ((int *) bits)[0] << endl;
-    //literal.Print (&supplier);
-
-    // read in all of the records from the text file and see if they match
-    // the CNF expression that was typed in
-    int counter = 0;
-    ComparisonEngine comp;
-    while (temp.SuckNextRecord (&mySchema, tableFile) == 1) {
-        counter++;
-        if (counter % 10000 == 0) {
-            cerr << counter << "\n";
-        }
-
-        if (comp.Compare (&temp, &literal, &myComparison))
-            temp.Print (&mySchema);
-
-    }
-
-   /* DBFile *dbFile = new DBFile;
-    Schema lineitem("/home/gurpreet/Desktop/dbi/onemoredb/catalog", "lineitem");
-
-
-    dbFile->Create("/home/gurpreet/Desktop/temp/t.bin",heap, NULL);;
-//      dbFile->Open(NULL);
-
-
-    dbFile->Load(lineitem,"/home/gurpreet/Desktop/temp/git/tpch-dbgen/lineitem.tbl");
     dbFile->MoveFirst();
 
-    Record temp;
-    int counter = 0;
-    while (dbFile->GetNext(temp) == 1) {
-        counter += 1;
-        if (counter % 10000 == 0) {
-            cout << counter << "\n";
-        }
-    }
-    cout << " scanned " << counter << " recs \n";
-    dbFile->Close();*/
+
+    Record record;
+    dbFile->GetNext(record);
+    record.Print(&nation);
+
+    dbFile->Close();
 }
-
-
