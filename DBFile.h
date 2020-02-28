@@ -89,12 +89,12 @@ class DBFile {
 
         int runLength;  // runlength for BigQ
         OrderMaker myOrder;  // Sort order for sorted file
-        OrderMaker *myQueryOrder = nullptr;
-        OrderMaker *literalQueryOrder = nullptr;
+        OrderMaker *myQueryOrder = NULL;
+        OrderMaker *literalQueryOrder = NULL;
 
         Pipe in = Pipe(100);  // Push new added records to BigQ through in pipe.
         Pipe out = Pipe(100);  // Get sorted records from BigQ through out pipe.
-        BigQ *bigQ = nullptr;
+        BigQ *bigQ = NULL;
 
         void writingMode();  // Switch to writing mode
         void readingMode();  // Switch to reading mode

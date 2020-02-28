@@ -2,32 +2,21 @@
 #include <iostream>
 #include <string.h>
 #include <unistd.h>
-#include <fstream>
 #include "Record.h"
 #include "Schema.h"
 #include "File.h"
 #include "Comparison.h"
 #include "DBFile.h"
+#include "Meta.h"
 
 using namespace std;
 
 bool isDirty = false;
 
-char metafile_path[4096];
-
 DBFile::DBFile() {
     f = new File();
     curPage = new Page;
     isDirty = false;
-    string bin_path;
-
-    if (getcwd(metafile_path, sizeof(metafile_path)) != NULL) {
-//        clog << "current working dir:" << metafile_path << endl;
-        strcat(metafile_path, "/metafile");
-    } else {
-        cerr << "error while getting curent dir" << endl;
-        exit(-1);
-    }
 }
 
 DBFile::~DBFile() {
@@ -38,62 +27,77 @@ bool DBFile::GetIsDirty() {
     return isDirty;
 }
 
-void WriteToMeta(const char *bin_path) {
-    FILE *out;
-    if ((out = fopen(metafile_path, "w")) != NULL) {
-        fprintf(out, bin_path);
-        fclose(out);
-    }
-}
-
-char *GetFromMeta() {
-    string bin_path;
-    ifstream metafile;
-    metafile.open(metafile_path);
-    getline(metafile, bin_path);
-    clog << bin_path << endl;
-    metafile.close();
-    char *cstr = new char[bin_path.length() + 1];
-    strcpy(cstr, bin_path.c_str());
-    return cstr;
-}
-
 int DBFile::Create(const char *f_path, fType f_type, void *startup) {
-    if (f_type != heap) {
-        cout << "file type is undefined!!" << endl;
-        return 1;
-    }
-    f->Open(0, strdup(f_path));
-//    clog << "writing bin_path to metafile:" << f_path << endl;
-    WriteToMeta(f_path);
-    return 0;
+//    if (f_type == heap) {
+//        myInternalVar = new DBFile::Heap();
+//    }else if (f_type == sorted) {
+//        myInternalVar = new DBFile::Sorted();
+//    }
+    return 1;
+
+//    return myInternalVar->Create(f_path, startup);
 }
 
-int DBFile::Open(const char *f_path) {
-    if (f_path == NULL) {
-        clog << "fetching bin_path from metafile.." << endl;
-        f_path = GetFromMeta();
-        clog << "binpath: " << f_path << endl;
-    } else {
-        clog << "writing bin_path to metafile.." << endl;
-        WriteToMeta(f_path);
-    }
+//int DBFile::Heap::Create (const char *f_path, void *startup) {
+//    file.Open(0, strdup(f_path));
+//    readingPage.EmptyItOut();
+//    writingPage.EmptyItOut();
+//    file.AddPage(&writingPage, -1);
+//    WriteMetaInfo(f_path,heap,startup);
+//    MoveFirst();
+//    return 1;
+//}
+//
+//int DBFile::Sorted::Create (const char *f_path, void *startup) {
+//    file.Open(0, strdup(f_path));
+//    readingPage.EmptyItOut();
+//    writingPage.EmptyItOut();
+//    file.AddPage(&writingPage, -1);
+//    WriteMetaInfo(f_path,sorted,startup);
+//    return 1;
+//}
 
-    if (FILE *file = fopen(f_path, "rw")) {
-        fclose(file);
-    } else {
-        cout<<"Already open"<<endl;
-        return 1;
-    }
-    f->Open(1, strdup(f_path));
-//    cout<<"Opening file: "<<f_path<<endl;
-//    clog << "opening file of length: " << f->GetLength() << endl;;
-
-    if (0 != f->GetLength()) {
-        f->GetPage(curPage, f->GetLength() - 2);
-    }
-    return 0;
-}
+//int DBFile::Open (const char *f_path) {
+//    // Firstly open .header file and read the first line to make sure whether it's a heap file or sorted file.
+//    MetaInfo metaInfo=GetMetaInfo();
+//
+//    if (metaInfo.fileType == heap) {
+////        myInternalVar = new Heap();
+//    }
+//    else if(metaInfo.fileType==sorted){
+////        myInternalVar = new Sorted();
+//    }else{
+//        return 0;
+//    }
+//    return myInternalVar->Open(f_path);
+//}
+//
+//int DBFile::Heap::Open (const char *fpath) {
+//    file.Open(1, strdup(fpath));  // Open existing DBFile
+//    readingPage.EmptyItOut();
+//    writingPage.EmptyItOut();
+//    MoveFirst();
+//    return 1;
+//}
+//
+//int DBFile::Sorted::Open (const char *f_path) {
+//    string input = "";
+////    myOrder.numAtts = 0;
+////    getline(f, input);
+////    while (f >> myOrder.whichAtts[myOrder.numAtts] && !f.eof()) {
+////        int type = 0;
+////        f >> type;
+////        if (type == 0) myOrder.whichTypes[myOrder.numAtts] = Int;
+////        else if (type == 1) myOrder.whichTypes[myOrder.numAtts] = Double;
+////        else myOrder.whichTypes[myOrder.numAtts] = String;
+////        ++myOrder.numAtts;
+////    }
+////    f.close();
+////    file.Open(1, f_path);
+//    writingPage.EmptyItOut();
+//    readingPage.EmptyItOut();
+//    return 1;
+//}
 
 //todo deal with page loads that are called in between add and gets
 void DBFile::Load(Schema &f_schema, const char *loadpath) {
@@ -191,5 +195,3 @@ int DBFile::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
         }
     return 0;
 }
-
-//11,0 12,35   2,3 1,1 2,3

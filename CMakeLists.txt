@@ -28,4 +28,6 @@ add_executable(a2test
         test.cc
         test.h
         TwoWayList.cc
-        TwoWayList.h)
+        TwoWayList.h
+        main.cc)
+

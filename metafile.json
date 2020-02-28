@@ -1,0 +1,8 @@
+{
+  "num_atts" : 2,
+  "path" : "somepath",
+  "runlen" : 2,
+  "type" : "sorted",
+  "which_atts" : [1, 2],
+  "which_types" : ["Double", "String"]
+}
