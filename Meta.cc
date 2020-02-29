@@ -27,8 +27,7 @@ Type getTypeForString(string type) {
         return String;
 }
 
-MetaInfo GetMetaInfo() {
-    json::JSON tmp;
+void init(){
     if (getcwd(cur_dir, sizeof(cur_dir)) != NULL) {
         clog << "current working dir:" << cur_dir << endl;
         strcpy(meta_path, cur_dir);
@@ -37,6 +36,11 @@ MetaInfo GetMetaInfo() {
         cerr << "error while getting curent dir" << endl;
         exit(-1);
     }
+}
+
+MetaInfo GetMetaInfo() {
+    init();
+    json::JSON tmp;
     fstream t(meta_path);
     string str((std::istreambuf_iterator<char>(t)),
                std::istreambuf_iterator<char>());
@@ -62,6 +66,7 @@ MetaInfo GetMetaInfo() {
 }
 
 void WriteMetaInfo(string path, fType type, void *startup) {
+    init();
     FILE *out;
     json::JSON obj;
     obj["path"] = path;

@@ -88,7 +88,7 @@ class DBFile {
         string fpath;  // file path of DBFile. Used to remove old file and rename tmp file during merging.
 
         int runLength;  // runlength for BigQ
-        OrderMaker myOrder;  // Sort order for sorted file
+        OrderMaker* myOrder;  // Sort order for sorted file
         OrderMaker *myQueryOrder = NULL;
         OrderMaker *literalQueryOrder = NULL;
 
