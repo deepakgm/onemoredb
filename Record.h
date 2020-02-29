@@ -66,8 +66,8 @@ public:
 	// that the schema also be given so that the record can be interpreted
 	void Print (Schema *mySchema);
 
-	//GetLength
-	long GetLength();
+    //GetLength
+    long GetLength();
 };
 
 #endif

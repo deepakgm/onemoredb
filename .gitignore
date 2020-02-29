@@ -3,3 +3,4 @@ cmake-build-debug/
 *.out
 *.bin
 .idea/
+*.tmp

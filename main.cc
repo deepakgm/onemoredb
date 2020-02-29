@@ -3,81 +3,86 @@
 #include <stdlib.h>
 #include "DBFile.h"
 #include "Schema.h"
-
+#include <limits.h>
+#include <cstring>
+#include "Meta.h"
 
 using namespace std;
 
-extern "C" {
-int yyparse(void);   // defined in y.tab.c
-}
-
-extern struct AndList *final;
-
 int main() {
-    // try to parse the CNF
-    cout << "Enter in your CNF: ";
-    if (yyparse() != 0) {
-        cout << "Can't parse your CNF.\n";
-        exit (1);
+//     MetaInfo metaInfo;
+//     metaInfo=GetMetaInfo();
+//    metaInfo.sortInfo->myOrder->Print();
+//     cout << "got meta " <<  metaInfo.sortInfo->myOrder->numAtts<< endl;
+     SortInfo* sortInfo=new SortInfo;
+     sortInfo->runLength=2;
+     OrderMaker* orderMaker=new(OrderMaker);
+     orderMaker->numAtts=4;
+     orderMaker->whichTypes[0]=Int;
+    orderMaker->whichTypes[1]=String;
+    orderMaker->whichTypes[2]=Int;
+    orderMaker->whichTypes[3]=String;
+
+    orderMaker->whichAtts[0]=0;
+    orderMaker->whichAtts[1]=1;
+    orderMaker->whichAtts[2]=2;
+    orderMaker->whichAtts[3]=3;
+
+     //    orderMaker.whichTypes=["Int","asa"]
+    sortInfo->myOrder=orderMaker;
+//     WriteMetaInfo("somepath",sorted, sortInfo);
+//GetMetaInfo();
+
+
+//    cout << metaInfo.binFilePath<< endl ;
+
+    char cur_dir[PATH_MAX];
+    char dbfile_dir[PATH_MAX];
+    char table_path[PATH_MAX];
+    char catalog_path[PATH_MAX];
+    char tempfile_path[PATH_MAX];
+    if (getcwd(cur_dir, sizeof(cur_dir)) != NULL) {
+        clog <<"current working dir:" << cur_dir << endl;
+        strcpy(dbfile_dir,cur_dir);
+        strcpy(table_path,cur_dir);
+        strcpy(catalog_path,cur_dir);
+        strcpy(tempfile_path,cur_dir);
+        strcat(dbfile_dir,"/test/test.bin");
+        strcat(table_path,"/test/nation.tbl");
+        strcat(catalog_path,"/test/catalog");
+        strcat(tempfile_path,"/test/tempfile");
+    } else {
+        cerr << "error while getting curent dir" << endl;
+        return 1;
     }
 
-    // suck up the schema from the file
-    Schema lineitem ("/home/gurpreet/Desktop/dbi/onemoredb/catalog", "lineitem");
+    strcpy(table_path,"/Users/apple/Desktop/dbi/tpch-dbgen/1GB/part.tbl");
 
-    // grow the CNF expression from the parse tree
-    CNF myComparison;
-    Record literal;
-    myComparison.GrowFromParseTree (final, &lineitem, literal);
+    DBFile* dbFile=new DBFile();
+    Schema nation (catalog_path, (char*)"part");
 
-    // print out the comparison to the screen
-    myComparison.Print ();
+    dbFile->Open(dbfile_dir);
 
-    // now open up the text file and start procesing it
-    FILE *tableFile = fopen ("/home/gurpreet/Desktop/temp/git/tpch-dbgen/lineitem.tbl", "r");
-
-    Record temp;
-    Schema mySchema ("catalog", "lineitem");
-
-    //char *bits = literal.GetBits ();
-    //cout << " numbytes in rec " << ((int *) bits)[0] << endl;
-    //literal.Print (&supplier);
-
-    // read in all of the records from the text file and see if they match
-    // the CNF expression that was typed in
-    int counter = 0;
-    ComparisonEngine comp;
-    while (temp.SuckNextRecord (&mySchema, tableFile) == 1) {
-        counter++;
-        if (counter % 10000 == 0) {
-            cerr << counter << "\n";
-        }
-
-        if (comp.Compare (&temp, &literal, &myComparison))
-            temp.Print (&mySchema);
-
-    }
-
-   /* DBFile *dbFile = new DBFile;
-    Schema lineitem("/home/gurpreet/Desktop/dbi/onemoredb/catalog", "lineitem");
-
-
-    dbFile->Create("/home/gurpreet/Desktop/temp/t.bin",heap, NULL);;
-//      dbFile->Open(NULL);
-
-
-    dbFile->Load(lineitem,"/home/gurpreet/Desktop/temp/git/tpch-dbgen/lineitem.tbl");
+//    dbFile->Create(dbfile_dir,heap,sortInfo);
+//    dbFile->Load(nation,table_path);
+//
     dbFile->MoveFirst();
+    Record trecord;
+    dbFile->GetNext (trecord);
+    trecord.Print(&nation);
 
-    Record temp;
+    Record record;
     int counter = 0;
-    while (dbFile->GetNext(temp) == 1) {
+    while (dbFile->GetNext (record) == 1) {
         counter += 1;
+//		temp.Print (rel->schema());
         if (counter % 10000 == 0) {
             cout << counter << "\n";
+            record.Print(&nation);
         }
     }
     cout << " scanned " << counter << " recs \n";
-    dbFile->Close();*/
+    record.Print(&nation);
+
+    dbFile->Close();
 }
-
-
