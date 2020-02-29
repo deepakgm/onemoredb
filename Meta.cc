@@ -6,6 +6,7 @@
 
 char meta_path[4096];
 char cur_dir[4096];
+bool initFlag;
 
 string getStringForType(Type type) {
     switch (type) {
@@ -28,6 +29,8 @@ Type getTypeForString(string type) {
 }
 
 void init(){
+    if(initFlag) return;
+    initFlag= true;
     if (getcwd(cur_dir, sizeof(cur_dir)) != NULL) {
         clog << "current working dir:" << cur_dir << endl;
         strcpy(meta_path, cur_dir);
@@ -36,6 +39,12 @@ void init(){
         cerr << "error while getting curent dir" << endl;
         exit(-1);
     }
+}
+char* GetTempPath() {
+    char* temp = new char[4096];
+    strcpy(temp, cur_dir);
+    strcat(temp, "/metafile.json");
+    return temp;
 }
 
 MetaInfo GetMetaInfo() {

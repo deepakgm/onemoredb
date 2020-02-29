@@ -13,6 +13,9 @@ struct MetaInfo {
 };
 
 MetaInfo GetMetaInfo();
+
 void WriteMetaInfo(string path, fType type, void *startup);
+
+char* GetTempPath();
 
 #endif

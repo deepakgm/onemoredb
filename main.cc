@@ -56,18 +56,32 @@ int main() {
         return 1;
     }
 
+    strcpy(table_path,"/Users/apple/Desktop/dbi/tpch-dbgen/1GB/part.tbl");
+
     DBFile* dbFile=new DBFile();
-    Schema nation (catalog_path, (char*)"nation");
+    Schema nation (catalog_path, (char*)"part");
 
     dbFile->Open(dbfile_dir);
 
-//    dbFile->Create(dbfile_dir,sorted,sortInfo);
+//    dbFile->Create(dbfile_dir,heap,sortInfo);
 //    dbFile->Load(nation,table_path);
-//    cout<<"loaded"<<endl;
 //
     dbFile->MoveFirst();
+    Record trecord;
+    dbFile->GetNext (trecord);
+    trecord.Print(&nation);
+
     Record record;
-    dbFile->GetNext(record);
+    int counter = 0;
+    while (dbFile->GetNext (record) == 1) {
+        counter += 1;
+//		temp.Print (rel->schema());
+        if (counter % 10000 == 0) {
+            cout << counter << "\n";
+            record.Print(&nation);
+        }
+    }
+    cout << " scanned " << counter << " recs \n";
     record.Print(&nation);
 
     dbFile->Close();
