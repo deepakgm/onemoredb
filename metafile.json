@@ -1,8 +1,8 @@
 {
   "num_atts" : 1,
-  "path" : "/Users/apple/Desktop/Projects/onemoredb/temp/customer.bin",
-  "runlen" : 8,
+  "path" : "/Users/apple/Desktop/Projects/onemoredb/test/test.bin",
+  "runlen" : 2,
   "type" : "sorted",
-  "which_atts" : [4],
-  "which_types" : ["String"]
+  "which_atts" : [0],
+  "which_types" : ["Int"]
 }

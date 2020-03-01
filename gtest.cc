@@ -47,15 +47,12 @@ int main(int argc, char **argv) {
 class BigQTest : public ::testing::Test {
 public:
     DBFile *dbFile;
+    Schema nation (catalog_path, "nation");
+
 protected:
     virtual void SetUp() {
         clog << "creating DBFile instance.." << endl;
         dbFile=new DBFile();
-        dbFile->Create(dbfile_dir,heap,NULL);
-        Schema nation (catalog_path, "nation");
-        dbFile->Load(nation,table_path);
-//        dbFile->MoveFirst();
-
     }
 
     virtual void TearDown() {
@@ -66,83 +63,7 @@ protected:
 };
 
 
-//test BigQ::dumpSortedList
-TEST_F(BigQTest,dumpSortedList1){
-    vector<Record*> recordList;
-    recordList.reserve(10);
-    Record temp;
-
-    while (dbFile->GetNext (temp) == 1) {
-        Record* record = new Record();
-        record->Copy(&temp);
-        recordList.emplace_back(record);
-    }
-
-    BigQ bigQ;
-    bigQ.file.Open(0, tempfile_path);
-
-    ASSERT_EQ(bigQ.blockNum,0);
-    bigQ.dumpSortedList(recordList);
-    ASSERT_EQ(bigQ.blockNum,1);
-}
-
-
-//test BigQ::dumpSortedList
-TEST_F(BigQTest,dumpSortedList2){
-    vector<Record*> recordList;
-    recordList.reserve(10);
-    Record temp;
-
-    while (dbFile->GetNext (temp) == 1) {
-        Record* record = new Record();
-        record->Copy(&temp);
-        recordList.emplace_back(record);
-    }
-
-    BigQ bigQ;
-    bigQ.file.Open(0, tempfile_path);
-
-    ASSERT_EQ(bigQ.file.GetLength(),0);
-    bigQ.dumpSortedList(recordList);
-    ASSERT_EQ(bigQ.file.GetLength(),1);
-}
-
-
-//test BigQ::dumpSortedList
-TEST_F(BigQTest,dumpSortedList3){
-    vector<Record*> recordList;
-    recordList.reserve(10);
-    Record temp;
-
-    while (dbFile->GetNext (temp) == 1) {
-        Record* record = new Record();
-        record->Copy(&temp);
-        recordList.emplace_back(record);
-    }
-
-    BigQ bigQ;
-    bigQ.file.Open(0, tempfile_path);
-
-    ASSERT_NE(recordList.size(),0);
-    bigQ.dumpSortedList(recordList);
-    ASSERT_EQ(recordList.size(),0);
-}
-
-// close
-TEST_F(BigQTest,close1){
-    BigQ bigQ;
-    bigQ.file.Open(0, tempfile_path);
-    Pipe* output=new Pipe(100);
-    bigQ.outPipe=output;
-    bigQ.close();
-    ASSERT_EQ(bigQ.file.Close(),0);
-}
-
-
-// open
-TEST_F(BigQTest,open1){
-    BigQ bigQ;
-    bigQ.init();
-    int file_length=bigQ.file.GetLength();
-    ASSERT_EQ(file_length,1);
+//test DBFile::Create
+TEST_F(DbTest,dumpSortedList1){
+//    dbFile->Create(dbfile_dir,heap,NULL);
 }

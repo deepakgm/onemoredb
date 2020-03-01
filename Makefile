@@ -1,5 +1,5 @@
 
-CC = g++ -O2 -Wno-deprecated
+CC = g++ -O2 -Wno-deprecated  -std=c++11
 
 tag = -i
 
@@ -12,27 +12,21 @@ main.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o DBFile
 
 test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o test.o
 	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o test.o
-	
-a2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o a2-test.o
-	$(CC) -o a2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o a2-test.o
-	
-a1test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o a1-test.o
-	$(CC) -o a1test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o y.tab.o lex.yy.o a1-test.o
+
+gtest.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o gtest.o
+	$(CC) -o test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o gtest.o -lgtest
 
 main.o: main.cc
-	$(CC) -std=c++11 -g -c main.cc
+	$(CC) -g -c main.cc
 
 test.o: test.cc
 	$(CC) -g -c test.cc
 
-a2-test.o: a2-test.cc
-	$(CC) -g -c a2-test.cc
-
-a1-test.o: a1-test.cc
-	$(CC) -g -c a1-test.cc
+gtest.o: gtest.cc
+	$(CC) -g -c gtest.cc
 
 Meta.o: Meta.cc
-	$(CC) -std=c++11 -g -c Meta.cc
+	$(CC) -g -c Meta.cc
 
 Comparison.o: Comparison.cc
 	$(CC) -g -c Comparison.cc
@@ -44,7 +38,7 @@ Pipe.o: Pipe.cc
 	$(CC) -g -c Pipe.cc
 
 BigQ.o: BigQ.cc
-	$(CC) -std=c++11 -g -c BigQ.cc
+	$(CC) -g -c BigQ.cc
 
 DBFile.o: DBFile.cc
 	$(CC) -g -c DBFile.cc

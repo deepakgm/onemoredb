@@ -36,8 +36,8 @@ int main() {
 
 
 //    for part table
-    strcpy(table_path,"/Users/apple/Desktop/dbi/tpch-dbgen/1GB/part.tbl");
-    Schema nation (catalog_path, (char*)"part");
+    strcpy(table_path,"/Users/apple/Desktop/dbi/tpch-dbgen/1GB/customer.tbl");
+    Schema nation (catalog_path, (char*)"customer");
     orderMaker->numAtts=1;
     orderMaker->whichTypes[0]=Int;
     orderMaker->whichAtts[0]=0;
