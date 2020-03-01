@@ -188,18 +188,19 @@ void Heap::Load(Schema &f_schema, const char *loadpath) {
     long recordCount = 0;
     long pageCount = file.GetLength()-1;
 
+    int isNotFull =0;
     while (tempRecord.SuckNextRecord(&f_schema, tableFile) == 1) {
         recordCount++;
-
-        int isFull = writingPage.Append(&tempRecord);
-        if (isFull == 0) {
+        isNotFull = writingPage.Append(&tempRecord);
+        if (!isNotFull) {
             file.AddPage(&writingPage, ++pageCount);
             curPageIndex++;
             writingPage.EmptyItOut();
             writingPage.Append(&tempRecord);
         }
     }
-    file.AddPage(&writingPage, ++pageCount);
+    if (!isNotFull)
+      file.AddPage(&writingPage, 0);
     cout << "loaded " << recordCount << " records into " << pageCount << " pages." << endl;
 }
 
@@ -276,18 +277,15 @@ int DBFile::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
 }
 
 int Heap::GetNext(Record &fetchme) {
-    if (readingPage.GetFirst(&fetchme) == 0) {
-        ++curPageIndex;
-        if (curPageIndex <= file.GetLength() - 2) {
-            file.GetPage(&readingPage, curPageIndex);
-            readingPage.GetFirst(&fetchme);
-            return 1;
-        } else {
+    while (!readingPage.GetFirst(&fetchme)) {
+        if (page_index == file.GetLength() - 2) {
             return 0;
         }
-    } else {
-        return 1;
+        else {
+            file.GetPage(&readingPage, ++page_index);
+        }
     }
+    return 1;
 }
 
 int Heap::GetNext(Record &fetchme, CNF &cnf, Record &literal) {

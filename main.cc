@@ -14,11 +14,11 @@ int main() {
 //     metaInfo=GetMetaInfo();
 //    metaInfo.sortInfo->myOrder->Print();
 //     cout << "got meta " <<  metaInfo.sortInfo->myOrder->numAtts<< endl;
-     SortInfo* sortInfo=new SortInfo;
-     sortInfo->runLength=2;
-     OrderMaker* orderMaker=new(OrderMaker);
-     orderMaker->numAtts=4;
-     orderMaker->whichTypes[0]=Int;
+    SortInfo* sortInfo=new SortInfo;
+    sortInfo->runLength=2;
+    OrderMaker* orderMaker=new(OrderMaker);
+    orderMaker->numAtts=4;
+    orderMaker->whichTypes[0]=Int;
     orderMaker->whichTypes[1]=String;
     orderMaker->whichTypes[2]=Int;
     orderMaker->whichTypes[3]=String;
@@ -56,32 +56,25 @@ int main() {
         return 1;
     }
 
-    strcpy(table_path,"/Users/apple/Desktop/dbi/tpch-dbgen/1GB/part.tbl");
+//    strcpy(table_path,"/Users/apple/Desktop/dbi/tpch-dbgen/1GB/part.tbl");
+//    Schema nation (catalog_path, (char*)"part");
+    Schema nation (catalog_path, (char*)"nation");
 
     DBFile* dbFile=new DBFile();
-    Schema nation (catalog_path, (char*)"part");
 
-    dbFile->Open(dbfile_dir);
+//    dbFile->Open(dbfile_dir);
 
-//    dbFile->Create(dbfile_dir,heap,sortInfo);
-//    dbFile->Load(nation,table_path);
-//
+    dbFile->Create(dbfile_dir,heap,sortInfo);
+    dbFile->Load(nation,table_path);
     dbFile->MoveFirst();
-    Record trecord;
-    dbFile->GetNext (trecord);
-    trecord.Print(&nation);
 
     Record record;
     int counter = 0;
     while (dbFile->GetNext (record) == 1) {
-        counter += 1;
-//		temp.Print (rel->schema());
-        if (counter % 10000 == 0) {
-            cout << counter << "\n";
-            record.Print(&nation);
-        }
+        counter ++;
     }
-    cout << " scanned " << counter << " recs \n";
+    cout << " scanned " << --counter << " recs \n";
+//    cout<< "last record:" <<endl;
     record.Print(&nation);
 
     dbFile->Close();
