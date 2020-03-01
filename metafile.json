@@ -1,4 +1,8 @@
 {
-  "path" : "/Users/apple/Desktop/Projects/onemoredb/test/test.bin",
-  "type" : "heap"
+  "num_atts" : 1,
+  "path" : "/Users/apple/Desktop/Projects/onemoredb/temp/customer.bin",
+  "runlen" : 8,
+  "type" : "sorted",
+  "which_atts" : [4],
+  "which_types" : ["String"]
 }

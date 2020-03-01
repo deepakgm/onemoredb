@@ -30,8 +30,10 @@ protected:
     Page readingPage;
     off_t page_index = -1;
     ComparisonEngine compEng;
-    OrderMaker* myOrder;
 
+    //todo can be moved to sorteddbfile
+    OrderMaker* myOrder;
+    int runLength;
     mType mode = reading;
 
     virtual void writingMode() = 0;
@@ -48,7 +50,7 @@ public:
 
     virtual void Load(Schema &myschema, const char *loadpath) = 0;
 
-    virtual void MoveFirst() = 0;
+    void MoveFirst();
 
     virtual void Add(Record &addme) = 0;
 
@@ -66,8 +68,6 @@ public:
     int curPageIndex;
     void Load(Schema &myschema, const char *loadpath);
 
-    void MoveFirst();
-
     void Add(Record &addme);
 
     int GetNext(Record &fetchme);
@@ -79,13 +79,12 @@ class Sorted : public GenericDBFile {
 private:
     string fpath;  // file path of DBFile. Used to remove old file and rename tmp file during merging.
 
-    int runLength;  // runlength for BigQ
-    OrderMaker* myOrder;  // Sort order for sorted file
     OrderMaker *myQueryOrder = NULL;
     OrderMaker *literalQueryOrder = NULL;
 
-    Pipe in = Pipe(100);  // Push new added records to BigQ through in pipe.
-    Pipe out = Pipe(100);  // Get sorted records from BigQ through out pipe.
+    Pipe in = Pipe(100);
+    Pipe out = Pipe(100);
+
     BigQ *bigQ = NULL;
 
     void writingMode();  // Switch to writing mode
@@ -93,8 +92,6 @@ private:
 
 public:
     void Load(Schema &myschema, const char *loadpath);
-
-    void MoveFirst();
 
     void Add(Record &addme);
 
@@ -104,10 +101,10 @@ public:
 };
 
 class DBFile {
-    GenericDBFile *myInternalVar;
 public:
     DBFile();
     ~DBFile();
+    GenericDBFile *myInternalVar;
     int Create(const char *fpath, fType file_type, void *startup);
     int Open(const char *fpath);
     int Close();

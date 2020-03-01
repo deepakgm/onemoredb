@@ -38,6 +38,10 @@ int GenericDBFile::Create(const char *f_path, fType type, void *startup) {
     writingPage.EmptyItOut();
     file.AddPage(&writingPage, -1);
     WriteMetaInfo(f_path, type, startup);
+    if (startup != NULL) {
+        myOrder = ((SortInfo *) startup)->myOrder;
+        runLength = ((SortInfo *) startup)->runLength;
+    }
     MoveFirst();
     return 1;
 }
@@ -96,13 +100,9 @@ void Sorted::writingMode() {
 void Sorted::readingMode() {
     if (mode == reading) return;
     mode = reading;
-//    MoveFirst();
+    MoveFirst();
     in.ShutDown();
-    File tempFile;
-    char* tempFilePath=GetTempPath();
-    tempFile.Open(0, tempFilePath);
     writingPage.EmptyItOut();
-    tempFile.AddPage(&writingPage, -1);
 
     bool pipeEmpty = false, fileEmpty = false; // Help determine which queue run out first.
 
@@ -118,7 +118,7 @@ void Sorted::readingMode() {
         if (compEng.Compare(&recFromPipe, &recFromPage, myOrder) <= 0) {
             // Write smaller record to writing buffer. If writing buffer if full, add this page to file and start to write to a new empty page.
             if (!writingPage.Append(&recFromPipe)) {
-                tempFile.AddPage(&writingPage, tempFile.GetLength() - 1);
+                file.AddPage(&writingPage, file.GetLength() - 1);
                 writingPage.EmptyItOut();
                 writingPage.Append(&recFromPipe);
             }
@@ -126,7 +126,7 @@ void Sorted::readingMode() {
             if (!out.Remove(&recFromPipe)) pipeEmpty = true;
         } else {
             if (!writingPage.Append(&recFromPage)) {
-                tempFile.AddPage(&writingPage, tempFile.GetLength() - 1);
+                file.AddPage(&writingPage, file.GetLength() - 1);
                 writingPage.EmptyItOut();
                 writingPage.Append(&recFromPage);
             }
@@ -136,36 +136,32 @@ void Sorted::readingMode() {
     // Determine which queue runs out and append records of the other queue to the end or new file.
     if (pipeEmpty && !fileEmpty) {
         if (!writingPage.Append(&recFromPage)) {
-            tempFile.AddPage(&writingPage, tempFile.GetLength() - 1);
+            file.AddPage(&writingPage, file.GetLength() - 1);
             writingPage.EmptyItOut();
             writingPage.Append(&recFromPage);
         }
         while (GetNext(recFromPage)) {
             if (!writingPage.Append(&recFromPage)) {
-                tempFile.AddPage(&writingPage, tempFile.GetLength() - 1);
+                file.AddPage(&writingPage, file.GetLength() - 1);
                 writingPage.EmptyItOut();
                 writingPage.Append(&recFromPage);
             }
         }
-    } else if (!pipeEmpty && fileEmpty) {
+    } else if (!pipeEmpty) {
         if (!writingPage.Append(&recFromPipe)) {
-            tempFile.AddPage(&writingPage, tempFile.GetLength() - 1);
+            file.AddPage(&writingPage, file.GetLength() - 1);
             writingPage.EmptyItOut();
             writingPage.Append(&recFromPipe);
         }
         while (out.Remove(&recFromPipe)) {
             if (!writingPage.Append(&recFromPipe)) {
-                tempFile.AddPage(&writingPage, tempFile.GetLength() - 1);
+                file.AddPage(&writingPage, file.GetLength() - 1);
                 writingPage.EmptyItOut();
                 writingPage.Append(&recFromPipe);
             }
         }
     }
-    if (!pipeEmpty || !fileEmpty) tempFile.AddPage(&writingPage, tempFile.GetLength() - 1);
-
-    tempFile.Close();
-    remove(fpath.c_str());
-    rename(tempFilePath, fpath.c_str());
+    if (!pipeEmpty || !fileEmpty) file.AddPage(&writingPage, file.GetLength() - 1);
 
     delete bigQ;
 }
@@ -186,9 +182,9 @@ void Heap::Load(Schema &f_schema, const char *loadpath) {
 
     Record tempRecord;
     long recordCount = 0;
-    long pageCount = file.GetLength()-1;
+    long pageCount = file.GetLength() - 1;
 
-    int isNotFull =0;
+    int isNotFull = 0;
     while (tempRecord.SuckNextRecord(&f_schema, tableFile) == 1) {
         recordCount++;
         isNotFull = writingPage.Append(&tempRecord);
@@ -200,20 +196,22 @@ void Heap::Load(Schema &f_schema, const char *loadpath) {
         }
     }
     if (!isNotFull)
-      file.AddPage(&writingPage, 0);
+        file.AddPage(&writingPage, 0);
+    fclose(tableFile);
     cout << "loaded " << recordCount << " records into " << pageCount << " pages." << endl;
 }
 
-void Sorted::Load(Schema &myschema, const char *loadpath) {
+void Sorted::Load(Schema &schema, const char *loadpath) {
     FILE *textFile = fopen(loadpath, "r");
     int numofRecords = 0;
     if (textFile == NULL) {
         cerr << "invalid load_path" << loadpath << endl;
         exit(1);
     } else {
-        Record record = Record();
-        while (record.SuckNextRecord(&myschema, textFile)) {
-            Add(record);
+        Record tempRecord = Record();
+        writingMode();
+        while (tempRecord.SuckNextRecord(&schema, textFile)) {
+            in.Insert(&tempRecord);
             ++numofRecords;
         }
         fclose(textFile);
@@ -225,14 +223,9 @@ void DBFile::MoveFirst() {
     myInternalVar->MoveFirst();
 }
 
-void Heap::MoveFirst() {
+void GenericDBFile::MoveFirst() {
     readingMode();
     readingPage.EmptyItOut();
-    page_index = -1;
-}
-
-void Sorted::MoveFirst() {
-    readingMode();
     page_index = -1;
 }
 
@@ -277,11 +270,13 @@ int DBFile::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
 }
 
 int Heap::GetNext(Record &fetchme) {
+    if (mode == writing) {
+        readingMode();
+    }
     while (!readingPage.GetFirst(&fetchme)) {
         if (page_index == file.GetLength() - 2) {
             return 0;
-        }
-        else {
+        } else {
             file.GetPage(&readingPage, ++page_index);
         }
     }
@@ -289,6 +284,9 @@ int Heap::GetNext(Record &fetchme) {
 }
 
 int Heap::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
+    if (mode == writing) {
+        readingMode();
+    }
     while (GetNext(fetchme))
         if (compEng.Compare(&fetchme, &literal, &cnf)) {
             return 1;
@@ -298,12 +296,9 @@ int Heap::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
 
 //todo change
 int Sorted::GetNext(Record &fetchme) {
-    // cout << "GetNext" << endl;
     if (mode == writing) {
         readingMode();
     }
-    // Get record from reading buffer. In case of empty, read a new page to buffer.
-    // If meets the end of file, return failure.
     while (!readingPage.GetFirst(&fetchme)) {
         if (page_index == file.GetLength() - 2) {
             return 0;
@@ -316,99 +311,12 @@ int Sorted::GetNext(Record &fetchme) {
 
 //todo change
 int Sorted::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
-    // cout << "GetNextByCNF" << endl;
-    if (mode != query) {
+    if (mode == writing) {
         readingMode();
-        mode = query;
-
-        // Construct query OrderMaker
-        delete myQueryOrder;
-        delete literalQueryOrder;
-        myQueryOrder = new OrderMaker();
-        literalQueryOrder = new OrderMaker();
-        for (int i = 0; i < myOrder->numAtts; ++i) {
-            bool found = false;
-            int literalIndex = 0;
-            for (int j = 0; j < cnf.numAnds && !found; ++j) {
-                for (int k = 0; k < cnf.orLens[j] && !found; ++k) {
-                    if (cnf.orList[j][k].operand1 == Literal) {
-                        if (cnf.orList[j][k].operand2 == Left && myOrder->whichAtts[i] == cnf.orList[j][k].whichAtt2 &&
-                            cnf.orList[j][k].op == Equals) {
-                            found = true;
-
-                            myQueryOrder->whichAtts[myQueryOrder->numAtts] = myOrder->whichAtts[i];
-                            myQueryOrder->whichTypes[myQueryOrder->numAtts] = myOrder->whichTypes[i];
-                            ++myQueryOrder->numAtts;
-
-                            literalQueryOrder->whichAtts[literalQueryOrder->numAtts] = literalIndex;
-                            literalQueryOrder->whichTypes[literalQueryOrder->numAtts] = cnf.orList[j][k].attType;
-                            ++literalQueryOrder->numAtts;
-                        }
-                        ++literalIndex;
-                    } else if (cnf.orList[j][k].operand2 == Literal) {
-                        if (cnf.orList[j][k].operand1 == Left && myOrder->whichAtts[i] == cnf.orList[j][k].whichAtt1 &&
-                            cnf.orList[j][k].op == Equals) {
-                            found = true;
-
-                            myQueryOrder->whichAtts[myQueryOrder->numAtts] = myOrder->whichAtts[i];
-                            myQueryOrder->whichTypes[myQueryOrder->numAtts] = myOrder->whichTypes[i];
-                            ++myQueryOrder->numAtts;
-
-                            literalQueryOrder->whichAtts[literalQueryOrder->numAtts] = literalIndex;
-                            literalQueryOrder->whichTypes[literalQueryOrder->numAtts] = cnf.orList[j][k].attType;
-                            ++literalQueryOrder->numAtts;
-                        }
-                        ++literalIndex;
-                    }
-                }
-            }
-            if (!found) break;
-        }
-
-        // Binary search
-        if (file.GetLength() == 1) return 0;
-        else if (myQueryOrder->numAtts == 0) {
-            page_index = 0;
-            file.GetPage(&readingPage, 0);
-        } else {
-            off_t left = 0, right = file.GetLength() - 2;
-            while (left < right - 1) {
-                page_index = left + (right - left) / 2;
-                file.GetPage(&readingPage, page_index);
-                GetNext(fetchme);
-                if (compEng.Compare(&fetchme, myQueryOrder, &literal, literalQueryOrder) == 0) {
-                    right = page_index;
-                } else if (compEng.Compare(&fetchme, myQueryOrder, &literal, literalQueryOrder) > 0) {
-                    right = page_index - 1;
-                } else {
-                    left = page_index;
-                }
-            }
-            page_index = left;
-            file.GetPage(&readingPage, page_index);
-            while (GetNext(fetchme)) {
-                if (compEng.Compare(&fetchme, myQueryOrder, &literal, literalQueryOrder) == 0) {
-                    if (compEng.Compare(&fetchme, &literal, &cnf)) {
-                        return 1;
-                    }
-                } else if (compEng.Compare(&fetchme, myQueryOrder, &literal, literalQueryOrder) > 0) {
-                    return 0;
-                }
-            }
-        }
     }
-
-    int fetchState = 0;
-    while (GetNext(fetchme)) {
-        if (myQueryOrder->numAtts > 0 && compEng.Compare(&fetchme, myQueryOrder, &literal, literalQueryOrder) != 0) {
-            break;
-        }
+    while (GetNext(fetchme))
         if (compEng.Compare(&fetchme, &literal, &cnf)) {
-            // Accepted record and break while.
-            fetchState = 1;
-            break;
+            return 1;
         }
-    }
-
-    return fetchState;
+    return 0;
 }
