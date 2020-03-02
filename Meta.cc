@@ -3,6 +3,7 @@
 #include <fstream>
 #include <unistd.h>
 #include "json.hpp"
+#include <cstring>
 
 char meta_path[4096];
 char cur_dir[4096];

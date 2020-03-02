@@ -4,10 +4,12 @@
 void test1 ();
 void test2 ();
 void test3 ();
+
 int add_data (FILE *src, int numrecs, int &res) {
     DBFile dbfile;
     dbfile.Open (rel->path ());
     Record temp;
+
     int proc = 0;
     int xx = 20000;
     while (++proc < numrecs && (res = temp.SuckNextRecord (rel->schema (), src))) {
@@ -18,9 +20,14 @@ int add_data (FILE *src, int numrecs, int &res) {
     dbfile.Close ();
     return proc;
 }
+
+
 // create a dbfile interactively
 void test1 () {
+
+
     OrderMaker o;
+
     int runlen = 0;
     while (runlen < 1) {
         cout << "\t\n specify runlength:\n\t ";
@@ -28,15 +35,20 @@ void test1 () {
     }
     rel->get_sort_order (o);
     struct {OrderMaker *o; int l;} startup = {&o, runlen};
+
     DBFile dbfile;
     cout << "\n output to dbfile : " << rel->path () << endl;
     dbfile.Create (rel->path(), sorted, &startup);
     dbfile.Close ();
+
     char tbl_path[100];
     sprintf (tbl_path, "%s%s.tbl", tpch_dir, rel->name());
     cout << " input from file : " << tbl_path << endl;
+
     FILE *tblfile = fopen (tbl_path, "r");
+
     srand48 (time (NULL));
+
     int proc = 1, res = 1, tot = 0;
     while (proc && res) {
         int x = 0;
@@ -46,9 +58,10 @@ void test1 () {
             cout << " \t 1. add a few (1 to 1k recs)\n";
             cout << " \t 2. add a lot (1k to 1e+06 recs) \n";
             cout << " \t 3. run some query \n \t ";
-            cin >> x;
+//            cin >> x;
             x=2;
         }
+
         if (x < 3) {
             proc = add_data (tblfile,lrand48()%(int)pow(1e3,x)+(x-1)*1000, res);
             tot += proc;
@@ -62,13 +75,17 @@ void test1 () {
     cout << "\n create finished.. " << tot << " recs inserted\n";
     fclose (tblfile);
 }
+
 // sequential scan of a DBfile
 void test2 () {
+
     cout << " scan : " << rel->path() << "\n";
     DBFile dbfile;
     dbfile.Open (rel->path());
     dbfile.MoveFirst ();
+
     Record temp;
+
     int cnt = 0;
     cerr << "\t";
     while (dbfile.GetNext (temp) && ++cnt) {
@@ -80,14 +97,19 @@ void test2 () {
     cout << "\n scanned " << cnt << " recs \n";
     dbfile.Close ();
 }
+
 void test3 () {
+
     CNF cnf;
     Record literal;
     rel->get_cnf (cnf, literal);
+
     DBFile dbfile;
     dbfile.Open (rel->path());
     dbfile.MoveFirst ();
+
     Record temp;
+
     int cnt = 0;
     cerr << "\t";
     while (dbfile.GetNext (temp, cnf, literal) && ++cnt) {
@@ -98,12 +120,17 @@ void test3 () {
     }
     cout << "\n query over " << rel->path () << " returned " << cnt << " recs\n";
     dbfile.Close ();
+
 }
+
 int main (int argc, char *argv[]) {
+
     setup ();
+
     relation *rel_ptr[] = {n, r, c, p, ps, s, o, li};
     void (*test_ptr[]) () = {&test1, &test2, &test3};
     void (*test) ();
+
     int tindx = 0;
     while (tindx < 1 || tindx > 3) {
         cout << " select test option: \n";
@@ -112,6 +139,7 @@ int main (int argc, char *argv[]) {
         cout << " \t 3. run some query \n \t ";
         cin >> tindx;
     }
+
     int findx = 0;
     while (findx < 1 || findx > 8) {
         cout << "\n select table: \n";
@@ -126,8 +154,10 @@ int main (int argc, char *argv[]) {
         cin >> findx;
     }
     rel = rel_ptr [findx - 1];
+
     test = test_ptr [tindx-1];
     test ();
+
     cleanup ();
     cout << "\n\n";
 }

@@ -11,14 +11,12 @@
 
 using namespace std;
 
-bool isDirty = false;
 
-//todo
+extern struct AndList *final;
+
 DBFile::DBFile() {
-    isDirty = false;
 }
 
-//todo
 DBFile::~DBFile() {
 }
 
@@ -26,10 +24,6 @@ GenericDBFile::GenericDBFile() {
     readingPage = *(new Page());
     writingPage = *(new Page());
     myOrder = new(OrderMaker);
-}
-
-bool DBFile::GetIsDirty() {
-    return isDirty;
 }
 
 int GenericDBFile::Create(const char *f_path, fType type, void *startup) {
@@ -93,47 +87,41 @@ void Heap::writingMode() {
 void Sorted::writingMode() {
     if (mode == writing) return;
     mode = writing;
-    bigQ = new BigQ(in, out, *myOrder, runLength);
+    bigQ = new BigQ(inPipe, outPipe, *myOrder, runLength);
 }
 
 //todo change
 void Sorted::readingMode() {
-    if (mode == reading) return;
+    if (mode == reading)
+        return;
+
     mode = reading;
     MoveFirst();
-    in.ShutDown();
+    inPipe.ShutDown();
     writingPage.EmptyItOut();
-
-    bool pipeEmpty = false, fileEmpty = false; // Help determine which queue run out first.
 
     Record recFromPipe;
     Record recFromPage;
+    bool pipeEmpty = outPipe.Remove(&recFromPipe)==0;
+    bool fileEmpty = GetNext(recFromPage)==0;
 
-    if (!out.Remove(&recFromPipe)) pipeEmpty = true;
-
-    if (!GetNext(recFromPage)) fileEmpty = true;
-
-    // Run two way merge only if two input queues are not empty.
     while (!pipeEmpty && !fileEmpty) {
-        if (compEng.Compare(&recFromPipe, &recFromPage, myOrder) <= 0) {
-            // Write smaller record to writing buffer. If writing buffer if full, add this page to file and start to write to a new empty page.
+        if (compEngine.Compare(&recFromPipe, &recFromPage, myOrder) <= 0) {
             if (!writingPage.Append(&recFromPipe)) {
                 file.AddPage(&writingPage, file.GetLength() - 1);
                 writingPage.EmptyItOut();
                 writingPage.Append(&recFromPipe);
             }
-            // If one queue is empty, end merging.
-            if (!out.Remove(&recFromPipe)) pipeEmpty = true;
+            pipeEmpty = outPipe.Remove(&recFromPipe)==0;
         } else {
             if (!writingPage.Append(&recFromPage)) {
                 file.AddPage(&writingPage, file.GetLength() - 1);
                 writingPage.EmptyItOut();
                 writingPage.Append(&recFromPage);
             }
-            if (!GetNext(recFromPage)) fileEmpty = true;
+            fileEmpty = GetNext(recFromPage)==0;
         }
     }
-    // Determine which queue runs out and append records of the other queue to the end or new file.
     if (pipeEmpty && !fileEmpty) {
         if (!writingPage.Append(&recFromPage)) {
             file.AddPage(&writingPage, file.GetLength() - 1);
@@ -153,7 +141,7 @@ void Sorted::readingMode() {
             writingPage.EmptyItOut();
             writingPage.Append(&recFromPipe);
         }
-        while (out.Remove(&recFromPipe)) {
+        while (outPipe.Remove(&recFromPipe)) {
             if (!writingPage.Append(&recFromPipe)) {
                 file.AddPage(&writingPage, file.GetLength() - 1);
                 writingPage.EmptyItOut();
@@ -161,9 +149,11 @@ void Sorted::readingMode() {
             }
         }
     }
-    if (!pipeEmpty || !fileEmpty) file.AddPage(&writingPage, file.GetLength() - 1);
 
     delete bigQ;
+
+    if (!pipeEmpty || !fileEmpty)
+        file.AddPage(&writingPage, file.GetLength() - 1);
 }
 
 
@@ -171,7 +161,6 @@ void DBFile::Load(Schema &f_schema, const char *loadpath) {
     myInternalVar->Load(f_schema, loadpath);
 }
 
-//todo handle bulk load
 void Heap::Load(Schema &f_schema, const char *loadpath) {
     writingMode();
     FILE *tableFile = fopen(loadpath, "r");
@@ -202,19 +191,19 @@ void Heap::Load(Schema &f_schema, const char *loadpath) {
 }
 
 void Sorted::Load(Schema &schema, const char *loadpath) {
-    FILE *textFile = fopen(loadpath, "r");
+    FILE *tableFile = fopen(loadpath, "r");
     int numofRecords = 0;
-    if (textFile == NULL) {
+    if (tableFile == NULL) {
         cerr << "invalid load_path" << loadpath << endl;
         exit(1);
     } else {
         Record tempRecord = Record();
         writingMode();
-        while (tempRecord.SuckNextRecord(&schema, textFile)) {
-            in.Insert(&tempRecord);
+        while (tempRecord.SuckNextRecord(&schema, tableFile)) {
+            inPipe.Insert(&tempRecord);
             ++numofRecords;
         }
-        fclose(textFile);
+        fclose(tableFile);
         cout << "Loaded " << numofRecords << " records" << endl;
     }
 }
@@ -226,7 +215,9 @@ void DBFile::MoveFirst() {
 void GenericDBFile::MoveFirst() {
     readingMode();
     readingPage.EmptyItOut();
-    page_index = -1;
+    delete queryOrder;
+    delete literalOrder;
+    curPageIndex = -1;
 }
 
 int DBFile::Close() {
@@ -258,7 +249,7 @@ void Heap::Add(Record &record) {
 
 void Sorted::Add(Record &rec) {
     writingMode();
-    in.Insert(&rec);
+    inPipe.Insert(&rec);
 }
 
 int DBFile::GetNext(Record &fetchme) {
@@ -274,49 +265,121 @@ int Heap::GetNext(Record &fetchme) {
         readingMode();
     }
     while (!readingPage.GetFirst(&fetchme)) {
-        if (page_index == file.GetLength() - 2) {
+        if (curPageIndex == file.GetLength() - 2) {
             return 0;
         } else {
-            file.GetPage(&readingPage, ++page_index);
+            file.GetPage(&readingPage, ++curPageIndex);
         }
     }
     return 1;
 }
 
 int Heap::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
-    if (mode == writing) {
+    if (mode == writing)
         readingMode();
-    }
+
     while (GetNext(fetchme))
-        if (compEng.Compare(&fetchme, &literal, &cnf)) {
+        if (compEngine.Compare(&fetchme, &literal, &cnf)) {
             return 1;
         }
     return 0;
 }
 
-//todo change
 int Sorted::GetNext(Record &fetchme) {
-    if (mode == writing) {
+    if (mode == writing)
         readingMode();
-    }
+
     while (!readingPage.GetFirst(&fetchme)) {
-        if (page_index == file.GetLength() - 2) {
+        if (curPageIndex == file.GetLength() - 2)
             return 0;
-        } else {
-            file.GetPage(&readingPage, ++page_index);
-        }
+        else
+            file.GetPage(&readingPage, ++curPageIndex);
     }
     return 1;
 }
 
-//todo change
-int Sorted::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
-    if (mode == writing) {
-        readingMode();
+//binary search to boil down the search to a specific page
+int Sorted::binarySearch(Record &fetchme, OrderMaker &queryorder, Record &literal, OrderMaker &cnforder) {
+    ComparisonEngine comparisonEngine;
+    if (!GetNext(fetchme))
+        return 0;
+    int compare = comparisonEngine.Compare(&fetchme, &queryorder, &literal, &cnforder);
+    if (compare > 0) return 0;
+    else if (compare == 0) return 1;
+
+    off_t low = curPageIndex, high = file.GetLength() - 2, mid = (low + high) / 2;
+//    cout << "binarySearch:   low" << low << "    high: " << high << endl;
+    while (low < mid) {
+        mid = (low + high) / 2;
+//        cout << "binarySearch:   low" << low << "    high: " << high << endl;
+        file.GetPage(&readingPage, mid);
+        if (!GetNext(fetchme))
+            exit(1);
+        compare = comparisonEngine.Compare(&fetchme, &queryorder, &literal, &cnforder);
+        if (compare < 0) low = mid;
+        else if (compare > 0) high = mid - 1;
+        else high = mid;
     }
-    while (GetNext(fetchme))
-        if (compEng.Compare(&fetchme, &literal, &cnf)) {
+}
+
+//construct ordermaker instances from the cnf
+void Sorted::constructQueryOrder(CNF &cnf, Record &literal) {
+    queryOrder = new OrderMaker();
+    literalOrder = new OrderMaker();
+    for (int i = 0; i < myOrder->numAtts; ++i) {
+        bool flag = false;
+        int index = 0;
+        for (int j = 0; j < cnf.numAnds && !flag; ++j) {
+            for (int k = 0; k < cnf.orLens[j] && !flag; ++k) {
+                if (cnf.orList[j][k].operand1 == Literal) {
+                    if (cnf.orList[j][k].operand2 == Left && myOrder->whichAtts[i] == cnf.orList[j][k].whichAtt2 &&
+                        cnf.orList[j][k].op == Equals) {
+                        flag = true;
+
+                        queryOrder->whichAtts[queryOrder->numAtts] = myOrder->whichAtts[i];
+                        queryOrder->whichTypes[queryOrder->numAtts] = myOrder->whichTypes[i];
+                        ++queryOrder->numAtts;
+
+                        literalOrder->whichAtts[literalOrder->numAtts] = index;
+                        literalOrder->whichTypes[literalOrder->numAtts] = cnf.orList[j][k].attType;
+                        ++literalOrder->numAtts;
+                    }
+                    ++index;
+                } else if (cnf.orList[j][k].operand2 == Literal) {
+                    if (cnf.orList[j][k].operand1 == Left && myOrder->whichAtts[i] == cnf.orList[j][k].whichAtt1 &&
+                        cnf.orList[j][k].op == Equals) {
+                        flag = true;
+
+                        queryOrder->whichAtts[queryOrder->numAtts] = myOrder->whichAtts[i];
+                        queryOrder->whichTypes[queryOrder->numAtts] = myOrder->whichTypes[i];
+                        ++queryOrder->numAtts;
+
+                        literalOrder->whichAtts[literalOrder->numAtts] = index;
+                        literalOrder->whichTypes[literalOrder->numAtts] = cnf.orList[j][k].attType;
+                        ++literalOrder->numAtts;
+                    }
+                    ++index;
+                }
+            }
+        }
+        if (!flag) break;
+    }
+}
+
+int Sorted::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
+    if (queryOrder == NULL || literalOrder == NULL) {  // check whether this is a fresh call
+        constructQueryOrder(cnf, literal);
+
+        if (queryOrder->numAtts != 0)
+            if (!binarySearch(fetchme, *queryOrder, literal, *literalOrder)) // binary search to pin down to the page
+                return 0;
+    }
+
+    while (GetNext(fetchme)) { // linear search to inside the page
+        if (compEngine.Compare(&fetchme, &literal, &cnf)) {
             return 1;
         }
+    }
+
     return 0;
 }

@@ -17,7 +17,7 @@ using namespace std;
 //char *tpch_dir ="/cise/tmp/dbi_sp11/DATA/1G/";
 char *catalog_path = "catalog";
 char *dbfile_dir = "/Users/apple/Desktop/Projects/onemoredb/temp/";
-char *tpch_dir ="/Users/apple/Desktop/dbi/tpch-dbgen/10MB/";
+char *tpch_dir ="/Users/apple/Desktop/dbi/tpch-dbgen/1G/";
 
 extern "C" {
 	int yyparse(void);   // defined in y.tab.c
@@ -54,7 +54,7 @@ public:
 	}
 
 	void get_cnf (CNF &cnf_pred, Record &literal) {
-		cout << "\n enter CNF predicate (when done press ctrl-D):\n\t";
+//		cout << "\n enter CNF predicate (when done press ctrl-D):\n\t";
   		if (yyparse() != 0) {
 			cout << " Error: can't parse your CNF.\n";
 			exit (1);
@@ -71,7 +71,6 @@ public:
 		CNF sort_pred;
 		sort_pred.GrowFromParseTree (final, schema (), literal); // constructs CNF predicate
 		OrderMaker dummy;
-		dummy.Print();
 		sort_pred.GetSortOrders (sortorder, dummy);
 	}
 };

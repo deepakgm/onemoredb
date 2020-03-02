@@ -3,6 +3,6 @@
   "path" : "/Users/apple/Desktop/Projects/onemoredb/test/test.bin",
   "runlen" : 2,
   "type" : "sorted",
-  "which_atts" : [0],
-  "which_types" : ["Int"]
+  "which_atts" : [6],
+  "which_types" : ["String"]
 }
