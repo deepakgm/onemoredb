@@ -299,11 +299,11 @@ int Sorted::GetNext(Record &fetchme) {
 }
 
 //binary search to boil down the search to a specific page
-int Sorted::binarySearch(Record &fetchme, OrderMaker &queryorder, Record &literal, OrderMaker &cnforder) {
+int Sorted::binarySearch(Record &fetchme, Record &literal) {
     ComparisonEngine comparisonEngine;
     if (!GetNext(fetchme))
         return 0;
-    int compare = comparisonEngine.Compare(&fetchme, &queryorder, &literal, &cnforder);
+    int compare = comparisonEngine.Compare(&fetchme, queryOrder, &literal, literalOrder);
     if (compare > 0) return 0;
     else if (compare == 0) return 1;
 
@@ -315,7 +315,7 @@ int Sorted::binarySearch(Record &fetchme, OrderMaker &queryorder, Record &litera
         file.GetPage(&readingPage, mid);
         if (!GetNext(fetchme))
             exit(1);
-        compare = comparisonEngine.Compare(&fetchme, &queryorder, &literal, &cnforder);
+        compare = comparisonEngine.Compare(&fetchme, queryOrder, &literal, literalOrder);
         if (compare < 0) low = mid;
         else if (compare > 0) high = mid - 1;
         else high = mid;
@@ -371,7 +371,7 @@ int Sorted::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
         constructQueryOrder(cnf, literal);
 
         if (queryOrder->numAtts != 0)
-            if (!binarySearch(fetchme, *queryOrder, literal, *literalOrder)) // binary search to pin down to the page
+            if (!binarySearch(fetchme, literal)) // binary search to pin down to the page
                 return 0;
     }
 

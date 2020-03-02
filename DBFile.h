@@ -73,7 +73,7 @@ private:
     void readingMode();
     void writingMode();
     void constructQueryOrder(CNF &cnf, Record &literal);
-    int binarySearch(Record& fetchme, OrderMaker& queryorder, Record& literal, OrderMaker& cnforder);
+    int binarySearch(Record& fetchme, Record& literal);
 
 public:
     void Load(Schema &myschema, const char *loadpath);
