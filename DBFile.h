@@ -35,12 +35,13 @@ protected:
     OrderMaker *queryOrder = NULL;
     OrderMaker *literalOrder = NULL;
     int runLength;
-    mType mode = reading;
 
     virtual void readingMode() = 0;
-    virtual void writingMode() = 0;
+//    virtual void writingMode() = 0;
 
 public:
+    mType mode = reading;
+    virtual void writingMode() = 0;
     GenericDBFile();
     int Create(const char *fpath, fType f_type, void *startup);
     int Open(const char *fpath);
