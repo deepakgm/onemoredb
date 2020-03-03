@@ -1,4 +1,3 @@
-
 CC = g++ -O2 -Wno-deprecated  -std=c++11
 
 tag = -i

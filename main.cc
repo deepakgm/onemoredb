@@ -49,7 +49,7 @@ int main() {
     Schema nation (catalog_path, (char*)"customer");
     orderMaker->numAtts=1;
     orderMaker->whichTypes[0]=String;
-    orderMaker->whichAtts[0]=4;
+    orderMaker->whichAtts[0]=6;
     sortInfo->myOrder=orderMaker;
 
 //  for nation table
@@ -86,7 +86,7 @@ int main() {
             cout<< "first record:" <<endl;
 //            record.Print(&nation);
         }
-            record.Print(&nation);
+        record.Print(&nation);
         counter ++;
     }
     cout<< "last record:" <<endl;

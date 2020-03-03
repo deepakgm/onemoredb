@@ -12,11 +12,12 @@ int add_data (FILE *src, int numrecs, int &res) {
 
     int proc = 0;
     int xx = 20000;
-    while (++proc < numrecs && (res = temp.SuckNextRecord (rel->schema (), src))) {
+    while ((res = temp.SuckNextRecord (rel->schema (), src)) && ++proc < numrecs) {
         dbfile.Add (temp);
         if (proc == xx) cerr << "\t ";
         if (proc % xx == 0) cerr << ".";
     }
+
     dbfile.Close ();
     return proc;
 }
@@ -27,24 +28,26 @@ void test1 () {
 
 
     OrderMaker o;
+    rel->get_sort_order (o);
 
     int runlen = 0;
     while (runlen < 1) {
         cout << "\t\n specify runlength:\n\t ";
         cin >> runlen;
     }
-    rel->get_sort_order (o);
     struct {OrderMaker *o; int l;} startup = {&o, runlen};
 
     DBFile dbfile;
+//    cout<<"2"<<endl;
     cout << "\n output to dbfile : " << rel->path () << endl;
+//    cout<<"1"<<endl;
     dbfile.Create (rel->path(), sorted, &startup);
     dbfile.Close ();
-
-    char tbl_path[100];
+    char tbl_path[1000];
     sprintf (tbl_path, "%s%s.tbl", tpch_dir, rel->name());
+    cout<<"1"<<endl;
     cout << " input from file : " << tbl_path << endl;
-
+    cout<<"3"<<endl;
     FILE *tblfile = fopen (tbl_path, "r");
 
     srand48 (time (NULL));
@@ -53,15 +56,12 @@ void test1 () {
     while (proc && res) {
         int x = 0;
         while (x < 1 || x > 3) {
-
             cout << "\n select option for : " << rel->path () << endl;
             cout << " \t 1. add a few (1 to 1k recs)\n";
             cout << " \t 2. add a lot (1k to 1e+06 recs) \n";
             cout << " \t 3. run some query \n \t ";
-//            cin >> x;
-            x=2;
+            cin >> x;
         }
-
         if (x < 3) {
             proc = add_data (tblfile,lrand48()%(int)pow(1e3,x)+(x-1)*1000, res);
             tot += proc;

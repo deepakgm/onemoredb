@@ -55,7 +55,7 @@ MetaInfo GetMetaInfo() {
     string str((std::istreambuf_iterator<char>(t)),
                std::istreambuf_iterator<char>());
     tmp = tmp.Load(str);
-    cout << tmp << endl;
+//    cout << tmp << endl;
 
     MetaInfo metaInfo;
     metaInfo.binFilePath = tmp["path"].ToString();

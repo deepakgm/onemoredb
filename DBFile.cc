@@ -236,6 +236,7 @@ void DBFile::Add(Record &record) {
 void Heap::Add(Record &record) {
     writingMode();
     int isFull = writingPage.Append(&record);
+
     if (isFull == 0) {
         if (file.GetLength() == 0)
             file.AddPage(&writingPage, 0);
@@ -286,10 +287,15 @@ int Heap::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
 }
 
 int Sorted::GetNext(Record &fetchme) {
+//    cout<<"ok"<<endl;
+//    cout<<mode<<endl;
     if (mode == writing)
         readingMode();
 
+//    cout<<"ok"<<endl;
     while (!readingPage.GetFirst(&fetchme)) {
+
+//        cout<<"ok"<<endl;
         if (curPageIndex == file.GetLength() - 2)
             return 0;
         else
