@@ -6,35 +6,22 @@
 #include <limits.h>
 #include <cstring>
 #include "Meta.h"
+#include <chrono>
 
 using namespace std;
 
+extern "C" {
+int yyparse(void);   // defined in y.tab.c
+}
+
+extern struct AndList *final;
+
 int main() {
-//     MetaInfo metaInfo;
-//     metaInfo=GetMetaInfo();
-//    metaInfo.sortInfo->myOrder->Print();
-//     cout << "got meta " <<  metaInfo.sortInfo->myOrder->numAtts<< endl;
-     SortInfo* sortInfo=new SortInfo;
-     sortInfo->runLength=2;
-     OrderMaker* orderMaker=new(OrderMaker);
-     orderMaker->numAtts=4;
-     orderMaker->whichTypes[0]=Int;
-    orderMaker->whichTypes[1]=String;
-    orderMaker->whichTypes[2]=Int;
-    orderMaker->whichTypes[3]=String;
-
-    orderMaker->whichAtts[0]=0;
-    orderMaker->whichAtts[1]=1;
-    orderMaker->whichAtts[2]=2;
-    orderMaker->whichAtts[3]=3;
-
-     //    orderMaker.whichTypes=["Int","asa"]
-    sortInfo->myOrder=orderMaker;
-//     WriteMetaInfo("somepath",sorted, sortInfo);
-//GetMetaInfo();
 
 
-//    cout << metaInfo.binFilePath<< endl ;
+    SortInfo* sortInfo=new SortInfo;
+    sortInfo->runLength=2;
+    OrderMaker* orderMaker=new(OrderMaker);
 
     char cur_dir[PATH_MAX];
     char dbfile_dir[PATH_MAX];
@@ -56,33 +43,58 @@ int main() {
         return 1;
     }
 
-    strcpy(table_path,"/Users/apple/Desktop/dbi/tpch-dbgen/1GB/part.tbl");
+
+//    for part table
+    strcpy(table_path,"/Users/apple/Desktop/dbi/tpch-dbgen/1GB/customer.tbl");
+    Schema nation (catalog_path, (char*)"customer");
+    orderMaker->numAtts=1;
+    orderMaker->whichTypes[0]=String;
+    orderMaker->whichAtts[0]=6;
+    sortInfo->myOrder=orderMaker;
+
+//  for nation table
+//    Schema nation (catalog_path, (char*)"nation");
+//    orderMaker->numAtts=1;
+//    orderMaker->whichTypes[0]=String;
+//    orderMaker->whichAtts[0]=1;
+//    sortInfo->myOrder=orderMaker;
+
+
 
     DBFile* dbFile=new DBFile();
-    Schema nation (catalog_path, (char*)"part");
 
-    dbFile->Open(dbfile_dir);
+//    dbFile->Open(dbfile_dir);
 
-//    dbFile->Create(dbfile_dir,heap,sortInfo);
-//    dbFile->Load(nation,table_path);
-//
+    cout << "\n specify sort ordering (when done press ctrl-D):\n\t ";
+    if (yyparse() != 0) {
+        cout << " Error: can't parse your CNF.\n";
+        exit (1);
+    }
+    Record literal;
+    CNF sort_pred;
+    sort_pred.GrowFromParseTree (final, &nation, literal); // constructs CNF predicate
+
+    dbFile->Create(dbfile_dir,sorted,sortInfo);
+    dbFile->Load(nation,table_path);
     dbFile->MoveFirst();
-    Record trecord;
-    dbFile->GetNext (trecord);
-    trecord.Print(&nation);
 
     Record record;
     int counter = 0;
-    while (dbFile->GetNext (record) == 1) {
-        counter += 1;
-//		temp.Print (rel->schema());
-        if (counter % 10000 == 0) {
-            cout << counter << "\n";
-            record.Print(&nation);
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    while (dbFile->GetNext (record,sort_pred,literal) == 1) {
+        if(counter==0){
+            cout<< "first record:" <<endl;
+//            record.Print(&nation);
         }
+        record.Print(&nation);
+        counter ++;
     }
-    cout << " scanned " << counter << " recs \n";
-    record.Print(&nation);
+    cout<< "last record:" <<endl;
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
+    std::cout << "Time taken for the query = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+    //    record.Print(&nation);
+
+    cout << " scanned " << counter << " recs \n";
     dbFile->Close();
 }

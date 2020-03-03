@@ -12,10 +12,12 @@ using namespace std;
 
 // make sure that the information below is correct
 
-char *catalog_path = "catalog"; 
-char *dbfile_dir = ""; 
-char *tpch_dir ="/cise/tmp/dbi_sp11/DATA/1G/"; 
-
+//char *catalog_path = "catalog";
+//char *dbfile_dir = "";
+//char *tpch_dir ="/cise/tmp/dbi_sp11/DATA/1G/";
+char *catalog_path = "/Users/apple/Desktop/dbi/onemoredb/catalog";
+char *dbfile_dir = "/Users/apple/Desktop/dbi/onemoredb/temp/";
+char *tpch_dir ="/Users/apple/Desktop/dbi/tpch-dbgen/1GB/";
 
 extern "C" {
 	int yyparse(void);   // defined in y.tab.c
@@ -58,6 +60,8 @@ public:
 			exit (1);
 		}
 		cnf_pred.GrowFromParseTree (final, schema (), literal); // constructs CNF predicate
+//		cout<<"hi"<<endl;
+//		cnf_pred.Print();
 	}
 	void get_sort_order (OrderMaker &sortorder) {
 		cout << "\n specify sort ordering (when done press ctrl-D):\n\t ";
@@ -69,7 +73,9 @@ public:
 		CNF sort_pred;
 		sort_pred.GrowFromParseTree (final, schema (), literal); // constructs CNF predicate
 		OrderMaker dummy;
+		dummy.Print();
 		sort_pred.GetSortOrders (sortorder, dummy);
+		cout<<"Done with relation"<<endl;
 	}
 };
 

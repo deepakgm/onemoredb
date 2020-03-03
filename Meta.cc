@@ -3,6 +3,7 @@
 #include <fstream>
 #include <unistd.h>
 #include "json.hpp"
+#include <cstring>
 
 char meta_path[4096];
 char cur_dir[4096];
@@ -54,7 +55,7 @@ MetaInfo GetMetaInfo() {
     string str((std::istreambuf_iterator<char>(t)),
                std::istreambuf_iterator<char>());
     tmp = tmp.Load(str);
-    cout << tmp << endl;
+//    cout << tmp << endl;
 
     MetaInfo metaInfo;
     metaInfo.binFilePath = tmp["path"].ToString();

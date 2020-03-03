@@ -74,7 +74,6 @@ void BigQ::phaseTwo() {
         priorityQueue.pop();
         int blockIndex = indexedRecord->blockIndex;
         outPipe->Insert(&(indexedRecord->record));
-
         if (tempPage[blockIndex].GetFirst(&(indexedRecord->record))) {
             priorityQueue.emplace(indexedRecord);
         } else if (blockStartOffset[blockIndex] < blockEndOffset[blockIndex]) {
@@ -113,8 +112,10 @@ void *BigQ::workerThread(void *arg) {
     bigQ->init();
 
     bigQ->phaseOne();
+//    clog << "bigq: phase-1 completed.." << endl;
 
     bigQ->phaseTwo();
+//    clog << "bigq: phase-2 completed.." << endl;
 
     bigQ->close();
     remove(tempFilePath);
