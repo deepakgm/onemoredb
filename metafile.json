@@ -1,4 +1,8 @@
 {
+  "num_atts" : 1,
   "path" : "/home/deepak/Desktop/dbi/onemoredb/test/test.bin",
-  "type" : "heap"
+  "runlen" : 2,
+  "type" : "sorted",
+  "which_atts" : [6],
+  "which_types" : ["String"]
 }

@@ -45,7 +45,7 @@ int main() {
 
 
 //    for part table
-    strcpy(table_path,"/Users/apple/Desktop/dbi/tpch-dbgen/1GB/customer.tbl");
+    strcpy(table_path,"/home/deepak/Desktop/dbi/tpch-dbgen/1GB/customer.tbl");
     Schema nation (catalog_path, (char*)"customer");
     orderMaker->numAtts=1;
     orderMaker->whichTypes[0]=String;
@@ -86,7 +86,7 @@ int main() {
             cout<< "first record:" <<endl;
 //            record.Print(&nation);
         }
-        record.Print(&nation);
+//        record.Print(&nation);
         counter ++;
     }
     cout<< "last record:" <<endl;
