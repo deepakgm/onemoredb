@@ -25,8 +25,6 @@ add_executable(a2test
         Record.h
         Schema.cc
         Schema.h
-        test.cc
-        test.h
         TwoWayList.cc
         TwoWayList.h
         main.cc)
