@@ -34,12 +34,12 @@ protected:
     OrderMaker* myOrder;
     OrderMaker *queryOrder = NULL;
     OrderMaker *literalOrder = NULL;
-    int runLength;
 
     virtual void readingMode() = 0;
 //    virtual void writingMode() = 0;
 
 public:
+    int runLength;
     mType mode = reading;
     virtual void writingMode() = 0;
     GenericDBFile();

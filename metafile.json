@@ -1,8 +1,4 @@
 {
-  "num_atts" : 1,
-  "path" : "/home/deepak/Desktop/dbi/onemoredb/test/test.bin",
-  "runlen" : 2,
-  "type" : "sorted",
-  "which_atts" : [6],
-  "which_types" : ["String"]
+  "path" : "/home/deepak/Desktop/dbi/tpch-dbgen/10MB/bin/lineitem.bin",
+  "type" : "heap"
 }
