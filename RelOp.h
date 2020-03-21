@@ -79,12 +79,34 @@ public:
 };
 
 class Project : public RelationalOp {
+private:
+    pthread_t thread;
+
 public:
-    void Run(Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, int numAttsOutput) {}
+    void Run(Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, int numAttsOutput);
 
-    void WaitUntilDone() {}
+    void WaitUntilDone() ;
 
-    void Use_n_Pages(int n) {}
+    void Use_n_Pages(int n) ;
+
+    static void *workerThread(void *arg);
+
+    class OpArgs {
+    public:
+        Pipe *inPipe;
+        Pipe *outPipe;
+        int* keepMe;
+        int numAttsInput;
+        int numAttsOutput;
+
+        OpArgs(Pipe &inPipe1, Pipe &outPipe1, int* keepMe1, int numAttsInput1, int numAttsOutput1) {
+            inPipe = &inPipe1;
+            outPipe = &outPipe1;
+            keepMe=keepMe1;
+            numAttsInput=numAttsInput1;
+            numAttsOutput=numAttsOutput1;
+        }
+    };
 };
 
 class Join : public RelationalOp {

@@ -54,3 +54,33 @@ void SelectPipe::Use_n_Pages(int runlen) {
     //todo
 }
 
+void Project::Run(Pipe &inPipe, Pipe &outPipe, int *keepMe, int numAttsInput, int numAttsOutput) {
+    OpArgs *opArgs = new OpArgs(inPipe, outPipe, keepMe, numAttsInput,numAttsOutput);
+    cout << "here " <<endl;
+    pthread_create(&thread, NULL, workerThread, opArgs);
+    cout << "here " <<endl;
+}
+
+void *Project::workerThread(void *arg) {
+    OpArgs *opArgs = (OpArgs *) arg;
+    Record temp;
+
+    cout << "here " <<endl;
+    cout << opArgs->keepMe << " " << opArgs->numAttsOutput ;
+    while (opArgs->inPipe->Remove(&temp)) {
+        temp.Project(opArgs->keepMe, opArgs->numAttsOutput, opArgs->numAttsInput);
+        opArgs->outPipe->Insert(&temp);
+    }
+
+    opArgs->outPipe->ShutDown();
+    pthread_exit(NULL);
+}
+
+void Project::WaitUntilDone() {
+    pthread_join(thread, NULL);
+}
+
+void Project::Use_n_Pages(int runlen) {
+//todo
+}
+

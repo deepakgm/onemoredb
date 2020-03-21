@@ -68,7 +68,7 @@ void init_SF_p (char *pred_str, int numpgs) {
 
 void init_SF_s (char *pred_str, int numpgs) {
 	dbf_s.Open (s->path());
-	get_cnf (pred_str, s->schema (), cnf_s, lit_s);
+    get_cnf (pred_str, s->schema (), cnf_s, lit_s);
 	SF_s.Use_n_Pages (numpgs);
 }
 
@@ -122,7 +122,7 @@ void q2 () {
 	P_p.Use_n_Pages (buffsz);
 
 	SF_p.Run (dbf_p, _p, cnf_p, lit_p);
-	P_p.Run (_p, _out, keepMe, numAttsIn, numAttsOut);
+    P_p.Run (_p, _out, keepMe, numAttsIn, numAttsOut);
 
 	SF_p.WaitUntilDone ();
 	P_p.WaitUntilDone ();
@@ -151,7 +151,9 @@ void q3 () {
 			get_cnf (str_sum, s->schema (), func);
 			func.Print ();
 	T.Use_n_Pages (1);
-	SF_s.Run (dbf_s, _s, cnf_s, lit_s);
+
+    SF_s.Run (dbf_s, _s, cnf_s, lit_s);
+
 	T.Run (_s, _out, func);
 
 	SF_s.WaitUntilDone ();

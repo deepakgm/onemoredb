@@ -1,4 +1,4 @@
 {
-  "path" : "/home/deepak/Desktop/dbi/tpch-dbgen/10MB/bin/lineitem.bin",
+  "path" : "/home/deepak/Desktop/dbi/tpch-dbgen/1GB/bin/supplier.bin",
   "type" : "heap"
 }
