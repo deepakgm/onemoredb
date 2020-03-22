@@ -9,6 +9,8 @@
 #include "gmock/gmock.h"
 #include "Meta.h"
 #include <cstring>
+#include "testkit.h"
+#include "RelOp.h"
 
 using ::testing::Mock;
 using ::testing::Invoke;
@@ -18,9 +20,9 @@ using ::testing::_;
 using namespace std;
 
 char cur_dir1[PATH_MAX];
-char dbfile_dir[PATH_MAX];
+char dbfile_dir1[PATH_MAX];
 char table_path[PATH_MAX];
-char catalog_path[PATH_MAX];
+char catalog_path1[PATH_MAX];
 char tempfile_path[PATH_MAX];
 
 
@@ -28,13 +30,13 @@ int main(int argc, char **argv) {
     // get the current dir
     if (getcwd(cur_dir1, sizeof(cur_dir1)) != NULL) {
         clog <<"current working dir:" << cur_dir1 << endl;
-        strcpy(dbfile_dir,cur_dir1);
+        strcpy(dbfile_dir1,cur_dir1);
         strcpy(table_path,cur_dir1);
-        strcpy(catalog_path,cur_dir1);
+        strcpy(catalog_path1,cur_dir1);
         strcpy(tempfile_path,cur_dir1);
-        strcat(dbfile_dir,"/test/test.bin");
+        strcat(dbfile_dir1,"/test/test.bin");
         strcat(table_path,"/test/nation.tbl");
-        strcat(catalog_path,"/test/catalog");
+        strcat(catalog_path1,"/test/catalog");
         strcat(tempfile_path,"/test/tempfile");
     } else {
         cerr << "error while getting curent dir" << endl;
@@ -46,15 +48,15 @@ int main(int argc, char **argv) {
 }
 
 
-class BigQTest : public ::testing::Test {
+class RelOpTest : public ::testing::Test {
 public:
     DBFile *dbFile,*dbFile1;
 protected:
     virtual void SetUp() {
         clog << "creating DBFile instance.." << endl;
         dbFile=new DBFile();
-        dbFile->Create(dbfile_dir,heap,NULL);
-        Schema nation (catalog_path, "nation");
+        dbFile->Create(dbfile_dir1,heap,NULL);
+        Schema nation (catalog_path1, "nation");
         dbFile->Load(nation,table_path);
 //        dbFile->MoveFirst();
 
@@ -63,173 +65,103 @@ protected:
     virtual void TearDown() {
         clog << "clearing memory.." << endl;
         delete dbFile;
-        remove(dbfile_dir);
+        remove(dbfile_dir1);
     }
 };
 
+//Select file test
+TEST_F(RelOpTest,selectFileTest1) {
+    char *pred_str = "(n_nationkey > 0)";
 
-//test BigQ::dumpSortedList
-TEST_F(BigQTest,dumpSortedList1){
-    vector<Record*> recordList;
-    recordList.reserve(10);
-    Record temp;
 
-    while (dbFile->GetNext (temp) == 1) {
-        Record* record = new Record();
-        record->Copy(&temp);
-        recordList.emplace_back(record);
+   Schema* nation=new Schema (catalog_path1, "nation");
+
+    CNF* cnf=new CNF();
+    Record* literal=new Record();
+
+    get_cnf (pred_str,nation, *cnf, *literal);
+    clog  << "created predicate" <<endl;
+    SelectFile* selectFile=new SelectFile();
+
+    Pipe* pipe1=new Pipe(100);
+    selectFile->Run (*dbFile, *pipe1, *cnf, *literal);
+
+    Record* record=new Record();
+    int count=0;
+    while(pipe1->Remove(record))
+        count++;
+
+    ASSERT_EQ(count,24);
+
+    delete(literal);
+    delete(cnf);
+    delete(pipe1);
+    delete(record);
+}
+//Select pipe test
+TEST_F(RelOpTest,selectPipeTest1) {
+    char *pred_str = "(n_nationkey > 0)";
+
+    Schema* nation=new Schema (catalog_path1, "nation");
+
+    CNF* cnf=new CNF();
+    Record* literal=new Record();
+
+    get_cnf (pred_str,nation, *cnf, *literal);
+    clog  << "created predicate" <<endl;
+
+    Pipe* inPipe=new Pipe(100);
+    Pipe* outPipe=new Pipe(100);
+
+    Record* record=new Record();
+    while(dbFile->GetNext(*record)){
+        inPipe->Insert(record);
+        Record* record=new Record();
     }
 
-    BigQ bigQ;
-    bigQ.file.Open(0, tempfile_path);
+    SelectPipe* selectPipe=new SelectPipe();
+    selectPipe->Run(*inPipe,*outPipe,*cnf,*literal);
+    inPipe->ShutDown();
 
-    ASSERT_EQ(bigQ.blockNum,0);
-    bigQ.dumpSortedList(recordList);
-    ASSERT_EQ(bigQ.blockNum,1);
+    int count=0;
+    while(outPipe->Remove(record))
+        count++;
+
+    ASSERT_EQ(count,24);
+
+    delete(cnf);
+    delete(inPipe);
+    delete(outPipe);
+    delete(record);
 }
 
-//test MetaContent
-TEST_F(BigQTest,metacontent1){
-    //orderMaker object
-    OrderMaker* orderMaker=new(OrderMaker);
-    orderMaker->numAtts=1;
-    orderMaker->whichTypes[0]=String;
-    orderMaker->whichAtts[0]=6;
-    //startup
-    SortInfo* sortInfo=new SortInfo;
-    sortInfo->runLength=2;
-    sortInfo->myOrder=orderMaker;
-    //generic dbfile
-    GenericDBFile *myInternalVar;
-    myInternalVar = new Heap();
-    //create metafile and initialize obj
-    myInternalVar->Create(tempfile_path, heap, sortInfo);
 
-    MetaInfo metaInfo = GetMetaInfo();
-    fType type_file;
-    type_file = metaInfo.fileType;
-//    cout<<type_file<<endl;
-    ASSERT_EQ(type_file,heap);
-//    bigQ.dumpSortedList(recordList);
-//    ASSERT_EQ(bigQ.blockNum,1);
-}
+//Projection test
+TEST_F(RelOpTest,projectionTest1) {
 
-//test BigQ::dumpSortedList
-TEST_F(BigQTest,dumpSortedList2){
-    vector<Record*> recordList;
-    recordList.reserve(10);
-    Record temp;
+    Pipe* inPipe=new Pipe(100);
+    Pipe* outPipe=new Pipe(100);
 
-    while (dbFile->GetNext (temp) == 1) {
-        Record* record = new Record();
-        record->Copy(&temp);
-        recordList.emplace_back(record);
+    Record* record=new Record();
+    while(dbFile->GetNext(*record)){
+        inPipe->Insert(record);
+        Record* record=new Record();
     }
 
-    BigQ bigQ;
-    bigQ.file.Open(0, tempfile_path);
+    int* keepMe=new int[2];
+    keepMe[0]=0;keepMe[1]=2;
 
-    ASSERT_EQ(bigQ.file.GetLength(),0);
-    bigQ.dumpSortedList(recordList);
-    ASSERT_EQ(bigQ.file.GetLength(),1);
-}
+    Project* project=new Project();
+    project->Run(*inPipe,*outPipe,keepMe,4,2);
+    inPipe->ShutDown();
 
-//mode test before writing/reading
-TEST_F(BigQTest,modetest1){
-    OrderMaker* orderMaker=new(OrderMaker);
-    orderMaker->numAtts=1;
-    orderMaker->whichTypes[0]=String;
-    orderMaker->whichAtts[0]=6;
-    //startup
-    SortInfo* sortInfo=new SortInfo;
-    sortInfo->runLength=2;
-    sortInfo->myOrder=orderMaker;
-    //generic dbfile
-    GenericDBFile *myInternalVar;
-    myInternalVar = new Sorted();
-    //create metafile and initialize obj
-    myInternalVar->Create(tempfile_path, heap, sortInfo);
-    myInternalVar->mode = reading;
-    myInternalVar->writingMode();
-    int output = myInternalVar->mode;
-    //since less records all in 1 page -> therefore returns 0
-    ASSERT_EQ(output,1);
-}
+    int count=0;
+    while(outPipe->Remove(record))
+        count++;
 
+    int attrCount=((int *) record->bits)[1] / sizeof(int) - 1;
 
-//test BigQ::dumpSortedList
-TEST_F(BigQTest,dumpSortedList3){
-    vector<Record*> recordList;
-    recordList.reserve(10);
-    Record temp;
+    ASSERT_EQ(count,25);
 
-    while (dbFile->GetNext (temp) == 1) {
-        Record* record = new Record();
-        record->Copy(&temp);
-        recordList.emplace_back(record);
-    }
-
-    BigQ bigQ;
-    bigQ.file.Open(0, tempfile_path);
-
-    ASSERT_NE(recordList.size(),0);
-    bigQ.dumpSortedList(recordList);
-    ASSERT_EQ(recordList.size(),0);
-}
-
-//test BigQ::dumpSortedList
-TEST_F(BigQTest,binarySearch1){
-    extern struct AndList *final;
-    Record literal;
-    Record temp;
-    CNF sort_pred;
-    Schema nation (catalog_path, (char*)"nation");
-    sort_pred.GrowFromParseTree (final, &nation, literal);
-
-    OrderMaker* orderMaker=new(OrderMaker);
-    orderMaker->numAtts=1;
-    orderMaker->whichTypes[0]=String;
-    orderMaker->whichAtts[0]=6;
-    //startup
-    SortInfo* sortInfo=new SortInfo;
-    sortInfo->runLength=2;
-    sortInfo->myOrder=orderMaker;
-    //generic dbfile
-    GenericDBFile *myInternalVar;
-    myInternalVar = new Sorted();
-    //create metafile and initialize obj
-    myInternalVar->Create(tempfile_path, sorted, sortInfo);
-    myInternalVar->Load(nation,table_path);
-//    cout<<"ok"<<endl;
-//    myInternalVar->MoveFirst();
-//    cout<<"ok"<<endl;
-    Page readingPage;
-    readingPage = *(new Page());
-    readingPage.EmptyItOut();
-    off_t curPageIndex = -1;
-    mType mode;
-    myInternalVar->mode = reading;
-//    cout<<"ok"<<endl;
-    int output = myInternalVar->GetNext(temp, sort_pred, literal);
-    //since less records all in 1 page -> therefore returns 0
-    ASSERT_EQ(output,0);
-}
-
-// close
-TEST_F(BigQTest,close1){
-    BigQ bigQ;
-    bigQ.file.Open(0, tempfile_path);
-    Pipe* output=new Pipe(100);
-    bigQ.outPipe=output;
-    bigQ.close();
-    ASSERT_EQ(bigQ.file.Close(),0);
-}
-
-
-// open
-TEST_F(BigQTest,open1){
-    BigQ bigQ;
-    bigQ.init();
-    int file_length=bigQ.file.GetLength();
-    ASSERT_EQ(file_length,1);
+    ASSERT_EQ(attrCount,2);
 }

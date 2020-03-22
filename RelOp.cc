@@ -63,11 +63,11 @@ void *Project::workerThread(void *arg) {
     OpArgs *opArgs = (OpArgs *) arg;
     Record temp;
 
-//    cout << opArgs->keepMe[1] << " " << opArgs->numAttsInput ;
     while (opArgs->inPipe->Remove(&temp)) {
         temp.Project(opArgs->keepMe, opArgs->numAttsOutput, opArgs->numAttsInput);
         opArgs->outPipe->Insert(&temp);
     }
+
     opArgs->outPipe->ShutDown();
     pthread_exit(NULL);
 }

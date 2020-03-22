@@ -27,5 +27,5 @@ add_executable(a2test
         Schema.h
         TwoWayList.cc
         TwoWayList.h
-        main.cc)
+        main.cc testkit.h)
 
