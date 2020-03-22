@@ -329,19 +329,19 @@ TEST_F(RelOpTest, groupByTest1) {
     groupBy->Run(*inPipe,*outPipe,orderMaker,func);
     inPipe->ShutDown();
 
-    Attribute IA = {"int", Int};
-    Attribute SA = {"string", String};
-    Attribute att3[] = {IA, SA, IA,SA,IA};
-    Schema out_sch ("out_sch", 5, att3);
+//    Attribute IA = {"int", Int};
+//    Attribute SA = {"string", String};
+//    Attribute att3[] = {IA, SA, IA,SA,IA};
+//    Schema out_sch ("out_sch", 5, att3);
 
     cout<<endl;
     int count = 0;
-    cout<<"before.."<<endl;
+//    cout<<"before.."<<endl;
     while (outPipe->Remove(record)){
-        record->Print(&out_sch);
+//        record->Print(&out_sch);
         count++;
     }
-    cout<<"after.."<<endl;
+//    cout<<"after.."<<endl;
 
 
     int attrCount = ((int *) record->bits)[1] / sizeof(int) - 1;
