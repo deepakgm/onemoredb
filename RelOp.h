@@ -5,6 +5,9 @@
 #include "DBFile.h"
 #include "Record.h"
 #include "Function.h"
+#include <sstream>
+#include <stdlib.h>
+#include <vector>
 
 class RelationalOp {
 public:
@@ -186,21 +189,60 @@ public:
 };
 
 class Sum : public RelationalOp {
+private:
+    pthread_t thread;
+
 public:
-    void Run(Pipe &inPipe, Pipe &outPipe, Function &computeMe) {}
+    void Run(Pipe &inPipe, Pipe &outPipe, Function &computeMe);
 
-    void WaitUntilDone() {}
+    void WaitUntilDone();
 
-    void Use_n_Pages(int n) {}
+    void Use_n_Pages(int n);
+
+    static void *workerThread(void *arg);
+
+    class OpArgs {
+    public:
+        Pipe *inPipe;
+        Pipe *outPipe;
+        Function *function;
+        int n_pages;
+
+        OpArgs(Pipe &inFile1, Pipe &outPipe1, Function &function1) {
+            inPipe = &inFile1;
+            outPipe = &outPipe1;
+            function = &function1;
+        }
+    };
 };
 
 class GroupBy : public RelationalOp {
+private:
+    pthread_t thread;
 public:
-    void Run(Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &computeMe) {}
+    void Run(Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &computeMe);
 
-    void WaitUntilDone() {}
+    void WaitUntilDone();
 
-    void Use_n_Pages(int n) {}
+    void Use_n_Pages(int n);
+
+    static void *workerThread(void *arg);
+
+    class OpArgs {
+    public:
+        Pipe *inPipe;
+        Pipe *outPipe;
+        Function *function;
+        OrderMaker *orderMaker;
+        int n_pages;
+
+        OpArgs(Pipe &inFile1, Pipe &outPipe1, OrderMaker &groupAtts, Function &function1) {
+            inPipe = &inFile1;
+            outPipe = &outPipe1;
+            orderMaker = &groupAtts;
+            function = &function1;
+        }
+    };
 };
 
 class WriteOut : public RelationalOp {
