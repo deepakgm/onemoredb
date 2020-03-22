@@ -211,8 +211,7 @@ void q4 () {
 	T.WaitUntilDone ();
 
 	Schema sum_sch ("sum_sch", 1, &DA);
-//	int cnt = clear_pipe (_out, &sum_sch, true);
-    int cnt = clear_pipe (_s_ps, &sum_sch, false);
+	int cnt = clear_pipe (_out, &sum_sch, true);
 	cout << " query4 returned " << cnt << " recs \n";
 }
 
