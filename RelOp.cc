@@ -427,69 +427,111 @@ void Sum::Run(Pipe &inPipe, Pipe &outPipe, Function &computeMe) {
     pthread_create(&thread, NULL, workerThread, opArgs);
 }
 
-void *Sum::workerThread(void *arg) {
-    OpArgs *opArgs = (OpArgs *) arg;
-
-    int totalIntSum = 0;
-    double totalDoubleSum = 0.0;
-
-    int recIntValue = 0;
-    double recDoubleValue = 0.0;
-
-    Record record;
-//    Function *function = function;
-    Type type;
-
-    ostringstream outResult;
-    string sumResult;
-    Record recordResult;
-
-    //type check only for first record
-    if(opArgs->inPipe->Remove(&record))
-        type = opArgs->function->Apply(record, recIntValue, recDoubleValue);
-
-    if (type == Int) {
-        totalIntSum += recIntValue;
-        while (opArgs->inPipe->Remove(&record)) {
-            totalIntSum += recIntValue;
-        }
-    }else{
-        totalDoubleSum += recDoubleValue;
-        while (opArgs->inPipe->Remove(&record)) {
-            totalDoubleSum += recDoubleValue;
-        }
-    }
-//    while (inPipe->Remove(&record)) {
-//        type = function->Apply(record, recIntValue, recDoubleValue);
-//        if (type == Int) {
-//            intSum += intAttrVal;
-//        } else {
-//            doubleSum += doubleAttrVal;
+//void *Sum::workerThread(void *arg) {
+//    OpArgs *opArgs = (OpArgs *) arg;
+//
+//    int totalIntSum = 0;
+//    double totalDoubleSum = 0.0;
+//
+//    int recIntValue = 0;
+//    double recDoubleValue = 0.0;
+//
+//    Record record;
+////    Function *function = function;
+//    Type type;
+//
+//    ostringstream outResult;
+//    string sumResult;
+//    Record recordResult;
+//
+//    //type check only for first record
+//    if(opArgs->inPipe->Remove(&record))
+//        type = opArgs->function->Apply(record, recIntValue, recDoubleValue);
+//
+//    if (type == Int) {
+//        totalIntSum += recIntValue;
+//        while (opArgs->inPipe->Remove(&record)) {
+//            totalIntSum += recIntValue;
+//        }
+//    }else{
+//        totalDoubleSum += recDoubleValue;
+//        while (opArgs->inPipe->Remove(&record)) {
+//            totalDoubleSum += recDoubleValue;
 //        }
 //    }
+////    while (inPipe->Remove(&record)) {
+////        type = function->Apply(record, recIntValue, recDoubleValue);
+////        if (type == Int) {
+////            intSum += intAttrVal;
+////        } else {
+////            doubleSum += doubleAttrVal;
+////        }
+////    }
+//
+//    // create output record
+//    if (type == Int) {
+//        outResult << totalIntSum;
+//        sumResult = outResult.str();
+//        sumResult.append("|");
+//
+//        Attribute IA = {"int", Int};
+//        Schema output_schema("output_schema", 1, &IA);
+//        recordResult.ComposeRecord(&output_schema, sumResult.c_str());
+//    } else {
+//
+//        outResult << totalDoubleSum;
+//        sumResult = outResult.str();
+//        sumResult.append("|");
+//
+//        Attribute DA = {"double", Double};
+////        attr.myType = Double;
+//        Schema output_schema("output_schema", 1, &DA);
+//        recordResult.ComposeRecord(&output_schema, sumResult.c_str());
+//    }
+////    cout<<recordResult.GetLength();
+//    opArgs->outPipe->Insert(&recordResult);
+//    opArgs->outPipe->ShutDown();
+//    pthread_exit(NULL);
+//}
+void *Sum::workerThread(void *arg)  {
+    OpArgs *s = (OpArgs*)arg;
+    Record outRec, tmpRec;
+    int intSum = 0;
+    int intVal = 0;
+    double doubleSum = 0.0;
+    double doubleVal = 0.0;
 
-    // create output record
-    if (type == Int) {
-        outResult << totalIntSum;
-        sumResult = outResult.str();
-        sumResult.append("|");
+    Attribute attr;
+    attr.name = "SUM";
+    stringstream output;
 
-        Attribute IA = {"int", Int};
-        Schema output_schema("output_schema", 1, &IA);
-        recordResult.ComposeRecord(&output_schema, sumResult.c_str());
-    } else {
-
-        outResult << totalDoubleSum;
-        sumResult = outResult.str();
-        sumResult.append("|");
-
-        Attribute DA = {"double", Double};
-//        attr.myType = Double;
-        Schema output_schema("output_schema", 1, &DA);
-        recordResult.ComposeRecord(&output_schema, sumResult.c_str());
+    if (s->function->returnsInt == 1) {
+        Type valType = Int;
+        while (s->inPipe->Remove(&tmpRec)) {
+            valType = s->function->Apply(tmpRec, intVal, doubleVal);
+            intSum = intSum + intVal;
+        }
+        output << intSum << "|";
     }
-    opArgs->outPipe->Insert(&recordResult);
-    opArgs->outPipe->ShutDown();
+    else if (s->function->returnsInt == 0) {
+        Type valType = Double;
+        while (s->inPipe->Remove(&tmpRec)) {
+            valType = s->function->Apply(tmpRec, intVal, doubleVal);
+            doubleSum = doubleSum + doubleVal;
+        }
+        attr.myType = Double;
+        output << doubleSum << "|";
+    }
+    else {
+        cerr << "Error: Invalid type in Sum operation." << endl;
+        exit(1);
+    }
+
+    Schema outSch("out_shema", 1, &attr);
+    outRec.ComposeRecord(&outSch, output.str().c_str());
+    s->outPipe->Insert(&outRec);
+
+    s->outPipe->ShutDown();
     pthread_exit(NULL);
 }
 
