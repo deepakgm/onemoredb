@@ -248,8 +248,10 @@ void q5 () {
 	P_ps.WaitUntilDone ();
 	D.WaitUntilDone ();
 	W.WaitUntilDone ();
+//    int cnt = clear_pipe (___ps, nullptr, false);
+//    cout << " query4 returned " << cnt << " recs \n";
 
-		cout << " query5 finished..output written to file " << fwpath << "\n";
+	cout << " query5 finished..output written to file " << fwpath << "\n";
 }
 
 // select sum (ps_supplycost) from supplier, partsupp 
@@ -290,16 +292,20 @@ void q6 () {
 	G.Use_n_Pages (1);
 
 	SF_ps.Run (dbf_ps, _ps, cnf_ps, lit_ps); // 161 recs qualified
-	J.Run (_s, _ps, _s_ps, cnf_p_ps, lit_p_ps);
-	G.Run (_s_ps, _out, grp_order, func);
+    J.Run (_s, _ps, _s_ps, cnf_p_ps, lit_p_ps);
+    G.Run (_s_ps, _out, grp_order, func);
+//    cout<<"here" << endl;
 
 	SF_ps.WaitUntilDone ();
 	J.WaitUntilDone ();
 	G.WaitUntilDone ();
 
+//    int cnt = clear_pipe (_out, nullptr, false);
+//    cout << " query4 returned " << cnt << " recs \n";
+
 	Schema sum_sch ("sum_sch", 1, &DA);
 	int cnt = clear_pipe (_out, &sum_sch, true);
-	cout << " query6 returned sum for " << cnt << " groups (expected 25 groups)\n"; 
+	cout << " query6 returned sum for " << cnt << " groups (expected 25 groups)\n";
 }
 
 void q7 () { 
