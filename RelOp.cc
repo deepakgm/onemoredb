@@ -423,3 +423,101 @@ void DuplicateRemoval::Use_n_Pages(int runlen) {
 //todo
 }
 
+void Sum::Run(Pipe &inPipe, Pipe &outPipe, Function &computeMe) {
+    OpArgs *opArgs = new OpArgs(inPipe, outPipe, computeMe);
+    pthread_create(&thread, NULL, workerThread, opArgs);
+}
+
+void *Sum::workerThread(void *arg) {
+    OpArgs *opArgs = (OpArgs *) arg;
+
+    int totalIntSum = 0;
+    double totalDoubleSum = 0.0;
+
+    int recIntValue = 0;
+    double recDoubleValue = 0.0;
+
+    Record record;
+//    Function *function = function;
+    Type type;
+
+    ostringstream outResult;
+    string sumResult;
+    Record recordResult;
+
+    //type check only for first record
+    if(opArgs->inPipe->Remove(&record))
+        type = opArgs->function->Apply(record, recIntValue, recDoubleValue);
+
+    if (type == Int) {
+        totalIntSum += recIntValue;
+        while (opArgs->inPipe->Remove(&record)) {
+            totalIntSum += recIntValue;
+        }
+    }else{
+        totalDoubleSum += recDoubleValue;
+        while (opArgs->inPipe->Remove(&record)) {
+            totalDoubleSum += recDoubleValue;
+        }
+    }
+//    while (inPipe->Remove(&record)) {
+//        type = function->Apply(record, recIntValue, recDoubleValue);
+//        if (type == Int) {
+//            intSum += intAttrVal;
+//        } else {
+//            doubleSum += doubleAttrVal;
+//        }
+//    }
+
+    // create output record
+    if (type == Int) {
+        outResult << totalIntSum;
+        sumResult = outResult.str();
+        sumResult.append("|");
+
+        Attribute IA = {"int", Int};
+        Schema output_schema("output_schema", 1, &IA);
+        recordResult.ComposeRecord(&output_schema, sumResult.c_str());
+    } else {
+
+        outResult << totalDoubleSum;
+        sumResult = outResult.str();
+        sumResult.append("|");
+
+        Attribute DA = {"double", Double};
+//        attr.myType = Double;
+        Schema output_schema("output_schema", 1, &DA);
+        recordResult.ComposeRecord(&output_schema, sumResult.c_str());
+    }
+    opArgs->outPipe->Insert(&recordResult);
+    opArgs->outPipe->ShutDown();
+    pthread_exit(NULL);
+}
+
+void Sum::WaitUntilDone() {
+    pthread_join(thread, NULL);
+}
+
+void Sum::Use_n_Pages(int runlen) {
+    n_pages = runlen;
+//todo
+}
+
+void GroupBy::Run(Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &computeMe) {
+    OpArgs *opArgs = new OpArgs(inPipe, outPipe, groupAtts, computeMe);
+    pthread_create(&thread, NULL, workerThread, opArgs);
+}
+
+void *GroupBy::workerThread(void *arg) {
+    OpArgs *opArgs = (OpArgs *) arg;
+
+}
+
+void GroupBy::WaitUntilDone() {
+    pthread_join(thread, NULL);
+}
+
+void GroupBy::Use_n_Pages(int runlen) {
+    n_pages = runlen;
+//todo
+}
