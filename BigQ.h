@@ -24,6 +24,7 @@ public:
     void dumpSortedList(std::vector<Record*>& recordList);
     void phaseOne();
     void phaseTwo();
+    string getRandStr(int length);
     void init();
     void close();
     Pipe* inPipe;

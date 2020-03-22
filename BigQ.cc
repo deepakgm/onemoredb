@@ -124,7 +124,8 @@ void *BigQ::workerThread(void *arg) {
 
 void BigQ::init() {
     if (getcwd(tempFilePath, sizeof(tempFilePath)) != NULL) {
-        strcat(tempFilePath, "/temp/myfile");
+        strcat(tempFilePath, "/temp/tmp");
+        strcat(tempFilePath, getRandStr(10).c_str());
     } else {
         cerr << "error while getting curent dir" << endl;
         exit(-1);
@@ -136,4 +137,17 @@ void BigQ::init() {
 void BigQ::close() {
     outPipe->ShutDown();
     file.Close();
+}
+
+string BigQ::getRandStr(int len)
+{
+    static string charset = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    string result;
+    result.resize(len);
+
+    for (int i = 0; i < len; i++) {
+        result[i] = charset[rand() % charset.length()];
+    }
+
+    return result;
 }

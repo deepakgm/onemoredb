@@ -68,7 +68,7 @@ void init_SF_p (char *pred_str, int numpgs) {
 
 void init_SF_s (char *pred_str, int numpgs) {
 	dbf_s.Open (s->path());
-    get_cnf (pred_str, s->schema (), cnf_s, lit_s);
+	get_cnf (pred_str, s->schema (), cnf_s, lit_s);
 	SF_s.Use_n_Pages (numpgs);
 }
 
@@ -122,14 +122,15 @@ void q2 () {
 	P_p.Use_n_Pages (buffsz);
 
 	SF_p.Run (dbf_p, _p, cnf_p, lit_p);
-    P_p.Run (_p, _out, keepMe, numAttsIn, numAttsOut);
+	P_p.Run (_p, _out, keepMe, numAttsIn, numAttsOut);
 
 	SF_p.WaitUntilDone ();
 	P_p.WaitUntilDone ();
 
 	Attribute att3[] = {IA, SA, DA};
 	Schema out_sch ("out_sch", numAttsOut, att3);
-	int cnt = clear_pipe (_p, p->schema (), true);
+//	int cnt = clear_pipe (_p, p->schema (), true);
+    int cnt = clear_pipe (_out, &out_sch, true);
 
 	cout << "\n\n query2 returned " << cnt << " records \n";
 
@@ -151,9 +152,7 @@ void q3 () {
 			get_cnf (str_sum, s->schema (), func);
 			func.Print ();
 	T.Use_n_Pages (1);
-
-    SF_s.Run (dbf_s, _s, cnf_s, lit_s);
-
+	SF_s.Run (dbf_s, _s, cnf_s, lit_s);
 	T.Run (_s, _out, func);
 
 	SF_s.WaitUntilDone ();
@@ -212,7 +211,8 @@ void q4 () {
 	T.WaitUntilDone ();
 
 	Schema sum_sch ("sum_sch", 1, &DA);
-	int cnt = clear_pipe (_out, &sum_sch, true);
+//	int cnt = clear_pipe (_out, &sum_sch, true);
+    int cnt = clear_pipe (_s_ps, &sum_sch, false);
 	cout << " query4 returned " << cnt << " recs \n";
 }
 
@@ -250,7 +250,7 @@ void q5 () {
 	D.WaitUntilDone ();
 	W.WaitUntilDone ();
 
-	cout << " query5 finished..output written to file " << fwpath << "\n";
+		cout << " query5 finished..output written to file " << fwpath << "\n";
 }
 
 // select sum (ps_supplycost) from supplier, partsupp 
