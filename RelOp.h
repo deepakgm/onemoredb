@@ -235,12 +235,14 @@ public:
         Function *function;
         OrderMaker *orderMaker;
         int n_pages;
+        ComparisonEngine *compEng;
 
-        OpArgs(Pipe &inFile1, Pipe &outPipe1, OrderMaker &groupAtts, Function &function1) {
+        OpArgs(Pipe &inFile1, Pipe &outPipe1, OrderMaker &groupAtts, Function &function1,int n_pages1) {
             inPipe = &inFile1;
             outPipe = &outPipe1;
             orderMaker = &groupAtts;
             function = &function1;
+            n_pages=n_pages1;
         }
     };
 };

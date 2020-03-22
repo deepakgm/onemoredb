@@ -545,13 +545,13 @@ void Sum::Use_n_Pages(int runlen) {
 }
 
 void GroupBy::Run(Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &computeMe) {
-    OpArgs *opArgs = new OpArgs(inPipe, outPipe, groupAtts, computeMe);
+    OpArgs *opArgs = new OpArgs(inPipe, outPipe, groupAtts, computeMe,n_pages);
     pthread_create(&thread, NULL, workerThread, opArgs);
 }
 
 void *GroupBy::workerThread(void *arg) {
-    OpArgs *gb = (OpArgs *) arg;
-    ComparisonEngine cmpEng;
+    OpArgs* opArgs = (OpArgs*)arg;
+
     Record outRec, tmpRec, lastRec;
     int intSum = 0;
     int intVal = 0;
@@ -560,14 +560,14 @@ void *GroupBy::workerThread(void *arg) {
     Type valType = String;
 
     Pipe outSort(100);
-    BigQ bq = BigQ(*(gb->inPipe), outSort, *(gb->orderMaker), gb->n_pages);
+    BigQ bq = BigQ(*(opArgs->inPipe), outSort, *(opArgs->orderMaker), opArgs->n_pages);
 
     if (!outSort.Remove(&tmpRec)) {
-        gb->outPipe->ShutDown();
+        opArgs->outPipe->ShutDown();
         pthread_exit(NULL);
     }
 
-    valType = gb->function->Apply(tmpRec, intVal, doubleVal);
+    valType = opArgs->function->Apply(tmpRec, intVal, doubleVal);
     if (valType == Int) {
         intSum = intSum + intVal;
     }
@@ -577,8 +577,8 @@ void *GroupBy::workerThread(void *arg) {
     lastRec.Consume(&tmpRec);
 
     while (outSort.Remove(&tmpRec)) {
-        if (cmpEng.Compare(&lastRec, &tmpRec, gb->orderMaker)) {
-            Attribute* attrs = new Attribute[gb->orderMaker->numAtts + 1];
+        if (opArgs->compEng->Compare(&lastRec, &tmpRec, opArgs->orderMaker)) {
+            Attribute* attrs = new Attribute[opArgs->orderMaker->numAtts + 1];
             attrs[0].name = "SUM";
             stringstream output;
             if (valType == Int) {
@@ -590,31 +590,31 @@ void *GroupBy::workerThread(void *arg) {
                 output << doubleSum << "|";
             }
 
-            for (int i = 0; i < gb->orderMaker->numAtts; ++i) {
-                Type curAttType = gb->orderMaker->whichTypes[i];
+            for (int i = 0; i < opArgs->orderMaker->numAtts; ++i) {
+                Type curAttType = opArgs->orderMaker->whichTypes[i];
                 if (curAttType == Int) {
                     attrs[i + 1].name = "int";
                     attrs[i + 1].myType = Int;
-                    int val = *((int*)(lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1]));
+                    int val = *((int*)(lastRec.bits + ((int *) lastRec.bits)[opArgs->orderMaker->whichAtts[i] + 1]));
                     output << val << "|";
                 }
                 else if (curAttType == Double) {
                     attrs[i + 1].name = "double";
                     attrs[i + 1].myType = Double;
-                    double val = *((double*)(lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1]));
+                    double val = *((double*)(lastRec.bits + ((int *) lastRec.bits)[opArgs->orderMaker->whichAtts[i] + 1]));
                     output << val << "|";
                 }
                 else {
                     attrs[i + 1].name = "string";
                     attrs[i + 1].myType = String;
-                    string val = lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1];
+                    string val = lastRec.bits + ((int *) lastRec.bits)[opArgs->orderMaker->whichAtts[i] + 1];
                     output << val << "|";
                 }
             }
 
-            Schema output_schema("output_schema", gb->orderMaker->numAtts + 1, attrs);
-            outRec.ComposeRecord(&output_schema, output.str().c_str());
-            gb->outPipe->Insert(&outRec);
+            Schema outSch("out_shema", opArgs->orderMaker->numAtts + 1, attrs);
+            outRec.ComposeRecord(&outSch, output.str().c_str());
+            opArgs->outPipe->Insert(&outRec);
 
             intSum = 0;
             intVal = 0;
@@ -622,7 +622,7 @@ void *GroupBy::workerThread(void *arg) {
             doubleVal = 0.0;
         }
 
-        valType = gb->function->Apply(tmpRec, intVal, doubleVal);
+        valType = opArgs->function->Apply(tmpRec, intVal, doubleVal);
         if (valType == Int) {
             intSum = intSum + intVal;
         }
@@ -632,7 +632,7 @@ void *GroupBy::workerThread(void *arg) {
         lastRec.Consume(&tmpRec);
     }
 
-    Attribute* attrs = new Attribute[gb->orderMaker->numAtts + 1];
+    Attribute* attrs = new Attribute[opArgs->orderMaker->numAtts + 1];
     attrs[0].name = "SUM";
     stringstream output;
     if (valType == Int) {
@@ -644,36 +644,37 @@ void *GroupBy::workerThread(void *arg) {
         output << doubleSum << "|";
     }
 
-    for (int i = 0; i < gb->orderMaker->numAtts; ++i) {
-        Type curAttType = gb->orderMaker->whichTypes[i];
+    for (int i = 0; i < opArgs->orderMaker->numAtts; ++i) {
+        Type curAttType = opArgs->orderMaker->whichTypes[i];
         if (curAttType == Int) {
             attrs[i + 1].name = "int";
             attrs[i + 1].myType = Int;
-            int val = *((int*)(lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1]));
-            cout << "[i]: " << val << "|";
+            int val = *((int*)(lastRec.bits + ((int *) lastRec.bits)[opArgs->orderMaker->whichAtts[i] + 1]));
+//            cout << "[i]: " << val << "|";
             output << val << "|";
         }
         else if (curAttType == Double) {
             attrs[i + 1].name = "double";
             attrs[i + 1].myType = Double;
-            double val = *((double*)(lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1]));
-            cout << "[i]: " << val << "|";
+            double val = *((double*)(lastRec.bits + ((int *) lastRec.bits)[opArgs->orderMaker->whichAtts[i] + 1]));
+//            cout << "[i]: " << val << "|";
             output << val << "|";
         }
         else {
             attrs[i + 1].name = "string";
             attrs[i + 1].myType = String;
-            string val = lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1];
-            cout << "[i]: " << val << "|";
+            string val = lastRec.bits + ((int *) lastRec.bits)[opArgs->orderMaker->whichAtts[i] + 1];
+//            cout << "[i]: " << val << "|";
             output << val << "|";
         }
     }
 
-    Schema output_schema("output_schema", gb->orderMaker->numAtts + 1, attrs);
-    outRec.ComposeRecord(&output_schema, output.str().c_str());
-    gb->outPipe->Insert(&outRec);
+    Schema outSch("out_shema", opArgs->orderMaker->numAtts + 1, attrs);
+    outRec.ComposeRecord(&outSch, output.str().c_str());
+    opArgs->outPipe->Insert(&outRec);
 
-    gb->outPipe->ShutDown();
+
+    opArgs->outPipe->ShutDown();
     pthread_exit(NULL);
 }
 
@@ -684,5 +685,4 @@ void GroupBy::WaitUntilDone() {
 
 void GroupBy::Use_n_Pages(int runlen) {
     n_pages = runlen;
-//todo
 }

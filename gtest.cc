@@ -308,7 +308,7 @@ TEST_F(RelOpTest, groupByTest1) {
         Record *record = new Record();
     }
 
-    char *pred_str = "(n_regionkey)";
+    char *pred_str = "(n_nationkey)";
 
     Schema *nation = new Schema(catalog_path1, "nation");
 
@@ -329,22 +329,35 @@ TEST_F(RelOpTest, groupByTest1) {
     groupBy->Run(*inPipe,*outPipe,orderMaker,func);
     inPipe->ShutDown();
 
-//    Attribute IA = {"int", Int};
-//    Attribute SA = {"string", String};
+    Attribute IA = {"int", Int};
+    Attribute SA = {"string", String};
 //    Attribute att3[] = {IA, SA, IA,SA,IA};
-//    Schema out_sch ("out_sch", 5, att3);
+    Attribute att3[] = {IA, IA, IA,SA,SA};
+    Schema out_sch ("out_sch", 5, att3);
 
-    cout<<endl;
+
     int count = 0;
-//    cout<<"before.."<<endl;
     while (outPipe->Remove(record)){
-//        record->Print(&out_sch);
         count++;
+        record->Print(&out_sch);
+//        record=new Record();
     }
-//    cout<<"after.."<<endl;
-
 
     int attrCount = ((int *) record->bits)[1] / sizeof(int) - 1;
-//    ASSERT_EQ(count,25);
+
+    ASSERT_EQ(count,25);
     ASSERT_EQ(attrCount,5);
+
+
+//    cout<<"before.."<<endl;
+//    while (outPipe->Remove(record)){
+////        record->Print(&out_sch);
+//        count++;
+//    }
+//    cout<<"after.."<<endl;
+//
+//
+//    int attrCount = ((int *) record->bits)[1] / sizeof(int) - 1;
+////    ASSERT_EQ(count,25);
+//    ASSERT_EQ(attrCount,5);
 }
