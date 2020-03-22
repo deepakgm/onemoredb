@@ -275,7 +275,7 @@ TEST_F(RelOpTest, sumTest1) {
 
 //    get_cnf (pred_str, &join_sch, func);
     get_cnf (pred_str, nation,func);
-    func.Print();
+//    func.Print();
 
     clog << "created predicate" << endl;
 
@@ -289,8 +289,62 @@ TEST_F(RelOpTest, sumTest1) {
     while (outPipe->Remove(record))
         count++;
 
-    Attribute IA = {"int", Int};
-    Schema sum_sch ("sum_sch", 1, &IA);
+    int attrCount = ((int *) record->bits)[1] / sizeof(int) - 1;
 
-    record->Print(&sum_sch);
+    ASSERT_EQ(count,1);
+    ASSERT_EQ(attrCount,1);
+}
+
+
+//groupby test
+TEST_F(RelOpTest, groupByTest1) {
+
+    Pipe *inPipe = new Pipe(100);
+    Pipe *outPipe = new Pipe(100);
+
+    Record *record = new Record();
+    while (dbFile->GetNext(*record)) {
+        inPipe->Insert(record);
+        Record *record = new Record();
+    }
+
+    char *pred_str = "(n_regionkey)";
+
+    Schema *nation = new Schema(catalog_path1, "nation");
+
+    CNF *cnf = new CNF();
+    Record *literal = new Record();
+    Function func;
+
+    get_cnf (pred_str, nation,func);
+//    func.Print();
+
+    clog << "created predicate" << endl;
+
+    OrderMaker orderMaker (nation);
+
+    GroupBy *groupBy = new GroupBy();
+    groupBy->Use_n_Pages(1);
+
+    groupBy->Run(*inPipe,*outPipe,orderMaker,func);
+    inPipe->ShutDown();
+
+    Attribute IA = {"int", Int};
+    Attribute SA = {"string", String};
+    Attribute att3[] = {IA, SA, IA,SA,IA};
+    Schema out_sch ("out_sch", 5, att3);
+
+    cout<<endl;
+    int count = 0;
+    cout<<"before.."<<endl;
+    while (outPipe->Remove(record)){
+        record->Print(&out_sch);
+        count++;
+    }
+    cout<<"after.."<<endl;
+
+
+    int attrCount = ((int *) record->bits)[1] / sizeof(int) - 1;
+//    ASSERT_EQ(count,25);
+    ASSERT_EQ(attrCount,5);
 }
