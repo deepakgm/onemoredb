@@ -37,4 +37,25 @@ void get_cnf (char *input, Schema *left, CNF &cnf_pred, Record &literal) {
     close_lexical_parser ();
 }
 
+
+void get_cnf (char *input, Schema *left, Schema *right, CNF &cnf_pred, Record &literal) {
+    init_lexical_parser (input);
+    if (yyparse() != 0) {
+        cout << " Error: can't parse your CNF " << input << endl;
+        exit (1);
+    }
+    cnf_pred.GrowFromParseTree (final, left, right, literal); // constructs CNF predicate
+    close_lexical_parser ();
+}
+
+
+void get_cnf (char *input, Schema *left, Function &fn_pred) {
+    init_lexical_parser_func (input);
+    if (yyfuncparse() != 0) {
+        cout << " Error: can't parse your arithmetic expr. " << input << endl;
+        exit (1);
+    }
+    fn_pred.GrowFromParseTree (finalfunc, *left); // constructs CNF predicate
+    close_lexical_parser_func ();
+}
 #endif //ONEMOREDB_TESTKIT_H

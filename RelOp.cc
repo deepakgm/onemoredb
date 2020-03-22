@@ -386,7 +386,7 @@ void DuplicateRemoval::Run(Pipe &inPipe, Pipe &outPipe, Schema &mySchema) {
     pthread_create(&thread, NULL, workerThread, opArgs);
 }
 
-void *DuplicateRemoval::workerThread(void *arg) {
+void *DuplicateRemoval::workerThread(void *arg){
     OpArgs *opArgs = (OpArgs *) arg;
     Record temp1;
     Record temp2;
@@ -419,8 +419,7 @@ void DuplicateRemoval::WaitUntilDone() {
 }
 
 void DuplicateRemoval::Use_n_Pages(int runlen) {
-//    n_pages = runlen;
-//todo
+    n_pages = runlen;
 }
 
 void Sum::Run(Pipe &inPipe, Pipe &outPipe, Function &computeMe) {
