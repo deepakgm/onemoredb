@@ -551,127 +551,81 @@ void GroupBy::Run(Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &
 
 void *GroupBy::workerThread(void *arg) {
     OpArgs* gb = (OpArgs*)arg;
-    ComparisonEngine cmpEng;
-    Record outRec, tmpRec, lastRec;
-    int intSum = 0;
-    int intVal = 0;
-    double doubleSum = 0.0;
-    double doubleVal = 0.0;
-    Type valType = String;
+    Record recArr[2];
+    Record *start = NULL, *end = NULL;
+    Record *temp = new Record;
+    Record *dump = new Record;
+    Type type;
+    Pipe *pipe = new Pipe(100);
+    BigQ bigq(*gb->inPipe, *pipe, *gb->orderMaker, 10);
+    ComparisonEngine comp;
+    int arrbound = (gb->orderMaker->numAtts)+1;
+    int groupId = 0, sumIntTotal = 0, sumIntRec, attsArr[arrbound];
+    double sumDblTotal=0, sumDblRec;
 
-    Pipe outSort(100);
-    BigQ bq = BigQ(*(gb->inPipe), outSort, *(gb->orderMaker), gb->n_pages);
+    attsArr[0] = 0;
+    for(int i = 1; i < arrbound; i++)
+        attsArr[i] = gb->orderMaker->whichAtts[i-1];
 
-    if (!outSort.Remove(&tmpRec)) {
-        gb->outPipe->ShutDown();
-        pthread_exit(NULL);
-    }
-
-    valType = gb->function->Apply(tmpRec, intVal, doubleVal);
-    if (valType == Int) {
-        intSum = intSum + intVal;
-    }
-    else if (valType == Double) {
-        doubleSum = doubleSum + doubleVal;
-    }
-    lastRec.Consume(&tmpRec);
-
-    while (outSort.Remove(&tmpRec)) {
-        if (cmpEng.Compare(&lastRec, &tmpRec, gb->orderMaker)) {
-            Attribute* attrs = new Attribute[gb->orderMaker->numAtts + 1];
-            attrs[0].name = "SUM";
-            stringstream output;
-            if (valType == Int) {
-                attrs[0].myType = Int;
-                output << intSum << "|";
-            }
-            else if (valType == Double) {
-                attrs[0].myType = Double;
-                output << doubleSum << "|";
-            }
-
-            for (int i = 0; i < gb->orderMaker->numAtts; ++i) {
-                Type curAttType = gb->orderMaker->whichTypes[i];
-                if (curAttType == Int) {
-                    attrs[i + 1].name = "int";
-                    attrs[i + 1].myType = Int;
-                    int val = *((int*)(lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1]));
-                    output << val << "|";
+    while(pipe->Remove(&recArr[groupId%2]) == 1)
+    {
+        start = end;
+        end = &recArr[groupId%2];
+        if(start != NULL && end != NULL)
+        {
+            if(comp.Compare(start, end, gb->orderMaker) != 0)
+            {
+                gb->function->Apply(*start, sumIntRec, sumDblRec);
+                if(gb->function->returnsInt == 1)
+                {
+                    type = Int;
+                    sumIntTotal = sumIntTotal + sumIntRec;
                 }
-                else if (curAttType == Double) {
-                    attrs[i + 1].name = "double";
-                    attrs[i + 1].myType = Double;
-                    double val = *((double*)(lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1]));
-                    output << val << "|";
+                else
+                {
+                    type = Double;
+                    sumDblTotal = sumDblTotal + sumDblRec;
                 }
-                else {
-                    attrs[i + 1].name = "string";
-                    attrs[i + 1].myType = String;
-                    string val = lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1];
-                    output << val << "|";
+                int startint = ((int *)start->bits)[1]/sizeof(int) - 1;
+                dump->CreateNewRecord(type, sumIntTotal, sumDblTotal);
+                temp->MergeRecords(dump, start, 1, startint, attsArr, arrbound, 1);
+                gb->outPipe->Insert(temp);
+                sumIntTotal = 0;
+                sumDblTotal = 0;
+            }
+            else
+            {
+                gb->function->Apply(*start, sumIntRec, sumDblRec);
+                if(gb->function->returnsInt == 1)
+                {
+                    type = Int;
+                    sumIntTotal = sumIntTotal + sumIntRec;
+                }
+                else
+                {
+                    type = Double;
+                    sumDblTotal = sumDblTotal + sumDblRec;
                 }
             }
-
-            Schema outSch("out_shema", gb->orderMaker->numAtts + 1, attrs);
-            outRec.ComposeRecord(&outSch, output.str().c_str());
-            gb->outPipe->Insert(&outRec);
-
-            intSum = 0;
-            intVal = 0;
-            doubleSum = 0.0;
-            doubleVal = 0.0;
         }
-
-        valType = gb->function->Apply(tmpRec, intVal, doubleVal);
-        if (valType == Int) {
-            intSum = intSum + intVal;
-        }
-        else if (valType == Double) {
-            doubleSum = doubleSum + doubleVal;
-        }
-        lastRec.Consume(&tmpRec);
+        groupId++;
     }
 
-    Attribute* attrs = new Attribute[gb->orderMaker->numAtts + 1];
-    attrs[0].name = "SUM";
-    stringstream output;
-    if (valType == Int) {
-        attrs[0].myType = Int;
-        output << intSum << "|";
+    gb->function->Apply(*end, sumIntRec, sumDblRec);
+    if(gb->function->returnsInt == 1)
+    {
+        type = Int;
+        sumIntTotal = sumIntTotal + sumIntRec;
     }
-    else if (valType == Double) {
-        attrs[0].myType = Double;
-        output << doubleSum << "|";
+    else
+    {
+        type = Double;
+        sumDblTotal = sumDblTotal + sumDblRec;
     }
-
-    for (int i = 0; i < gb->orderMaker->numAtts; ++i) {
-        Type curAttType = gb->orderMaker->whichTypes[i];
-        if (curAttType == Int) {
-            attrs[i + 1].name = "int";
-            attrs[i + 1].myType = Int;
-            int val = *((int*)(lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1]));
-            cout << "[i]: " << val << "|";
-            output << val << "|";
-        }
-        else if (curAttType == Double) {
-            attrs[i + 1].name = "double";
-            attrs[i + 1].myType = Double;
-            double val = *((double*)(lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1]));
-            cout << "[i]: " << val << "|";
-            output << val << "|";
-        }
-        else {
-            attrs[i + 1].name = "string";
-            attrs[i + 1].myType = String;
-            string val = lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1];
-            cout << "[i]: " << val << "|";
-            output << val << "|";
-        }
-    }
-
-    Schema outSch("out_shema", gb->orderMaker->numAtts + 1, attrs);
-    outRec.ComposeRecord(&outSch, output.str().c_str());
-    gb->outPipe->Insert(&outRec);
+    int startint = ((int *)start->bits)[1]/sizeof(int) - 1;
+    dump->CreateNewRecord(type, sumIntTotal, sumDblTotal);
+    temp->MergeRecords(dump, end, 1, startint, attsArr, arrbound, 1);
+    gb->outPipe->Insert(temp);
 
     gb->outPipe->ShutDown();
     pthread_exit(NULL);
