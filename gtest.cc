@@ -308,7 +308,7 @@ TEST_F(RelOpTest, groupByTest1) {
         Record *record = new Record();
     }
 
-    char *pred_str = "(n_nationkey)";
+    char *pred_str = "(n_regionkey)";
 
     Schema *nation = new Schema(catalog_path1, "nation");
 
@@ -317,47 +317,38 @@ TEST_F(RelOpTest, groupByTest1) {
     Function func;
 
     get_cnf (pred_str, nation,func);
-//    func.Print();
 
     clog << "created predicate" << endl;
 
     OrderMaker orderMaker (nation);
 
+    orderMaker.numAtts=1;
+    orderMaker.whichAtts[0]=2;
+    orderMaker.whichTypes[0]=Int;
+    
+    
     GroupBy *groupBy = new GroupBy();
     groupBy->Use_n_Pages(1);
 
     groupBy->Run(*inPipe,*outPipe,orderMaker,func);
     inPipe->ShutDown();
 
-    Attribute IA = {"int", Int};
-    Attribute SA = {"string", String};
+//    Attribute IA = {"int", Int};
+//    Attribute SA = {"string", String};
 //    Attribute att3[] = {IA, SA, IA,SA,IA};
-    Attribute att3[] = {IA, IA, IA,SA,SA};
-    Schema out_sch ("out_sch", 5, att3);
+//    Attribute att3[] = {IA, IA};
+//    Schema out_sch ("out_sch", 2, att3);
 
 
     int count = 0;
     while (outPipe->Remove(record)){
         count++;
-        record->Print(&out_sch);
-//        record=new Record();
+//        record->Print(&out_sch);
     }
 
     int attrCount = ((int *) record->bits)[1] / sizeof(int) - 1;
 
-    ASSERT_EQ(count,25);
-    ASSERT_EQ(attrCount,5);
+    ASSERT_EQ(count,5);
+    ASSERT_EQ(attrCount,2);
 
-
-//    cout<<"before.."<<endl;
-//    while (outPipe->Remove(record)){
-////        record->Print(&out_sch);
-//        count++;
-//    }
-//    cout<<"after.."<<endl;
-//
-//
-//    int attrCount = ((int *) record->bits)[1] / sizeof(int) - 1;
-////    ASSERT_EQ(count,25);
-//    ASSERT_EQ(attrCount,5);
 }

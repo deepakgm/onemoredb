@@ -1,4 +1,4 @@
-#include "RelOp.h"#include "RelOp.h"
+#include "RelOp.h"
 
 void SelectFile::Run(DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal) {
     OpArgs *opArgs = new OpArgs(inFile, outPipe, selOp, literal);
@@ -550,87 +550,114 @@ void GroupBy::Run(Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &
 }
 
 void *GroupBy::workerThread(void *arg) {
-    OpArgs* gb = (OpArgs*)arg;
-    Record recArr[2];
+    OpArgs* opArgs = (OpArgs*)arg;
+    
+    Record outRecArr[2];
     Record *start = NULL, *end = NULL;
     Record *temp = new Record;
     Record *dump = new Record;
     Type type;
     Pipe *pipe = new Pipe(100);
-    BigQ bigq(*gb->inPipe, *pipe, *gb->orderMaker, 10);
-    ComparisonEngine comp;
-    int arrbound = (gb->orderMaker->numAtts)+1;
-    int groupId = 0, sumIntTotal = 0, sumIntRec, attsArr[arrbound];
-    double sumDblTotal=0, sumDblRec;
+    BigQ bigq(*opArgs->inPipe, *pipe, *opArgs->orderMaker, 10);
+    int arrbound = (opArgs->orderMaker->numAtts)+1;
+    int groupId = 0, intSum = 0, sumIntRec, attsArr[arrbound];
+    double doubleSum=0, sumDblRec;
 
     attsArr[0] = 0;
     for(int i = 1; i < arrbound; i++)
-        attsArr[i] = gb->orderMaker->whichAtts[i-1];
+        attsArr[i] = opArgs->orderMaker->whichAtts[i-1];
 
-    while(pipe->Remove(&recArr[groupId%2]) == 1)
+    while(pipe->Remove(&outRecArr[groupId%2]) == 1)
     {
         start = end;
-        end = &recArr[groupId%2];
+        end = &outRecArr[groupId%2];
         if(start != NULL && end != NULL)
         {
-            if(comp.Compare(start, end, gb->orderMaker) != 0)
+            if(opArgs->compEng->Compare(start, end, opArgs->orderMaker) != 0)
             {
-                gb->function->Apply(*start, sumIntRec, sumDblRec);
-                if(gb->function->returnsInt == 1)
+                opArgs->function->Apply(*start, sumIntRec, sumDblRec);
+                if(opArgs->function->returnsInt == 1)
                 {
                     type = Int;
-                    sumIntTotal = sumIntTotal + sumIntRec;
+                    intSum = intSum + sumIntRec;
                 }
                 else
                 {
                     type = Double;
-                    sumDblTotal = sumDblTotal + sumDblRec;
+                    doubleSum = doubleSum + sumDblRec;
                 }
                 int startint = ((int *)start->bits)[1]/sizeof(int) - 1;
-                dump->CreateNewRecord(type, sumIntTotal, sumDblTotal);
+
+                Attribute attr;
+                stringstream output;
+                if(type==Int){
+                    attr.name="int";
+                    attr.myType=Int;
+                    output << intSum << "|";
+                }
+                else{
+                    attr.name="double";
+                    attr.myType=Double;
+                    output << doubleSum << "|";
+                }
+                Schema out_sch ("sum", 1, &attr);
+                dump->ComposeRecord(&out_sch,output.str().c_str());
                 temp->MergeRecords(dump, start, 1, startint, attsArr, arrbound, 1);
-                gb->outPipe->Insert(temp);
-                sumIntTotal = 0;
-                sumDblTotal = 0;
+                opArgs->outPipe->Insert(temp);
+                intSum = 0;
+                doubleSum = 0;
             }
             else
             {
-                gb->function->Apply(*start, sumIntRec, sumDblRec);
-                if(gb->function->returnsInt == 1)
+                opArgs->function->Apply(*start, sumIntRec, sumDblRec);
+                if(opArgs->function->returnsInt == 1)
                 {
                     type = Int;
-                    sumIntTotal = sumIntTotal + sumIntRec;
+                    intSum = intSum + sumIntRec;
                 }
                 else
                 {
                     type = Double;
-                    sumDblTotal = sumDblTotal + sumDblRec;
+                    doubleSum = doubleSum + sumDblRec;
                 }
             }
         }
         groupId++;
     }
 
-    gb->function->Apply(*end, sumIntRec, sumDblRec);
-    if(gb->function->returnsInt == 1)
+    opArgs->function->Apply(*end, sumIntRec, sumDblRec);
+    if(opArgs->function->returnsInt == 1)
     {
         type = Int;
-        sumIntTotal = sumIntTotal + sumIntRec;
+        intSum = intSum + sumIntRec;
     }
     else
     {
         type = Double;
-        sumDblTotal = sumDblTotal + sumDblRec;
+        doubleSum = doubleSum + sumDblRec;
     }
     int startint = ((int *)start->bits)[1]/sizeof(int) - 1;
-    dump->CreateNewRecord(type, sumIntTotal, sumDblTotal);
-    temp->MergeRecords(dump, end, 1, startint, attsArr, arrbound, 1);
-    gb->outPipe->Insert(temp);
 
-    gb->outPipe->ShutDown();
+    Attribute attr;
+    stringstream output;
+    if(type==Int){
+        attr.name="int";
+        attr.myType=Int;
+        output << intSum << "|";
+    }
+    else{
+        attr.name="double";
+        attr.myType=Double;
+        output << doubleSum << "|";
+    }
+    Schema out_sch ("sum", 1, &attr);
+    dump->ComposeRecord(&out_sch,output.str().c_str());
+    temp->MergeRecords(dump, end, 1, startint, attsArr, arrbound, 1);
+    opArgs->outPipe->Insert(temp);
+
+    opArgs->outPipe->ShutDown();
     pthread_exit(NULL);
 }
-
 
 void GroupBy::WaitUntilDone() {
     pthread_join(thread, NULL);

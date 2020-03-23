@@ -11,7 +11,7 @@
 
 class RelationalOp {
 public:
-    int n_pages=100;
+    int n_pages=10;
     // blocks the caller until the particular relational operator
     // has run to completion
     virtual void WaitUntilDone() = 0;
