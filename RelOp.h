@@ -248,12 +248,34 @@ public:
 };
 
 class WriteOut : public RelationalOp {
+private:
+    pthread_t thread;
+
 public:
-    void Run(Pipe &inPipe, FILE *outFile, Schema &mySchema) {}
+    void Run(Pipe &inPipe, FILE *outFile, Schema &mySchema);
 
-    void WaitUntilDone() {}
+    void WaitUntilDone();
 
-    void Use_n_Pages(int n) {}
+    void Use_n_Pages(int n);
+
+    static void *workerThread(void *arg);
+
+//    void writeOut(Record &rec);
+
+    class OpArgs {
+    public:
+        Pipe *inPipe;
+        FILE *outPipe;;
+        Schema *schema;
+        int n_pages;
+
+        OpArgs(Pipe &inPipe1, FILE *outPipe1, Schema &mySchema) {
+            inPipe = &inPipe1;
+            outPipe = outPipe1;
+            schema = &mySchema;
+        }
+    };
+
 };
 
 #endif
