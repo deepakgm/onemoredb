@@ -22,8 +22,8 @@ test1.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pip
 a2-2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o a2-2test.o
 	$(CC) -o a2-2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o a2-2test.o -lfl -lpthread
 	
-a2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o a2-test.o
-	$(CC) -o a2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o a2-test.o -lfl -lpthread
+a2test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o a2test.o
+	$(CC) -o a2test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o BigQ.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o a2test.o -lfl -lpthread
 	
 a1test.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o a1-test.o
 	$(CC) -o a1test.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o y.tab.o lex.yy.o Meta.o a1-test.o -lfl
@@ -45,8 +45,8 @@ test1.o: test1.cc
 a2-2test.o: a2-2test.cc
 	$(CC) -g -c a2-2test.cc
 
-a2-test.o: a2-test.cc
-	$(CC) -g -c a2-test.cc
+a2test.o: a2test.cc
+	$(CC) -g -c a2test.cc
 
 a1-test.o: a1-test.cc
 	$(CC) -g -c a1-test.cc
