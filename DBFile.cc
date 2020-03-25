@@ -52,6 +52,13 @@ int DBFile::Create(const char *f_path, fType type, void *startup) {
 int DBFile::Open(const char *f_path) {
     MetaInfo metaInfo = GetMetaInfo();
 
+    if(f_path!=metaInfo.binFilePath){
+        cout << "DbFile Open called without calling Create!!" <<endl;
+        WriteMetaInfo(f_path,heap,NULL);
+        metaInfo = GetMetaInfo();
+    }else{
+
+    }
     if (metaInfo.fileType == heap) {
         myInternalVar = new Heap();
     } else if (metaInfo.fileType == sorted) {
@@ -66,8 +73,8 @@ int GenericDBFile::Open(const char *fpath) {
     MetaInfo metaInfo = GetMetaInfo();
     myOrder = metaInfo.sortInfo->myOrder;
 
-    //    cout << "input file: "<< fpath<<endl;
-//    cout << "meta input file: "<< metaInfo.binFilePath<<endl;
+        cout << "input file: "<< fpath<<endl;
+    cout << "meta input file: "<< metaInfo.binFilePath<<endl;
     if(fpath!=metaInfo.binFilePath){
         cout << "DbFile Open called without calling Create!!" <<endl;
         Create(fpath,heap,NULL);
