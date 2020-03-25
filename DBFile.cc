@@ -53,12 +53,14 @@ int DBFile::Open(const char *f_path) {
     MetaInfo metaInfo = GetMetaInfo();
 
     if (f_path != metaInfo.binFilePath) {
+        cout << "input file: " << f_path << endl;
+        cout << "meta input file: " << metaInfo.binFilePath << endl;
+
         cout << "DbFile Open called without calling Create!!" << endl;
         WriteMetaInfo(f_path, heap, NULL);
         metaInfo = GetMetaInfo();
-    } else {
-
     }
+
     if (metaInfo.fileType == heap) {
         myInternalVar = new Heap();
     } else if (metaInfo.fileType == sorted) {
