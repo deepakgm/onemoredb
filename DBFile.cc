@@ -52,11 +52,11 @@ int DBFile::Create(const char *f_path, fType type, void *startup) {
 int DBFile::Open(const char *f_path) {
     MetaInfo metaInfo = GetMetaInfo();
 
-    if(f_path!=metaInfo.binFilePath){
-        cout << "DbFile Open called without calling Create!!" <<endl;
-        WriteMetaInfo(f_path,heap,NULL);
+    if (f_path != metaInfo.binFilePath) {
+        cout << "DbFile Open called without calling Create!!" << endl;
+        WriteMetaInfo(f_path, heap, NULL);
         metaInfo = GetMetaInfo();
-    }else{
+    } else {
 
     }
     if (metaInfo.fileType == heap) {
@@ -72,18 +72,10 @@ int DBFile::Open(const char *f_path) {
 int GenericDBFile::Open(const char *fpath) {
     MetaInfo metaInfo = GetMetaInfo();
     myOrder = metaInfo.sortInfo->myOrder;
-
-        cout << "input file: "<< fpath<<endl;
-    cout << "meta input file: "<< metaInfo.binFilePath<<endl;
-    if(fpath!=metaInfo.binFilePath){
-        cout << "DbFile Open called without calling Create!!" <<endl;
-        Create(fpath,heap,NULL);
-    }else{
-        file.Open(1, strdup(fpath));
-        writingPage.EmptyItOut();
-        readingPage.EmptyItOut();
-        return 1;
-    }
+    file.Open(1, strdup(fpath));
+    writingPage.EmptyItOut();
+    readingPage.EmptyItOut();
+    return 1;
 }
 
 void Heap::readingMode() {
@@ -117,8 +109,8 @@ void Sorted::readingMode() {
 
     Record recFromPipe;
     Record recFromPage;
-    bool pipeEmpty = outPipe.Remove(&recFromPipe)==0;
-    bool fileEmpty = GetNext(recFromPage)==0;
+    bool pipeEmpty = outPipe.Remove(&recFromPipe) == 0;
+    bool fileEmpty = GetNext(recFromPage) == 0;
 
     while (!pipeEmpty && !fileEmpty) {
         if (compEngine.Compare(&recFromPipe, &recFromPage, myOrder) <= 0) {
@@ -127,14 +119,14 @@ void Sorted::readingMode() {
                 writingPage.EmptyItOut();
                 writingPage.Append(&recFromPipe);
             }
-            pipeEmpty = outPipe.Remove(&recFromPipe)==0;
+            pipeEmpty = outPipe.Remove(&recFromPipe) == 0;
         } else {
             if (!writingPage.Append(&recFromPage)) {
                 file.AddPage(&writingPage, file.GetLength() - 1);
                 writingPage.EmptyItOut();
                 writingPage.Append(&recFromPage);
             }
-            fileEmpty = GetNext(recFromPage)==0;
+            fileEmpty = GetNext(recFromPage) == 0;
         }
     }
     if (pipeEmpty && !fileEmpty) {
