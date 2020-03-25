@@ -31,17 +31,30 @@ void BigQ::phaseOne() {
 
     vector<Record *> recordList;
     Page page;
+    int page_index=0;
 
     while (inPipe->Remove(&tempRecord)) {
         Record *record = new Record();
         record->Copy(&tempRecord);
-        curSize += record->GetLength();
 
-        if (curSize >= maxSize) {
-            curSize = 0;
-            sort(recordList.begin(), recordList.end(), comparator);
-            dumpSortedList(recordList);
+
+//        curSize += record->GetLength();
+
+        if(!page.Append(&tempRecord)){
+            if (++page_index == runlen){
+                sort(recordList.begin(), recordList.end(), comparator);
+                dumpSortedList(recordList);
+                page_index=0;
+            }
+            page.EmptyItOut();
+            page.Append(&tempRecord);
         }
+
+//        if (curSize >= maxSize) {
+//            curSize = 0;
+//            sort(recordList.begin(), recordList.end(), comparator);
+//            dumpSortedList(recordList);
+//        }
         recordList.emplace_back(record);
     }
 //    cout<<"Current Record Size: "<<curSize<<endl;
@@ -58,6 +71,7 @@ void BigQ::phaseOne() {
 }
 
 void BigQ::phaseTwo() {
+//    cout <<"phase2: " << blockNum <<endl;
     vector<Page> tempPage(blockNum);
     priority_queue<IndexedRecord *, vector<IndexedRecord *>, IndexedRecordCompare> priorityQueue(*maker);
 
