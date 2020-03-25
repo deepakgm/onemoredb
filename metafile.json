@@ -1,4 +1,4 @@
 {
-  "path" : "/home/deepak/Desktop/dbi/onemoredb/test/test.bin",
+  "path" : "/home/deepak/Desktop/dbi/tpch-dbgen/10MB/bin/partsupp.bin",
   "type" : "heap"
 }

@@ -65,10 +65,18 @@ int DBFile::Open(const char *f_path) {
 int GenericDBFile::Open(const char *fpath) {
     MetaInfo metaInfo = GetMetaInfo();
     myOrder = metaInfo.sortInfo->myOrder;
-    file.Open(1, strdup(fpath));
-    writingPage.EmptyItOut();
-    readingPage.EmptyItOut();
-    return 1;
+
+    //    cout << "input file: "<< fpath<<endl;
+//    cout << "meta input file: "<< metaInfo.binFilePath<<endl;
+    if(fpath!=metaInfo.binFilePath){
+        cout << "DbFile Open called without calling Create!!" <<endl;
+        Create(fpath,heap,NULL);
+    }else{
+        file.Open(1, strdup(fpath));
+        writingPage.EmptyItOut();
+        readingPage.EmptyItOut();
+        return 1;
+    }
 }
 
 void Heap::readingMode() {

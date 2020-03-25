@@ -709,6 +709,8 @@ void *WriteOut::workerThread(void *arg) {
 
         fprintf(opsArgs->outPipe, "\n");
     }
+    fclose(opsArgs->outPipe);
+    opsArgs->inPipe->ShutDown();
     pthread_exit(NULL);
 }
 
