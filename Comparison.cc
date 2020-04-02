@@ -2,7 +2,6 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
-
 #include "Comparison.h"
 
 
@@ -564,7 +563,7 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 				cerr << "You gave me some strange type for an operand that I do not recognize!!\n";
 				exit (1);
 			}
-
+			
 
 			// now we check to make sure that there was not a type mismatch
 			if (typeLeft != typeRight) {
@@ -597,19 +596,19 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 	fprintf (outSchemaFile, "END\n");
 	fclose (outSchemaFile);
 
-    // and open up the record file
+	// and open up the record file
 	outRecFile = fopen ("sdafdsfFFDSDA", "r");
 
-    // read in the record's schema
+	// read in the record's schema
 	Schema outSchema("hkljdfgkSDFSDF", "tempSchema");
 
-    // and get the record
+	// and get the record
 	literal.SuckNextRecord (&outSchema, outRecFile);
 
-    // close the record file
+	// close the record file
 	fclose (outRecFile);
 
-    remove("sdafdsfFFDSDA");
+	remove("sdafdsfFFDSDA");
 	remove("hkljdfgkSDFSDF");
 }
 

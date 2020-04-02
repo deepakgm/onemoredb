@@ -17,12 +17,13 @@ class Comparison {
 
 public:
     Target operand1;
-    int whichAtt1;
-    Target operand2;
-    int whichAtt2;
+	int whichAtt1;
+	Target operand2;
+	int whichAtt2;
 
-    Type attType;
-    CompOperator op;
+	Type attType;
+
+	CompOperator op;
 
 	Comparison();
 
@@ -71,13 +72,15 @@ class CNF {
 
 	friend class ComparisonEngine;
 
+	Comparison orList[MAX_ANDS][MAX_ORS];
 
 
 public:
-    Comparison orList[MAX_ANDS][MAX_ORS];
 
-    int orLens[MAX_ANDS];
-    int numAnds;
+	int orLens[MAX_ANDS];
+	int numAnds;
+
+
 	// this returns an instance of the OrderMaker class that
 	// allows the CNF to be implemented using a sort-based
 	// algorithm such as a sort-merge join.  Returns a 0 if and
