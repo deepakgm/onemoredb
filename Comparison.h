@@ -72,10 +72,10 @@ class CNF {
 
 	friend class ComparisonEngine;
 
-	Comparison orList[MAX_ANDS][MAX_ORS];
 
 
 public:
+    Comparison orList[MAX_ANDS][MAX_ORS];
 
 	int orLens[MAX_ANDS];
 	int numAnds;

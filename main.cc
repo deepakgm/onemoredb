@@ -7,19 +7,13 @@
 #include <cstring>
 #include "Meta.h"
 #include <chrono>
+#include "Statistics.h"
 
 using namespace std;
 
-extern "C" {
-int yyparse(void);   // defined in y.tab.c
-}
-
-extern struct AndList *final;
-
 int main() {
 
-
-    SortInfo* sortInfo=new SortInfo;
+    /*SortInfo* sortInfo=new SortInfo;
     sortInfo->runLength=2;
     OrderMaker* orderMaker=new(OrderMaker);
 
@@ -96,5 +90,19 @@ int main() {
     //    record.Print(&nation);
 
     cout << " scanned " << counter << " recs \n";
-    dbFile->Close();
+    dbFile->Close();*/
+
+    Statistics s;
+    char *relName[] = {"supplier","partsupp"};
+
+
+    s.AddRel(relName[0],10000);
+    s.AddAtt(relName[0], "s_suppkey",10000);
+
+    s.AddRel(relName[1],800000);
+    s.AddAtt(relName[1], "ps_suppkey", 10000);
+
+    s.CopyRel("supplier","supplier2");
+
+    cout << "done" <<endl;
 }

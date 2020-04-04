@@ -2,14 +2,24 @@
 #define STATISTICS_
 #include "ParseTree.h"
 
+#include <map>
+#include <unordered_set>
+#include <vector>
+#include <fstream>
+#include <iostream>
+#include <string.h>
 
 class Statistics
 {
+
+private:
+    std::map<std::string, int> relMap;
+    std::map<std::string, std::pair<std::string, int>> attrMap;
+
 public:
 	Statistics();
 	Statistics(Statistics &copyMe);	 // Performs deep copy
 	~Statistics();
-
 
 	void AddRel(char *relName, int numTuples);
 	void AddAtt(char *relName, char *attName, int numDistincts);

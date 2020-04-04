@@ -5,27 +5,52 @@ set(CMAKE_CXX_STANDARD 14)
 
 include_directories(.)
 
-add_executable(a2test
-        BigQ.cc
-        BigQ.h
+add_executable(onemoredb
+#        BigQ.cc
+#        BigQ.h
+        #        DBFile.cc
+        #        DBFile.h
+        #        gtest.cc
+        #        lex.yy.c
+        #        lex.yyfunc.c
+        #        y.tab.c
+        #        y.tab.h
+        #        yyfunc.tab.c
+        #        yyfunc.tab.h
+        #        ParseFunc.h
+        #        ParseTree.h
+        #        RelOp.cc
+        #        RelOp.h
+        #        test.cc
+        #        test.h
+        #        test1.cc
+        #        test1.h
+
+
         Comparison.cc
         Comparison.h
         ComparisonEngine.cc
         ComparisonEngine.h
-        DBFile.cc
-        DBFile.h
         Defs.h
         File.cc
         File.h
-        Parser.y
-        ParseTree.h
+        Function.cc
+        Function.h
+        json.hpp
+        main.cc
+        Meta.cc
+        Meta.h
+
         Pipe.cc
         Pipe.h
         Record.cc
         Record.h
+
         Schema.cc
         Schema.h
+        Statistics.cc
+        Statistics.h
+        testkit.h
         TwoWayList.cc
         TwoWayList.h
-        main.cc testkit.h)
-
+        )
