@@ -38,10 +38,11 @@ protected:
 
     virtual void TearDown() {
         clog << "clearing memory.." << endl;
-        s.relMap.clear();
-        s.attrMap.clear();
+//        s.relMap.clear();
+//        s.attrMap.clear();
     }
 };
+/*
 
 //Add rel test
 TEST_F(StatisticTest, addRelTest1) {
@@ -86,29 +87,57 @@ TEST_F(StatisticTest, readWriteTest1) {
     ASSERT_EQ(s.relMap.size(),1);
 }
 
+*/
 
 //Estimate Test
 TEST_F(StatisticTest, estimateTest1) {
-    s.AddRel(relName[0],1000);
-    s.AddAtt(relName[0], "key",100);
+    char *relName[] = {"supplier","customer","nation"};
 
-    s.AddRel(relName[1],1);
-    s.AddAtt(relName[1], "key2",1);
+    //s.Read(fileName);
 
-    char *cnf = "(key = key2)";
+    s.AddRel(relName[0],10000);
+    s.AddAtt(relName[0], "s_nationkey",25);
 
+    s.AddRel(relName[1],150000);
+    s.AddAtt(relName[1], "c_custkey",150000);
+    s.AddAtt(relName[1], "c_nationkey",25);
+
+    s.AddRel(relName[2],25);
+    s.AddAtt(relName[2], "n_nationkey",25);
+
+    s.CopyRel("nation","n1");
+    s.CopyRel("nation","n2");
+    s.CopyRel("supplier","s");
+    s.CopyRel("customer","c");
+
+    char *set1[] ={"s","n1"};
+    char *cnf = "(s.s_nationkey = n1.n_nationkey)";
     yy_scan_string(cnf);
     yyparse();
-    double result = s.Estimate(final, relName, 2);
-//
-    cout <<result <<endl;
+//    s.Apply(final, set1, 2);
 
-//    s.Write(stat_file_path);
-
-//    char *cnf = "(key = key2)";
-//
+//    char *set2[] ={"c","n2"};
+//    cnf = "(c.c_nationkey = n2.n_nationkey)";
 //    yy_scan_string(cnf);
 //    yyparse();
-//    double result = s.Estimate(final, relName, 2);
+//    s.Apply(final, set2, 2);
+//
+//    char *set3[] = {"c","s","n1","n2"};
+//    cnf = " (n1.n_nationkey = n2.n_nationkey )";
+//    yy_scan_string(cnf);
+//    yyparse();
+//
+//
+//    double result = s.Estimate(final, set3, 4);
+
+//    if(fabs(result-60000000.0)>0.1)
+//        cout<<"error in estimating Q3\n";
+
+//    s.Apply(final, set3, 4);
+
+    double result = s.Estimate(final, set1, 2);
+    cout <<result<<endl;
+
+    s.Write(stat_file_path);
 
 }

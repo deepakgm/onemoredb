@@ -1,433 +1,551 @@
 #include "Statistics.h"
+#include <iostream>
+#include <map>
+#include <set>
+#include <stdlib.h>
+#include <fstream>
+#include <sstream>
+#include <math.h>
+#include <string.h>
+#include <iomanip>
+#include <typeinfo>
+#define _DEP
+//#define _DEBUG
 
-using namespace std;
 
+Statistics::Statistics()
+{
 
-Statistics::Statistics(){
+    isCalledFrmApply = false;
+    isApply = false;
+    relationData = new map<string,int>();
+    attrData= new map<string,map <string, int> >();
+
 }
 
-Statistics::~Statistics(){
-//todo
-}
-Statistics::Statistics(Statistics &copyMe){
-    relMap = map<string, int>(copyMe.relMap);
-    attrMap = map<string, pair<string, int>>(copyMe.attrMap);
+
+Statistics::Statistics(Statistics &copyMe)
+{
+
+    relationData = new map<string,int>(*(copyMe.relationData));
+    attrData = new map<string,map <string, int> >(*(copyMe.attrData));
+
 }
 
-void Statistics::AddRel(char *relName, int numTuples){
-    relMap[string(relName)] = numTuples;
+
+Statistics::~Statistics()
+{
+    delete relationData;
+    delete attrData;
 }
 
-void Statistics::AddAtt(char *relName, char *attName, int numDistincts){
-    string relName1(relName);
-    string attName1(attName);
+void Statistics::AddRel(char *relName, int numTuples)
+{
+
+    //relData n = new relData;
+    //n.numTuples = numTuples;
+
+
+
+    string rel(relName);
+
+    pair < map<string,int>::iterator, bool> ret = relationData->insert(pair<string,int>(rel,numTuples));
+
+    if(ret.second==false){
+
+        cout<<"Duplicate found";
+
+        relationData->erase(ret.first);
+        relationData->insert(pair<string,int>(rel,numTuples));
+
+    }
+
+}
+void Statistics::AddAtt(char *relName, char *attName, int numDistincts)
+{
+
+    string aName(attName);
+    string rname(relName);
+
 
     if (numDistincts == -1) {
-        attrMap[attName1].first = relName1;
-        attrMap[attName1].second = relMap[relName1];
+
+        int numTuples = relationData->at(rname);
+        (*attrData)[rname][aName] = numTuples;
+
+    } else {
+        (*attrData)[rname][aName] = numDistincts;
     }
-    else {
-        attrMap[attName1].first = relName1;
-        attrMap[attName1].second = numDistincts;
+
+
+}
+void Statistics::CopyRel(char *_oldName, char *_newName)
+{
+
+
+    string oldName(_oldName);
+    string newName(_newName);
+
+    //copy relation data
+
+    int oldNumTuples = (*relationData)[oldName];
+    (*relationData)[newName] = oldNumTuples;
+
+    //copy relation attribute
+
+    map<string, int> &oldattrData = (*attrData)[oldName];
+
+    for (map<string, int>::iterator oldAttrInfo = oldattrData.begin(); oldAttrInfo != oldattrData.end(); ++oldAttrInfo) {
+
+        string newAtt = newName;
+        newAtt += "." + oldAttrInfo->first;
+        //cout << (*oldAttrInfo).first << ": " << (*oldAttrInfo).second << endl;
+        (*attrData)[newName][newAtt] = oldAttrInfo->second;
     }
+
+
 }
 
-void Statistics::CopyRel(char *oldName, char *newName)
+void Statistics::Read(char *fromWhere)
 {
-    string oldName1(oldName);
-    string newName1(newName);
 
-    relMap[newName1] = relMap[oldName1];
-    map<string, pair<string, int>> tmp;
+    string fileName(fromWhere);
 
-    for (auto iter = attrMap.begin(); iter != attrMap.end(); ++iter) {
-        if (iter->second.first == oldName1) {
-            string newAttrName = newName1 + "." + iter->first;
-//            tmp[newAttrName].first = newName1;
-//            tmp[newAttrName].second = iter->second.second;
-            AddAtt(newName, (char *)newAttrName.c_str(), iter->second.second);
-        }
-    }
-//    for (auto iter = tmp.begin(); iter != tmp.end(); ++iter) {
-//        AddAtt(newName, (char *)iter->first.c_str(), iter->second.second);
-//    }
-}
+    ifstream ifile(fromWhere);
 
-void Statistics::Read( char *fromWhere)
-{
-    ifstream file(fromWhere);
 
-    if (!file) {
-        cerr << "Statistics file doesn't exist!" << endl;
-        exit(-1);
+    if (!ifile) {//TODO::create blank file and return
+        cout << "FILE doest not exist";
+        return;
     }
 
-    relMap.clear();
-    attrMap.clear();
+    ifstream readFile;
 
-    int attrNum;
-    file >> attrNum;
+    readFile.open(fileName.c_str(), ios::in);
 
-    for (int i = 0; i < attrNum; i++) {
-        string attr;
-        file >> attr;
+    //1.read relationData size
+    string input;
+    readFile >> input;
+    int relationDataSize = atoi(input.c_str());
 
-        string::size_type index1 = attr.find_first_of(":");
-        string::size_type index2 = attr.find_last_of(":");
-        string attrName = attr.substr(0, index1);
-        string relName = attr.substr(index1 + 1, index2 - index1 - 1);
-        int numDistincts = atoi(attr.substr(index2 + 1).c_str());
-        attrMap[attrName].first = relName;
-        attrMap[attrName].second = numDistincts;
+    //clear relation data
+    relationData->clear();
+
+    //2.read actual relationdata map
+    for (int i = 0; i < relationDataSize; i++) {
+
+        readFile >> input;
+
+        size_t splitAt = input.find_first_of("#");
+        string part1 = input.substr(0, splitAt);
+        string part2 = input.substr(splitAt + 1);
+
+
+        int part2Int = atoi(part2.c_str());
+        (*relationData)[part1] = part2Int;
+
     }
 
-    int relNum;
-    file >> relNum;
+    //3.skip over attrData map size
+    readFile >> input;
 
-    for (int i = 0; i < relNum; i++) {
-        string rel;
-        file >> rel;
+    //clear attrData map
+    attrData->clear();
 
-        string::size_type index = rel.find_first_of(":");
-        string relName = rel.substr(0, index);
-        int NumTuples = atoi(rel.substr(index + 1).c_str());
-        relMap[relName] = NumTuples;
+    //4. read in actual attrData map
+    string relName, attrName, distinctCount;
+    readFile >> relName >> attrName >> distinctCount;
+
+    while (!readFile.eof()) {
+
+        int distinctCountInt = atoi(distinctCount.c_str());
+        (*attrData)[relName][attrName] = distinctCountInt;
+        readFile >> relName >> attrName >> distinctCount;
+
     }
 
-    file.close();
+
+    readFile.close();
+
+
+
 }
 
 void Statistics::Write(char *fromWhere)
 {
-    ofstream file(fromWhere);
 
-    file << attrMap.size() << endl;
+    string fileName(fromWhere);
+    remove(fromWhere);
 
-    for (auto iter1 = attrMap.begin(); iter1 != attrMap.end(); ++iter1) {
-        file << iter1->first << ":" << iter1->second.first << ":" << iter1->second.second << endl;
+    ofstream writeFile;
+    writeFile.open(fileName.c_str(), ios::out);
+
+
+    //1.relation data size
+
+    int relationDataSize = relationData->size();
+    writeFile << relationDataSize << "\n";
+
+    //2. actual relation data map
+
+    for (map<string, int>::iterator entry = relationData->begin(); entry != relationData->end(); entry++) {
+
+        const char *first = entry->first.c_str();
+        int second = entry->second;
+
+        writeFile << first << "#" << second << "\n";
+
+
     }
 
-    file << relMap.size() << endl;
 
-    for (auto iter = relMap.begin(); iter != relMap.end(); ++iter) {
-        file << iter->first << ":" << iter->second << endl;
+    //3. attrData size
+
+    int attrDataSize = attrData->size();
+    writeFile << attrDataSize << "\n";
+
+    //4. actual attrData map
+
+    for (map<string, map<string, int> >::iterator ii = attrData->begin(); ii != attrData->end(); ++ii) {
+
+        for (map<string, int>::iterator j = ii->second.begin(); j != ii->second.end(); ++j) {
+            //cout << (*ii).first << " : " << (*j).first << " : " << (*j).second << endl;
+            //1. rel name 2.attr name 3.distincts
+            const char *first = (*ii).first.c_str();
+            const char *second = (*j).first.c_str();
+            int third = (*j).second;
+            writeFile << first << " " << second << " " << third << "\n";
+
+        }
+
     }
 
-    file.close();
+    writeFile.close();
+
+
+
+
 }
 
 void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoin)
 {
-    // cout << "APPLY!!!" << endl;
-    double andRes = 1.0;
-    int64_t modifier = 1;
-    vector<string> joinRels(2);
-    string joinedRelName = "";
-    for (int i = 0; i < numToJoin - 1; ++i) {
-        joinedRelName += relNames[i];
-    }
-    if (relMap.count(joinedRelName) > 0) {
-        joinRels[0] = joinedRelName;
-        joinRels[1] = relNames[numToJoin - 1];
-    }
-    else {
-        joinedRelName += relNames[numToJoin - 1];
-        joinRels[0] = joinedRelName;
-    }
 
-    if (!parseTree) {
-        return;
-    }
+    isCalledFrmApply = true;
+    isApply = true;
+    Estimate(parseTree, relNames, numToJoin);
+    isApply = false;
+    isCalledFrmApply = false;
 
-    /*
-     * Add code to check whether parseTree is legal here.
-     */
-
-    AndList *curAnd = parseTree;
-    while (curAnd) {
-        OrList *curOr = curAnd->left;
-
-        /*
-         * Should figure out whether attrs in this orList appear more than onece.
-         * If they are, the ratio of tuples left should be sum of each comparion's possibility.
-         * If they aren't, the ratio of tuples left should be 1 - product of (1 - each possibility)
-         */
-
-        map<string, double> orPairList;
-        bool isAlwaysTrue = false;
-        double orRes = 1.0;
-
-        while (curOr) {
-            ComparisonOp *curComp = curOr->left;
-            Operand *left = curComp->left;
-            Operand *right = curComp->right;
-
-            if (curComp->code == EQUALS) {
-                // Join. The ratio of tuples left should be 1 / max(leftDistinct, rightDistinct).
-                if (left->code == NAME && right->code == NAME) {
-                    // cout << "JOIN!!!" << endl;
-                    string leftAttrName = left->value;
-                    string rightAttrName = right->value;
-
-                    string leftRel = attrMap[leftAttrName].first;
-                    // cout << "leftRel: " << leftRel << endl;
-                    string rightRel = attrMap[rightAttrName].first;
-                    // cout << "rightRel: " << rightRel << endl;
-
-                    if ((leftRel != joinRels[0] && leftRel != joinRels[1]) || (rightRel != joinRels[0] && rightRel != joinRels[1])) {
-                        isAlwaysTrue = true;
-                        break;
-                    }
-
-                    int leftDistinct = attrMap[leftAttrName].second;
-                    // cout << "leftDistinct: " << leftDistinct << endl;
-                    int rightDistinct = attrMap[rightAttrName].second;
-                    // cout << "rightDistinct: " << rightDistinct << endl;
-
-                    attrMap[leftAttrName].second = min(leftDistinct, rightDistinct);
-                    attrMap[rightAttrName].second = min(leftDistinct, rightDistinct);
-
-                    modifier = max(leftDistinct, rightDistinct);
-                    orRes = 1.0 / modifier;
-                    // cout << "orRes: " << orRes << endl;
-                }
-                    // Equal Selection. Use different formula according to situation mentioned above.
-                else {
-                    if (left->code == NAME || right->code == NAME) {
-                        // cout << "Equal selection!!!" << endl;
-                        string attrName = (left->code == NAME) ? left->value : right->value;
-                        string relName = attrMap[attrName].first;
-                        // cout << attrName << endl;
-                        // cout << attrMap[attrName].first << endl;
-                        if (relName != joinRels[0] && relName != joinRels[1]) {
-                            isAlwaysTrue = true;
-                            break;
-                        }
-                        int distinct = attrMap[attrName].second;
-
-                        orPairList[attrName] += 1.0 / distinct;
-                        if (orPairList[attrName] > 1.0) {
-                            orPairList[attrName] = 1.0;
-                        }
-                    }
-                    else if (left->code == right->code && left->value == right->value) {
-                        // cout << "Constant selection!!!" << endl;
-                        isAlwaysTrue = true;
-                        break;
-                    }
-                }
-            }
-                /*
-                 * Less or greater than. Actually I don't know how to get the possibility of this operation.
-                 * According to testcases we can assume possibility of equal, greater than and less than are
-                 * equal, which is 1 / 3 each.
-                 * Also need to figure out whether the same attrs or not then use different formula.
-                 */
-            else {
-                if (left->code == NAME || right->code == NAME) {
-                    // cout << "Greater or less selection!!!" << endl;
-                    string attrName = (left->code == NAME) ? left->value : right->value;
-                    string relName = attrMap[attrName].first;
-                    // cout << attrName << endl;
-                    // cout << attrMap[attrName].first << endl;
-                    if (relName != joinRels[0] && relName != joinRels[1]) {
-                        isAlwaysTrue = true;
-                        break;
-                    }
-                    orPairList[attrName] += 1.0 / 3.0;
-                    if (orPairList[attrName] > 1.0) {
-                        orPairList[attrName] = 1.0;
-                    }
-                }
-                else if (left->code == right->code && ((curComp->code == GREATER_THAN && left->value > right->value) || (curComp->code == LESS_THAN && left->value < right->value))) {
-                    // cout << "Constant selection!!!" << endl;
-                    isAlwaysTrue = true;
-                    break;
-                }
-            }
-
-            curOr = curOr->rightOr;
-        }
-
-        if (!isAlwaysTrue && !orPairList.empty()) {
-            // cout << "I am here!" << endl;
-            double reveRes = 1;
-            for (auto iter = orPairList.begin(); iter != orPairList.end(); ++iter) {
-                reveRes *= (1.0 - iter->second);
-            }
-            orRes = 1 - reveRes;
-        }
-        andRes *= orRes;
-        // cout << "andRes: " << andRes << endl;
-
-        curAnd = curAnd->rightAnd;
-    }
-
-    double numofTuples = andRes;
-    numofTuples *= relMap[joinRels[0]];
-    relMap.erase(joinRels[0]);
-    if (joinRels[1] != "") {
-        numofTuples *= relMap[joinRels[1]];
-        relMap.erase(joinRels[1]);
-    }
-    string newRelName = joinRels[0] + joinRels[1];
-    relMap[newRelName] = numofTuples;
-    andRes *= modifier;
-    for (auto iter = attrMap.begin(); iter != attrMap.end(); ++iter) {
-        if (iter->second.first == joinRels[0] || iter->second.first == joinRels[1]) {
-            string attrName = iter->first;
-            int numofDistinct = iter->second.second * andRes;
-            attrMap[attrName].first = newRelName;
-            attrMap[attrName].second = numofDistinct;
-        }
-    }
-    // cout << "newRelName: " << newRelName << endl;
-    // cout << "numofTuples: " << relMap[newRelName] << endl;
 }
 
 double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numToJoin)
 {
-    double andRes = 1.0;
-    vector<string> joinRels(2);
-    string joinedRelName = "";
-    for (int i = 0; i < numToJoin - 1; ++i) {
-        joinedRelName += relNames[i];
-    }
-    if (relMap.count(joinedRelName) > 0) {
-        joinRels[0] = joinedRelName;
-        joinRels[1] = relNames[numToJoin - 1];
-    }
-    else {
-        joinedRelName += relNames[numToJoin - 1];
-        joinRels[0] = joinedRelName;
-    }
 
-    if (!parseTree) {
-        return 0;
-    }
+    double resultEstimate = 0.0;
+    // TODO error checking
+    struct AndList *currentAnd;
+    struct OrList *currentOr;
 
-    /*
-     * Add code to check whether parseTree is legal here.
-     */
+    currentAnd = parseTree;
 
-    AndList *curAnd = parseTree;
-    while (curAnd) {
-        OrList *curOr = curAnd->left;
-        double orRes = 1.0;
+    string leftRelation;
+    string rightRelation;
 
-        /*
-         * Should scan the orList first to figure out whether attrs in this orList are the same.
-         * If they are, the ratio of tuples left should be sum of each comparion's possibility.
-         * If they aren't, the ratio of tuples left should be 1 - product of (1 - each possibility)
-         */
+    string leftAttr;
+    string rightAttr;
 
-        map<string, double> orPairList;
-        bool isAlwaysTrue = false;
+    string joinLeftRelation, joinRightRelation;
 
-        while (curOr) {
-            ComparisonOp *curComp = curOr->left;
-            Operand *left = curComp->left;
-            Operand *right = curComp->right;
+    bool isJoin = false;
+    bool isJoinPerformed = false;
 
-            if (curComp->code == EQUALS) {
-                // Join. The ratio of tuples left should be 1 / max(leftDistinct, rightDistinct).
-                if (left->code == NAME && right->code == NAME) {
-                    // cout << "JOIN!!!" << endl;
-                    string leftAttrName = left->value;
-                    string rightAttrName = right->value;
+    bool isdep = false;
+    bool done = false;
+    string prev;
 
-                    string leftRel = attrMap[leftAttrName].first;
-                    // cout << "leftRel: " << leftRel << endl;
-                    string rightRel = attrMap[rightAttrName].first;
-                    // cout << "rightRel: " << rightRel << endl;
+    double resultANDFactor = 1.0;
+    double resultORFactor = 1.0;
 
-                    if ((leftRel != joinRels[0] && leftRel != joinRels[1]) || (rightRel != joinRels[0] && rightRel != joinRels[1])) {
-                        isAlwaysTrue = true;
+    map<string, int> relOpMap;
+
+//And list is structured as a root, a orlist the left and andlist to the right.
+//Or list is structured as a root, a comparison the left and orlist to the right.
+//a comparison is structed as a root and operands to the left and right.
+//operands consists of a code and value.
+
+    while (currentAnd != NULL) {
+
+
+        currentOr = currentAnd->left;
+        resultORFactor = 1.0;
+
+
+        while (currentOr != NULL) {
+
+
+            isJoin = false;
+            ComparisonOp *currentCompOp = currentOr->left;
+
+
+            // find relation of left attribute
+            //first attribute has to be a name
+            if (currentCompOp->left->code != NAME) {
+                cout << "LEFT should be attribute name" << endl;
+
+                return 0;
+            } else {
+
+                //find the relation where the attribute lies.
+
+                leftAttr = currentCompOp->left->value;
+
+#ifdef _DEP
+                if(strcmp(leftAttr.c_str(),prev.c_str())==0)
+                {
+
+                    //cout<<"equal"<<endl;
+                    isdep=true;
+                }
+
+                prev= leftAttr;
+#endif
+
+
+                //cout << "Left Attribute is " << leftAttr << endl;
+
+
+
+                for (map<string, map<string, int> >::iterator mapEntry = attrData->begin(); mapEntry != attrData->end(); mapEntry++) {
+                    if ((*attrData)[mapEntry->first].count(leftAttr) > 0) {
+
+                        leftRelation = mapEntry->first;
                         break;
                     }
 
-                    int leftDistinct = attrMap[leftAttrName].second;
-                    // cout << "leftDistinct: " << leftDistinct << endl;
-                    int rightDistinct = attrMap[rightAttrName].second;
-                    // cout << "rightDistinct: " << rightDistinct << endl;
-
-                    // cout << "leftNumofTuples: " << relMap[leftRel] << endl;
-                    // cout << "rightNumofTuples: " << relMap[rightRel] << endl;
-
-                    // cout << "result: " << result << endl;
-                    orRes = 1.0 / max(leftDistinct, rightDistinct);
-                    // cout << "result: " << result << endl;
                 }
-                    // Equal Selection. Use different formula according to situation mentioned above.
-                else {
-                    // cout << "EQUAL COMPARISON!!!" << endl;
-                    if (left->code == NAME || right->code == NAME) {
-                        string attrName = (left->code == NAME) ? left->value : right->value;
-                        string relName = attrMap[attrName].first;
-                        // cout << "relName: " << relName << endl;
-                        if (relName != joinRels[0] && relName != joinRels[1]) {
-                            isAlwaysTrue = true;
-                            break;
-                        }
-                        int distinct = attrMap[attrName].second;
 
-                        orPairList[attrName] += 1.0 / distinct;
-                        if (orPairList[attrName] > 1.0) {
-                            orPairList[attrName] = 1.0;
-                        }
-                    }
-                    else if (left->code == right->code && left->value == right->value) {
-                        isAlwaysTrue = true;
+            }
+
+            // find relation of right attribute
+            if (currentCompOp->right->code == NAME) {//the right operand is a name too hence it is a join
+                isJoin = true;
+                isJoinPerformed = true;
+                rightAttr = currentCompOp->right->value;
+
+                //find right relation
+
+                for (map<string, map<string, int> >::iterator mapEntry = attrData->begin(); mapEntry != attrData->end(); ++mapEntry) {
+                    if ((*attrData)[mapEntry->first].count(rightAttr) > 0) {
+                        rightRelation = mapEntry->first;
                         break;
                     }
                 }
             }
-                // Less or greater than. Actually I don't know how to get the possibility of this operation.
-                // First we can simply try equal possibility of equal, greater than and less than. 1 / 3 each.
-                // Also need to figure out whether the same attrs or not then use different formula.
-            else {
-                if (left->code == NAME || right->code == NAME) {
-                    string attrName = (left->code == NAME) ? left->value : right->value;
-                    string relName = attrMap[attrName].first;
-                    // cout << "relName: " << relName << endl;
-                    // cout << "joinRels[0]: " << joinRels[0] << endl;
-                    // cout << "joinRels[1]: " << joinRels[1] << endl;
-                    if (relName != joinRels[0] && relName != joinRels[1]) {
-                        isAlwaysTrue = true;
-                        break;
-                    }
-                    orPairList[attrName] += 1.0 / 3.0;
-                    if (orPairList[attrName] > 1.0) {
-                        orPairList[attrName] = 1.0;
-                    }
-                }
-                else if (left->code == right->code && ((curComp->code == GREATER_THAN && left->value > right->value) || (curComp->code == LESS_THAN && left->value < right->value))) {
-                    isAlwaysTrue = true;
-                    break;
-                }
-            }
 
-            curOr = curOr->rightOr;
+            if (isJoin == true) {
+
+                //find distinct counts of both attributes for the relations.
+
+                double leftDistinctCount = (*attrData)[leftRelation][currentCompOp->left->value];
+                double rightDistinctCount = (*attrData)[rightRelation][currentCompOp->right->value];
+
+                if (currentCompOp->code == EQUALS) {
+                    resultORFactor *=(1.0 - (1.0 / max(leftDistinctCount, rightDistinctCount)));//ORFACTOR??
+                }
+
+                joinLeftRelation = leftRelation;
+                joinRightRelation = rightRelation;
+
+            } else {
+
+#ifdef _DEP
+                if(isdep){
+
+
+
+
+                    if(!done){
+
+                        //cout<<"done"<<endl;
+                        resultORFactor =1.0 -resultORFactor;
+                        done = true;
+
+
+                    }
+
+                    if (currentCompOp->code == GREATER_THAN || currentCompOp->code == LESS_THAN) {
+                        resultORFactor += (1.0 / 3.0);
+                        relOpMap[currentCompOp->left->value] = currentCompOp->code;
+
+                    }
+                    if (currentCompOp->code == EQUALS) {
+                        resultORFactor +=(1.0 / ((*attrData)[leftRelation][currentCompOp->left->value]));
+                        relOpMap[currentCompOp->left->value] = currentCompOp->code;
+                    }
+
+
+#ifdef _DEBUG
+                    cout<<"or "<<std::setprecision (15) <<resultORFactor<<endl;
+				    cout<<"ikr "<< (*attrData)[leftRelation][currentCompOp->left->value]<<endl;
+
+#endif
+
+
+
+
+
+                }
+
+
+
+
+
+                else{
+
+                    if (currentCompOp->code == GREATER_THAN || currentCompOp->code == LESS_THAN) {
+                        resultORFactor *= (2.0 / 3.0);
+                        relOpMap[currentCompOp->left->value] = currentCompOp->code;
+
+                    }
+                    if (currentCompOp->code == EQUALS) {
+                        resultORFactor *=(1.0- (1.0 / (*attrData)[leftRelation][currentCompOp->left->value]));
+                        relOpMap[currentCompOp->left->value] = currentCompOp->code;
+                    }
+
+#ifdef _DEBUG
+                    cout<<"or"<<resultORFactor<<endl;
+					cout<<"ikr "<< (*attrData)[leftRelation][currentCompOp->left->value]<<endl;
+
+
+#endif
+
+
+
+                }
+
+#else
+
+
+                if (currentCompOp->code == GREATER_THAN || currentCompOp->code == LESS_THAN) {
+                                    resultORFactor *= (2.0 / 3.0);
+                                    relOpMap[currentCompOp->left->value] = currentCompOp->code;
+
+                            }
+                            if (currentCompOp->code == EQUALS) {
+                                    resultORFactor *=(1.0- (1.0 / (*attrData)[leftRelation][currentCompOp->left->value]));
+                                    relOpMap[currentCompOp->left->value] = currentCompOp->code;
+                            }
+
+#endif
+
+
+
+
+
+
+            }
+            currentOr = currentOr->rightOr;
         }
-        if (!isAlwaysTrue && !orPairList.empty()) {
-            // cout << "I am here!" << endl;
-            double reveRes = 1.0;
-            for (auto iter = orPairList.begin(); iter != orPairList.end(); ++iter) {
-                reveRes *= (1.0 - iter->second);
-            }
-            orRes = 1 - reveRes;
-        }
-        // cout << "orRes: " << orRes << endl;
-        andRes *= orRes;
 
-        curAnd = curAnd->rightAnd;
+
+
+
+#ifdef _DEP
+        if(!isdep)
+            resultORFactor =1.0 -resultORFactor;
+
+#else
+        resultORFactor =1.0 -resultORFactor;
+#endif
+
+#ifdef _DEBUG
+        cout<<"prev and"<<resultANDFactor <<" or "<< resultORFactor<<"curr and "<< resultANDFactor*resultORFactor<<endl;
+
+#endif
+
+        isdep=false;
+        done =false;
+
+        resultANDFactor *= resultORFactor;
+        currentAnd = currentAnd->rightAnd;
     }
 
-    double result = 1.0;
-    result *= relMap[joinRels[0]];
-    if (joinRels[1] != "") result *= relMap[joinRels[1]];
-    result *= andRes;
 
-    // cout << "result: " << result << endl;
-    return result;
+    double rightTupleCount = (*relationData)[rightRelation];
+
+    if (isJoinPerformed == true) {
+        double leftTupleCount = (*relationData)[joinLeftRelation];
+        resultEstimate = leftTupleCount * rightTupleCount * resultANDFactor;
+    } else {
+        double leftTupleCount = (*relationData)[leftRelation];
+        resultEstimate = leftTupleCount * resultANDFactor;
+    }
+
+    if (isApply) {
+
+//    		cout<<"is apply is" <<isApply;
+
+        map<string, int>::iterator relOpMapITR, distinctCountMapITR;
+        set<string> addedJoinAttrSet;
+        if (isJoinPerformed) {
+            for (relOpMapITR = relOpMap.begin(); relOpMapITR != relOpMap.end(); relOpMapITR++) {
+
+                for (int i = 0; i < relationData->size(); i++) {
+                    if (relNames[i] == NULL)
+                        continue;
+                    int cnt = ((*attrData)[relNames[i]]).count(relOpMapITR->first);
+                    if (cnt == 0)
+                        continue;
+                    else if (cnt == 1) {
+
+                        for (distinctCountMapITR = (*attrData)[relNames[i]].begin(); distinctCountMapITR != (*attrData)[relNames[i]].end(); distinctCountMapITR++) {
+                            if ((relOpMapITR->second == LESS_THAN) || (relOpMapITR->second == GREATER_THAN)) {
+                                (*attrData)[joinLeftRelation + "_" + joinRightRelation][distinctCountMapITR->first] = (int)round((double)(distinctCountMapITR->second) / 3.0);
+                            } else if (relOpMapITR->second == EQUALS) {
+                                if (relOpMapITR->first == distinctCountMapITR->first) { //same attribute on which condition is imposed
+                                    (*attrData)[joinLeftRelation + "_" + joinRightRelation][distinctCountMapITR->first] = 1;
+                                } else
+                                    (*attrData)[joinLeftRelation + "_" + joinRightRelation][distinctCountMapITR->first] = min((int)round(resultEstimate), distinctCountMapITR->second);
+                            }
+                        }
+                        break;
+                    } else if (cnt > 1) {
+
+                        for (distinctCountMapITR = (*attrData)[relNames[i]].begin(); distinctCountMapITR != (*attrData)[relNames[i]].end(); distinctCountMapITR++) {
+                            if (relOpMapITR->second == EQUALS) {
+                                if (relOpMapITR->first == distinctCountMapITR->first) {
+                                    (*attrData)[joinLeftRelation + "_" + joinRightRelation][distinctCountMapITR->first] = cnt;
+                                } else
+                                    (*attrData)[joinLeftRelation + "_" + joinRightRelation][distinctCountMapITR->first] = min((int) round(resultEstimate), distinctCountMapITR->second);
+                            }
+                        }
+                        break;
+                    }
+                    addedJoinAttrSet.insert(relNames[i]);
+                }
+            }
+
+            if (addedJoinAttrSet.count(joinLeftRelation) == 0) {
+                for (map<string, int>::iterator entry = (*attrData)[joinLeftRelation].begin(); entry != (*attrData)[joinLeftRelation].end(); entry++) {
+                    (*attrData)[joinLeftRelation + "_" + joinRightRelation][entry->first] = entry->second;
+
+                }
+            }
+            if (addedJoinAttrSet.count(joinRightRelation) == 0) {
+                for (map<string, int>::iterator entry = (*attrData)[joinRightRelation].begin(); entry != (*attrData)[joinRightRelation].end(); entry++) {
+                    (*attrData)[joinLeftRelation + "_" + joinRightRelation][entry->first] = entry->second;
+
+                }
+            }
+            (*relationData)[joinLeftRelation + "_" + joinRightRelation] =round(resultEstimate);
+            relationData->erase(joinLeftRelation);
+            relationData->erase(joinRightRelation);
+
+            attrData->erase(joinLeftRelation);
+            attrData->erase(joinRightRelation);
+
+        }
+    }
+
+    return (double)((double)resultEstimate);
 }

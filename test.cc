@@ -7,7 +7,6 @@
 extern "C" struct YY_BUFFER_STATE *yy_scan_string(const char*);
 extern "C" int yyparse(void);
 extern struct AndList *final;
-
 using namespace std;
 
 
@@ -100,8 +99,13 @@ void q0 (){
     yy_scan_string(cnf);
     yyparse();
     double result = s.Estimate(final, relName, 2);
+
+//    cout <<<<endl;
+    cout <<800000-result<<endl;
+
     if(result!=800000)
         cout<<"error in estimating Q1 before apply \n ";
+
     s.Apply(final, relName, 2);
 
     // test write and read
@@ -197,7 +201,7 @@ void q3 (){
     //s.Read(fileName);
 
     s.AddRel(relName[0],10000);
-    s.AddAtt(relName[0], "s_nationey",25);
+    s.AddAtt(relName[0], "s_nationkey",25);
 
     s.AddRel(relName[1],150000);
     s.AddAtt(relName[1], "c_custkey",150000);
@@ -217,23 +221,23 @@ void q3 (){
     yyparse();
     s.Apply(final, set1, 2);
 
-//    char *set2[] ={"c","n2"};
-//    cnf = "(c.c_nationkey = n2.n_nationkey)";
-//    yy_scan_string(cnf);
-//    yyparse();
-//    s.Apply(final, set2, 2);
-//
-//    char *set3[] = {"c","s","n1","n2"};
-//    cnf = " (n1.n_nationkey = n2.n_nationkey )";
-//    yy_scan_string(cnf);
-//    yyparse();
-//
-//    double result = s.Estimate(final, set3, 4);
-//
-//    if(fabs(result-60000000.0)>0.1)
-//        cout<<"error in estimating Q3\n";
-//
-//    s.Apply(final, set3, 4);
+    char *set2[] ={"c","n2"};
+    cnf = "(c.c_nationkey = n2.n_nationkey)";
+    yy_scan_string(cnf);
+    yyparse();
+    s.Apply(final, set2, 2);
+
+    char *set3[] = {"c","s","n1","n2"};
+    cnf = " (n1.n_nationkey = n2.n_nationkey )";
+    yy_scan_string(cnf);
+    yyparse();
+
+    double result = s.Estimate(final, set3, 4);
+
+    if(fabs(result-60000000.0)>0.1)
+        cout<<"error in estimating Q3\n";
+
+    s.Apply(final, set3, 4);
 
     s.Write(fileName);
 

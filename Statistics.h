@@ -1,26 +1,37 @@
 #ifndef STATISTICS_
 #define STATISTICS_
 #include "ParseTree.h"
-
+#include <string>
 #include <map>
-#include <unordered_set>
-#include <vector>
-#include <fstream>
-#include <iostream>
-#include <string.h>
+
+/*struct cmp_str
+{
+   bool operator()(char const *a, char const *b)
+   {
+      return std::strcmp(a, b) < 0;
+   }
+};*/
+
+/*typedef struct relData{
+	int numTuples;
+
+}reldata;*/
+
+using namespace std;
 
 class Statistics
 {
 
-//private:
+    map<string,int> *relationData;
+    map<string,map <string, int> > *attrData;
+    bool isCalledFrmApply;
+    bool isApply;
 
 public:
-    std::map<std::string, int> relMap;
-    std::map<std::string, std::pair<std::string, int>> attrMap;
-
     Statistics();
     Statistics(Statistics &copyMe);	 // Performs deep copy
     ~Statistics();
+
 
     void AddRel(char *relName, int numTuples);
     void AddAtt(char *relName, char *attName, int numDistincts);

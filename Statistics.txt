@@ -1,4 +1,5 @@
 1
-key:relation:10000
+supplier_partsupp#800000
 1
-relation:10000
+supplier_partsupp ps_suppkey 10000
+supplier_partsupp s_suppkey 10000
