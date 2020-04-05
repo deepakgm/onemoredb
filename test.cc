@@ -8,7 +8,7 @@ extern "C" struct YY_BUFFER_STATE *yy_scan_string(const char*);
 extern "C" int yyparse(void);
 extern struct AndList *final;
 using namespace std;
-
+const double TOLERANCE=0.0001;
 
 void PrintOperand(struct Operand *pOperand)
 {
@@ -100,10 +100,7 @@ void q0 (){
     yyparse();
     double result = s.Estimate(final, relName, 2);
 
-//    cout <<<<endl;
-    cout <<800000-result<<endl;
-
-    if(result!=800000)
+    if(result-800000>TOLERANCE)
         cout<<"error in estimating Q1 before apply \n ";
 
     s.Apply(final, relName, 2);
@@ -118,6 +115,8 @@ void q0 (){
     yy_scan_string(cnf);
     yyparse();
     double dummy = s1.Estimate(final, relName, 2);
+    cout <<dummy <<endl;
+
     if(fabs(dummy*3.0-result) >0.1)
     {
         cout<<"Read or write or last apply is not correct\n";
@@ -275,36 +274,34 @@ void q4 (){
     s.CopyRel("nation","n");
     s.CopyRel("region","r");
 
+    char *relName2[] = { "p", "ps", "s", "n", "r"};
+
     char *cnf = "(p.p_partkey=ps.ps_partkey) AND (p.p_size = 2)";
     yy_scan_string(cnf);
     yyparse();
-    s.Apply(final, relName, 2);
+    s.Apply(final, relName2, 2);
 
     cnf ="(s.s_suppkey = ps.ps_suppkey)";
     yy_scan_string(cnf);
     yyparse();
-    s.Apply(final, relName, 3);
+    s.Apply(final, relName2, 3);
 
     cnf =" (s.s_nationkey = n.n_nationkey)";
     yy_scan_string(cnf);
     yyparse();
-    s.Apply(final, relName, 4);
+    s.Apply(final, relName2, 4);
 
     cnf ="(n.n_regionkey = r.r_regionkey) AND (r.r_name = 'AMERICA') ";
     yy_scan_string(cnf);
     yyparse();
 
-    double result = s.Estimate(final, relName, 5);
+    double result = s.Estimate(final, relName2, 5);
     if(fabs(result-3200)>0.1)
         cout<<"error in estimating Q4\n";
 
     s.Apply(final, relName, 5);
 
     s.Write(fileName);
-
-
-
-
 }
 
 void q5 (){
@@ -542,7 +539,7 @@ void q11 (){
 
     s.AddRel(relName[0],200000);
     s.AddAtt(relName[0], "p_partkey",200000);
-    s.AddAtt(relName[0], "p_conatiner",40);
+    s.AddAtt(relName[0], "p_container",40);
 
     s.AddRel(relName[1],6001215);
     s.AddAtt(relName[1], "l_partkey",200000);
@@ -555,6 +552,7 @@ void q11 (){
     yyparse();
 
     double result = s.Estimate(final, relName,2);
+
 
     if(fabs(result-21432.9)>0.5)
         cout<<"error in estimating Q11\n";

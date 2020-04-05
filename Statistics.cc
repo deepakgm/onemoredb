@@ -67,7 +67,6 @@ void Statistics::AddAtt(char *relName, char *attName, int numDistincts)
     string aName(attName);
     string rname(relName);
 
-
     if (numDistincts == -1) {
 
         int numTuples = relationData->at(rname);
@@ -102,7 +101,6 @@ void Statistics::CopyRel(char *_oldName, char *_newName)
         //cout << (*oldAttrInfo).first << ": " << (*oldAttrInfo).second << endl;
         (*attrData)[newName][newAtt] = oldAttrInfo->second;
     }
-
 
 }
 
@@ -309,11 +307,7 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 
                 prev= leftAttr;
 #endif
-
-
                 //cout << "Left Attribute is " << leftAttr << endl;
-
-
 
                 for (map<string, map<string, int> >::iterator mapEntry = attrData->begin(); mapEntry != attrData->end(); mapEntry++) {
                     if ((*attrData)[mapEntry->first].count(leftAttr) > 0) {
