@@ -42,10 +42,10 @@ void Statistics::CopyRel(char *oldName, char *newName)
 
     for (auto iter = attrMap.begin(); iter != attrMap.end(); ++iter) {
         if (iter->second.first == oldName1) {
-            string newAttrName = newName1 + "_" + iter->first;
+            string newAttrName = newName1 + "." + iter->first;
 //            tmp[newAttrName].first = newName1;
 //            tmp[newAttrName].second = iter->second.second;
-             AddAtt(newName, (char *)newAttrName.c_str(), iter->second.second);
+            AddAtt(newName, (char *)newAttrName.c_str(), iter->second.second);
         }
     }
 //    for (auto iter = tmp.begin(); iter != tmp.end(); ++iter) {

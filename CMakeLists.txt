@@ -5,12 +5,23 @@ set(CMAKE_CXX_STANDARD 14)
 
 include_directories(.)
 
+add_library(
+                lex.yy.c
+                lex.yyfunc.c
+                y.tab.c
+                y.tab.h
+                yyfunc.tab.c
+                yyfunc.tab.h
+                ParseFunc.h
+                ParseTree.h
+)
+
+
 add_executable(onemoredb
-#        BigQ.cc
-#        BigQ.h
-        #        DBFile.cc
-        #        DBFile.h
-        #        gtest.cc
+        BigQ.cc
+        BigQ.h
+                DBFile.cc
+                DBFile.h
         #        lex.yy.c
         #        lex.yyfunc.c
         #        y.tab.c
@@ -21,10 +32,11 @@ add_executable(onemoredb
         #        ParseTree.h
         #        RelOp.cc
         #        RelOp.h
-        #        test.cc
+                test.cc
         #        test.h
         #        test1.cc
         #        test1.h
+                gtest.cc
 
 
         Comparison.cc
@@ -37,7 +49,7 @@ add_executable(onemoredb
         Function.cc
         Function.h
         json.hpp
-        main.cc
+#        main.cc
         Meta.cc
         Meta.h
 

@@ -1,43 +1,23 @@
 #include <limits.h>
 #include "gtest/gtest.h"
 #include <iostream>
-#include "Record.h"
 #include <stdlib.h>
-#include "DBFile.h"
-#include "Schema.h"
-#include "BigQ.h"
-#include "gmock/gmock.h"
-#include "Meta.h"
+//#include "gmock/gmock.h"
 #include <cstring>
+#include "Statistics.h"
 #include "testkit.h"
-#include "RelOp.h"
-
-using ::testing::Mock;
-using ::testing::Invoke;
-using ::testing::Return;
-using ::testing::_;
 
 using namespace std;
 
+char stat_file_path[PATH_MAX];
 char cur_dir1[PATH_MAX];
-char dbfile_dir1[PATH_MAX];
-char table_path[PATH_MAX];
-char catalog_path1[PATH_MAX];
-char tempfile_path[PATH_MAX];
-
+char *relName[] = {"relation","relation2"};
 
 int main(int argc, char **argv) {
     // get the current dir
     if (getcwd(cur_dir1, sizeof(cur_dir1)) != NULL) {
         clog << "current working dir:" << cur_dir1 << endl;
-        strcpy(dbfile_dir1, cur_dir1);
-        strcpy(table_path, cur_dir1);
-        strcpy(catalog_path1, cur_dir1);
-        strcpy(tempfile_path, cur_dir1);
-        strcat(dbfile_dir1, "/test/test.bin");
-        strcat(table_path, "/test/nation.tbl");
-        strcat(catalog_path1, "/test/catalog");
-        strcat(tempfile_path, "/test/tempfile");
+        strcat(stat_file_path, "Statistics.txt");
     } else {
         cerr << "error while getting curent dir" << endl;
         return 1;
@@ -48,307 +28,87 @@ int main(int argc, char **argv) {
 }
 
 
-class RelOpTest : public ::testing::Test {
+class StatisticTest : public ::testing::Test {
 public:
-    DBFile *dbFile, *dbFile1;
+    Statistics s;
 protected:
     virtual void SetUp() {
-        clog << "creating DBFile instance.." << endl;
-        dbFile = new DBFile();
-        dbFile->Create(dbfile_dir1, heap, NULL);
-        Schema nation(catalog_path1, "nation");
-        dbFile->Load(nation, table_path);
-//        dbFile->MoveFirst();
-
+        clog << "initializing test" << endl;
     }
 
     virtual void TearDown() {
         clog << "clearing memory.." << endl;
-        delete dbFile;
-        remove(dbfile_dir1);
+        s.relMap.clear();
+        s.attrMap.clear();
     }
 };
 
-//Select file test
-TEST_F(RelOpTest, selectFileTest1) {
-    char *pred_str = "(n_nationkey > 0)";
+//Add rel test
+TEST_F(StatisticTest, addRelTest1) {
 
+    ASSERT_EQ(s.relMap.size(),0);
+    ASSERT_EQ(s.attrMap.size(),0);
 
-    Schema *nation = new Schema(catalog_path1, "nation");
+    s.AddRel(relName[0],800000);
+    s.AddAtt(relName[0], "key", 10000);
 
-    CNF *cnf = new CNF();
-    Record *literal = new Record();
-
-    get_cnf(pred_str, nation, *cnf, *literal);
-    clog << "created predicate" << endl;
-    SelectFile *selectFile = new SelectFile();
-
-    Pipe *pipe1 = new Pipe(100);
-    selectFile->Run(*dbFile, *pipe1, *cnf, *literal);
-
-    Record *record = new Record();
-    int count = 0;
-    while (pipe1->Remove(record))
-        count++;
-
-    ASSERT_EQ(count, 24);
-
-    delete (literal);
-    delete (cnf);
-    delete (pipe1);
-    delete (record);
+    ASSERT_EQ(s.relMap.size(),1);
+    ASSERT_EQ(s.attrMap.size(),1);
 }
 
-//Select pipe test
-TEST_F(RelOpTest, selectPipeTest1) {
-    char *pred_str = "(n_nationkey > 0)";
+//Copy rel test
+TEST_F(StatisticTest, copyRelTest1) {
 
-    Schema *nation = new Schema(catalog_path1, "nation");
+    s.AddRel(relName[0],10000);
+    s.AddAtt(relName[0], "key",10000);
 
-    CNF *cnf = new CNF();
-    Record *literal = new Record();
+    ASSERT_EQ(s.relMap.size(),1);
 
-    get_cnf(pred_str, nation, *cnf, *literal);
-    clog << "created predicate" << endl;
+    s.CopyRel("relation","relationCopy");
 
-    Pipe *inPipe = new Pipe(100);
-    Pipe *outPipe = new Pipe(100);
-
-    Record *record = new Record();
-    while (dbFile->GetNext(*record)) {
-        inPipe->Insert(record);
-        Record *record = new Record();
-    }
-
-    SelectPipe *selectPipe = new SelectPipe();
-    selectPipe->Run(*inPipe, *outPipe, *cnf, *literal);
-    inPipe->ShutDown();
-
-    int count = 0;
-    while (outPipe->Remove(record))
-        count++;
-
-    ASSERT_EQ(count, 24);
-
-    delete (cnf);
-    delete (inPipe);
-    delete (outPipe);
-    delete (record);
+    ASSERT_EQ(s.relMap.size(),2);
 }
 
 
-//Projection test
-TEST_F(RelOpTest, projectionTest1) {
+//Write and Read Test
+TEST_F(StatisticTest, readWriteTest1) {
+    s.AddRel(relName[0],10000);
+    s.AddAtt(relName[0], "key",10000);
 
-    Pipe *inPipe = new Pipe(100);
-    Pipe *outPipe = new Pipe(100);
+    ASSERT_EQ(s.relMap.size(),1);
 
-    Record *record = new Record();
-    while (dbFile->GetNext(*record)) {
-        inPipe->Insert(record);
-        Record *record = new Record();
-    }
+    s.Write(stat_file_path);
 
-    int *keepMe = new int[2];
-    keepMe[0] = 0;
-    keepMe[1] = 2;
+    s.relMap.clear();
+    s.attrMap.clear();
 
-    Project *project = new Project();
-    project->Run(*inPipe, *outPipe, keepMe, 4, 2);
-    inPipe->ShutDown();
-
-    int count = 0;
-    while (outPipe->Remove(record))
-        count++;
-
-    int attrCount = ((int *) record->bits)[1] / sizeof(int) - 1;
-
-    ASSERT_EQ(count, 25);
-
-    ASSERT_EQ(attrCount, 2);
+    s.Read(stat_file_path);
+    ASSERT_EQ(s.relMap.size(),1);
 }
 
 
-//duplicate removal test
-TEST_F(RelOpTest, duplicateTest1) {
+//Estimate Test
+TEST_F(StatisticTest, estimateTest1) {
+    s.AddRel(relName[0],1000);
+    s.AddAtt(relName[0], "key",100);
 
-    Pipe *inPipe = new Pipe(100);
-    Pipe *outPipe = new Pipe(100);
+    s.AddRel(relName[1],1);
+    s.AddAtt(relName[1], "key2",1);
 
-    Record *record = new Record();
-    while (dbFile->GetNext(*record)) {
-        inPipe->Insert(record);
-        Record *record = new Record();
-    }
+    char *cnf = "(key = key2)";
 
-    dbFile->MoveFirst();
-    while (dbFile->GetNext(*record)) {
-        inPipe->Insert(record);
-        Record *record = new Record();
-    }
+    yy_scan_string(cnf);
+    yyparse();
+    double result = s.Estimate(final, relName, 2);
+//
+    cout <<result <<endl;
 
-    Attribute IA = {"int", Int};
-    Schema mySchema("mySchema", 1, &IA);
+//    s.Write(stat_file_path);
 
-    DuplicateRemoval *duplicateRemoval = new DuplicateRemoval();
-    duplicateRemoval->Use_n_Pages(1);
-    duplicateRemoval->Run(*inPipe, *outPipe, mySchema);
-    inPipe->ShutDown();
-
-    int count = 0;
-    while (outPipe->Remove(record))
-        count++;
-
-    ASSERT_EQ(count, 25);
-}
-
-
-//join test
-TEST_F(RelOpTest, joinTest1) {
-
-    Pipe *inPipe1 = new Pipe(100);
-    Pipe *inPipe2 = new Pipe(100);
-    Pipe *outPipe = new Pipe(100);
-
-    Record *record = new Record();
-    while (dbFile->GetNext(*record)) {
-        inPipe1->Insert(record);
-        Record *record = new Record();
-    }
-
-    dbFile->MoveFirst();
-    while (dbFile->GetNext(*record)) {
-        inPipe2->Insert(record);
-        Record *record = new Record();
-    }
-
-
-    char *pred_str = "(n_nationkey = n_nationkey)";
-
-    Schema *nation1 = new Schema(catalog_path1, "nation");
-    Schema *nation2 = new Schema(catalog_path1, "nation");
-
-    CNF *cnf = new CNF();
-    Record *literal = new Record();
-
-    get_cnf (pred_str, nation1, nation2, *cnf, *literal);
-
-    clog << "created predicate" << endl;
-
-    Join *join = new Join();
-    join->Use_n_Pages(1);
-    join->Run(*inPipe1,*inPipe2, *outPipe, *cnf,*literal);
-    inPipe1->ShutDown();
-    inPipe2->ShutDown();
-
-    int count = 0;
-    while (outPipe->Remove(record))
-        count++;
-
-    int attrCount = ((int *) record->bits)[1] / sizeof(int) - 1;
-
-    ASSERT_EQ(count, 24);
-
-    ASSERT_EQ(attrCount, 8);
-}
-
-
-//sum test
-TEST_F(RelOpTest, sumTest1) {
-
-    Pipe *inPipe = new Pipe(100);
-    Pipe *outPipe = new Pipe(100);
-
-    Record *record = new Record();
-    while (dbFile->GetNext(*record)) {
-        inPipe->Insert(record);
-        Record *record = new Record();
-    }
-
-    char *pred_str = "(n_nationkey)";
-
-    Schema *nation = new Schema(catalog_path1, "nation");
-
-    CNF *cnf = new CNF();
-    Record *literal = new Record();
-    Function func;
-
-//    get_cnf (pred_str, &join_sch, func);
-    get_cnf (pred_str, nation,func);
-//    func.Print();
-
-    clog << "created predicate" << endl;
-
-    Sum *sum = new Sum();
-    sum->Use_n_Pages(1);
-    sum->Run(*inPipe,*outPipe,func);
-    inPipe->ShutDown();
-
-
-    int count = 0;
-    while (outPipe->Remove(record))
-        count++;
-
-    int attrCount = ((int *) record->bits)[1] / sizeof(int) - 1;
-
-    ASSERT_EQ(count,1);
-    ASSERT_EQ(attrCount,1);
-}
-
-
-//groupby test
-TEST_F(RelOpTest, groupByTest1) {
-
-    Pipe *inPipe = new Pipe(100);
-    Pipe *outPipe = new Pipe(100);
-
-    Record *record = new Record();
-    while (dbFile->GetNext(*record)) {
-        inPipe->Insert(record);
-        Record *record = new Record();
-    }
-
-    char *pred_str = "(n_regionkey)";
-
-    Schema *nation = new Schema(catalog_path1, "nation");
-
-    CNF *cnf = new CNF();
-    Record *literal = new Record();
-    Function func;
-
-    get_cnf (pred_str, nation,func);
-
-    clog << "created predicate" << endl;
-
-    OrderMaker orderMaker (nation);
-
-    orderMaker.numAtts=1;
-    orderMaker.whichAtts[0]=2;
-    orderMaker.whichTypes[0]=Int;
-    
-    
-    GroupBy *groupBy = new GroupBy();
-    groupBy->Use_n_Pages(1);
-
-    groupBy->Run(*inPipe,*outPipe,orderMaker,func);
-    inPipe->ShutDown();
-
-//    Attribute IA = {"int", Int};
-//    Attribute SA = {"string", String};
-//    Attribute att3[] = {IA, SA, IA,SA,IA};
-//    Attribute att3[] = {IA, IA};
-//    Schema out_sch ("out_sch", 2, att3);
-
-
-    int count = 0;
-    while (outPipe->Remove(record)){
-        count++;
-//        record->Print(&out_sch);
-    }
-
-    int attrCount = ((int *) record->bits)[1] / sizeof(int) - 1;
-
-    ASSERT_EQ(count,5);
-    ASSERT_EQ(attrCount,2);
+//    char *cnf = "(key = key2)";
+//
+//    yy_scan_string(cnf);
+//    yyparse();
+//    double result = s.Estimate(final, relName, 2);
 
 }

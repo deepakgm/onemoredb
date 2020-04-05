@@ -1,0 +1,194 @@
+[
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-O2",
+   "-Wno-deprecated",
+   "-g",
+   "-c",
+   "Record.cc"
+  ],
+  "file": "Record.cc"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-O2",
+   "-Wno-deprecated",
+   "-g",
+   "-c",
+   "Comparison.cc"
+  ],
+  "file": "Comparison.cc"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-O2",
+   "-Wno-deprecated",
+   "-g",
+   "-c",
+   "ComparisonEngine.cc"
+  ],
+  "file": "ComparisonEngine.cc"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-O2",
+   "-Wno-deprecated",
+   "-g",
+   "-c",
+   "Schema.cc"
+  ],
+  "file": "Schema.cc"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-O2",
+   "-Wno-deprecated",
+   "-g",
+   "-c",
+   "File.cc"
+  ],
+  "file": "File.cc"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-O2",
+   "-Wno-deprecated",
+   "-g",
+   "-c",
+   "DBFile.cc"
+  ],
+  "file": "DBFile.cc"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-O2",
+   "-Wno-deprecated",
+   "-g",
+   "-c",
+   "Pipe.cc"
+  ],
+  "file": "Pipe.cc"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-O2",
+   "-Wno-deprecated",
+   "-g",
+   "-c",
+   "BigQ.cc"
+  ],
+  "file": "BigQ.cc"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-O2",
+   "-Wno-deprecated",
+   "-g",
+   "-c",
+   "RelOp.cc"
+  ],
+  "file": "RelOp.cc"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-O2",
+   "-Wno-deprecated",
+   "-g",
+   "-c",
+   "Function.cc"
+  ],
+  "file": "Function.cc"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-c",
+   "y.tab.c"
+  ],
+  "file": "y.tab.c"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-c",
+   "yyfunc.tab.c"
+  ],
+  "file": "yyfunc.tab.c"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "gcc",
+   "-c",
+   "lex.yy.c"
+  ],
+  "file": "lex.yy.c"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "gcc",
+   "-c",
+   "lex.yyfunc.c"
+  ],
+  "file": "lex.yyfunc.c"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-O2",
+   "-Wno-deprecated",
+   "-g",
+   "-c",
+   "Meta.cc"
+  ],
+  "file": "Meta.cc"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-O2",
+   "-Wno-deprecated",
+   "-g",
+   "-c",
+   "Statistics.cc"
+  ],
+  "file": "Statistics.cc"
+ },
+ {
+  "directory": "/home/deepak/Desktop/dbi/onemoredb",
+  "arguments": [
+   "g++",
+   "-O2",
+   "-Wno-deprecated",
+   "-g",
+   "-c",
+   "test.cc"
+  ],
+  "file": "test.cc"
+ }
+]
