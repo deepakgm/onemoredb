@@ -1,8 +1,6 @@
 #include <limits.h>
 #include "gtest/gtest.h"
 #include <iostream>
-#include <stdlib.h>
-//#include "gmock/gmock.h"
 #include <cstring>
 #include "Statistics.h"
 #include "testkit.h"
@@ -11,7 +9,7 @@ using namespace std;
 
 char stat_file_path[PATH_MAX];
 char cur_dir1[PATH_MAX];
-char *relName[] = {"relation","relation2"};
+char *relName[] = {"relation1","relation2"};
 
 int main(int argc, char **argv) {
     // get the current dir
@@ -38,23 +36,23 @@ protected:
 
     virtual void TearDown() {
         clog << "clearing memory.." << endl;
-//        s.relMap.clear();
-//        s.attrMap.clear();
+        s.relationMap->clear();
+        s.attrMap->clear();
     }
 };
-/*
+
 
 //Add rel test
 TEST_F(StatisticTest, addRelTest1) {
 
-    ASSERT_EQ(s.relMap.size(),0);
-    ASSERT_EQ(s.attrMap.size(),0);
+    ASSERT_EQ(s.relationMap->size(),0);
+    ASSERT_EQ(s.attrMap->size(),0);
 
     s.AddRel(relName[0],800000);
     s.AddAtt(relName[0], "key", 10000);
 
-    ASSERT_EQ(s.relMap.size(),1);
-    ASSERT_EQ(s.attrMap.size(),1);
+    ASSERT_EQ(s.relationMap->size(),1);
+    ASSERT_EQ(s.attrMap->size(),1);
 }
 
 //Copy rel test
@@ -63,11 +61,11 @@ TEST_F(StatisticTest, copyRelTest1) {
     s.AddRel(relName[0],10000);
     s.AddAtt(relName[0], "key",10000);
 
-    ASSERT_EQ(s.relMap.size(),1);
+    ASSERT_EQ(s.relationMap->size(),1);
 
-    s.CopyRel("relation","relationCopy");
+    s.CopyRel("relation1","relation1Copy");
 
-    ASSERT_EQ(s.relMap.size(),2);
+    ASSERT_EQ(s.relationMap->size(),2);
 }
 
 
@@ -76,68 +74,67 @@ TEST_F(StatisticTest, readWriteTest1) {
     s.AddRel(relName[0],10000);
     s.AddAtt(relName[0], "key",10000);
 
-    ASSERT_EQ(s.relMap.size(),1);
+    ASSERT_EQ(s.relationMap->size(),1);
 
     s.Write(stat_file_path);
 
-    s.relMap.clear();
-    s.attrMap.clear();
+    s.relationMap->clear();
+    s.attrMap->clear();
 
     s.Read(stat_file_path);
-    ASSERT_EQ(s.relMap.size(),1);
+    ASSERT_EQ(s.relationMap->size(),1);
 }
 
-*/
-
-//Estimate Test
+//Estimate Test 1
 TEST_F(StatisticTest, estimateTest1) {
-    char *relName[] = {"supplier","customer","nation"};
-
-    //s.Read(fileName);
-
     s.AddRel(relName[0],10000);
-    s.AddAtt(relName[0], "s_nationkey",25);
+    s.AddAtt(relName[0], "key1",25);
 
-    s.AddRel(relName[1],150000);
-    s.AddAtt(relName[1], "c_custkey",150000);
-    s.AddAtt(relName[1], "c_nationkey",25);
 
-    s.AddRel(relName[2],25);
-    s.AddAtt(relName[2], "n_nationkey",25);
-
-    s.CopyRel("nation","n1");
-    s.CopyRel("nation","n2");
-    s.CopyRel("supplier","s");
-    s.CopyRel("customer","c");
-
-    char *set1[] ={"s","n1"};
-    char *cnf = "(s.s_nationkey = n1.n_nationkey)";
+    char *cnf = "(key1 > 1)";
     yy_scan_string(cnf);
     yyparse();
-//    s.Apply(final, set1, 2);
 
-//    char *set2[] ={"c","n2"};
-//    cnf = "(c.c_nationkey = n2.n_nationkey)";
-//    yy_scan_string(cnf);
-//    yyparse();
-//    s.Apply(final, set2, 2);
-//
-//    char *set3[] = {"c","s","n1","n2"};
-//    cnf = " (n1.n_nationkey = n2.n_nationkey )";
-//    yy_scan_string(cnf);
-//    yyparse();
-//
-//
-//    double result = s.Estimate(final, set3, 4);
+    double result = s.Estimate(final, relName, 2);
 
-//    if(fabs(result-60000000.0)>0.1)
-//        cout<<"error in estimating Q3\n";
+    ASSERT_LE(fabs(result-3333.34),0.01);
+}
 
-//    s.Apply(final, set3, 4);
 
-    double result = s.Estimate(final, set1, 2);
-    cout <<result<<endl;
 
-    s.Write(stat_file_path);
+//Estimate Test 2
+TEST_F(StatisticTest, estimateTest2) {
+    s.AddRel(relName[0],10000);
+    s.AddAtt(relName[0], "key1",25);
 
+    s.AddRel(relName[1],25);
+    s.AddAtt(relName[1], "key2",25);
+
+    
+    char *cnf = "(key1 = key2)";
+    yy_scan_string(cnf);
+    yyparse();
+
+    double result = s.Estimate(final, relName, 2);
+
+    //verify estimate method does not changes state of the object
+    ASSERT_EQ(s.relationMap->size() ,2);
+}
+
+//Apply Test
+TEST_F(StatisticTest, applyTest1) {
+    s.AddRel(relName[0],10000);
+    s.AddAtt(relName[0], "key1",25);
+
+    s.AddRel(relName[1],25);
+    s.AddAtt(relName[1], "key2",25);
+
+
+    char *cnf = "(key1 = key2)";
+    yy_scan_string(cnf);
+    yyparse();
+
+    s.Apply(final, relName, 2);
+
+    ASSERT_EQ(s.relationMap->size() ,1);
 }
