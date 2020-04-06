@@ -1,8 +1,6 @@
 1
-lineitem_part:21433
+lineitem:857316
 1
-lineitem_part l_partkey 200000
-lineitem_part l_shipinstruct 4
-lineitem_part l_shipmode 7
-lineitem_part p_container 40
-lineitem_part p_partkey 200000
+lineitem l_discount 11
+lineitem l_returnflag 3
+lineitem l_shipmode 7

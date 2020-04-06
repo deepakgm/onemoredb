@@ -70,10 +70,10 @@ void Statistics::CopyRel(char *oldName1, char *newName1) {
 void Statistics::Read(char *fromWhere) {
     relationMap->clear();
     attrMap->clear();
-    
+
     ifstream file_exists(fromWhere);
     if (!file_exists) {
-        cerr << "The give file_path '"<<fromWhere<<"' doest not exist";
+        cerr << "The give file_path '" << fromWhere << "' doest not exist";
         return;
     }
 
@@ -84,7 +84,7 @@ void Statistics::Read(char *fromWhere) {
     string str;
     statFile >> str;
     int relationCount = atoi(str.c_str());
-    
+
 
     for (int i = 0; i < relationCount; i++) {
         statFile >> str;
@@ -121,7 +121,7 @@ void Statistics::Write(char *fromWhere) {
     for (auto entry = relationMap->begin(); entry != relationMap->end(); entry++)
         statFile << entry->first.c_str() << ":" << entry->second << "\n";
 
-    statFile <<  attrMap->size() << "\n";
+    statFile << attrMap->size() << "\n";
 
     for (auto relItr = attrMap->begin(); relItr != attrMap->end(); ++relItr)
         for (auto attrItr = relItr->second.begin(); attrItr != relItr->second.end(); ++attrItr)
@@ -168,7 +168,8 @@ void Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoi
                             if (opMapItr->first == countMapItr->first)
                                 (*attrMap)[joinLeftRel + "_" + joinRightRel][countMapItr->first] = 1;
                             else
-                                (*attrMap)[joinLeftRel + "_" + joinRightRel][countMapItr->first] = min((int) round(result), countMapItr->second);
+                                (*attrMap)[joinLeftRel + "_" + joinRightRel][countMapItr->first] = min(
+                                        (int) round(result), countMapItr->second);
                         }
                     }
                     break;
@@ -212,13 +213,17 @@ void Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoi
         attrMap->erase(joinLeftRel);
         attrMap->erase(joinRightRel);
 
-    }else{
-        if(relationMap->size()==1){
-            for (auto entry = relationMap->begin(); entry != relationMap->end(); entry++){
-                entry->second=round(result);
-                break;
-            }
+    } else {
+        // find the rel for which the attr belongs to
+        string relName;
+        for (auto entry = opratorMap.begin(); entry != opratorMap.end(); entry++) {
+            for (auto mapEntry = attrMap->begin(); mapEntry != attrMap->end(); ++mapEntry)
+                if ((*attrMap)[mapEntry->first].count(entry->first) > 0) {
+                    relName = mapEntry->first;
+                    break;
+                }
         }
+        (*relationMap)[relName]=round(result);
     }
 }
 
@@ -324,5 +329,3 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 
     return result;
 }
-
-
