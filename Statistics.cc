@@ -13,8 +13,7 @@
 //#define _DEBUG
 
 
-Statistics::Statistics()
-{
+Statistics::Statistics(){
 
     isCalledFrmApply = false;
     isApply = false;
@@ -24,8 +23,7 @@ Statistics::Statistics()
 }
 
 
-Statistics::Statistics(Statistics &copyMe)
-{
+Statistics::Statistics(Statistics &copyMe){
 
     relationData = new map<string,int>(*(copyMe.relationData));
     attrData = new map<string,map <string, int> >(*(copyMe.attrData));
@@ -239,6 +237,7 @@ void  Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJo
 double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numToJoin)
 {
 
+
     double resultEstimate = 0.0;
     // TODO error checking
     struct AndList *currentAnd;
@@ -298,10 +297,8 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
                 leftAttr = currentCompOp->left->value;
 
 #ifdef _DEP
-                if(strcmp(leftAttr.c_str(),prev.c_str())==0)
-                {
-
-                    //cout<<"equal"<<endl;
+                if(strcmp(leftAttr.c_str(),prev.c_str())==0){
+                    cout<<"equal"<< leftAttr<<endl;
                     isdep=true;
                 }
 
@@ -315,9 +312,7 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
                         leftRelation = mapEntry->first;
                         break;
                     }
-
                 }
-
             }
 
             // find relation of right attribute
@@ -354,17 +349,10 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 
 #ifdef _DEP
                 if(isdep){
-
-
-
-
                     if(!done){
-
-                        //cout<<"done"<<endl;
+                        cout<<"done"<<endl;
                         resultORFactor =1.0 -resultORFactor;
                         done = true;
-
-
                     }
 
                     if (currentCompOp->code == GREATER_THAN || currentCompOp->code == LESS_THAN) {
@@ -377,24 +365,12 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
                         relOpMap[currentCompOp->left->value] = currentCompOp->code;
                     }
 
-
 #ifdef _DEBUG
                     cout<<"or "<<std::setprecision (15) <<resultORFactor<<endl;
 				    cout<<"ikr "<< (*attrData)[leftRelation][currentCompOp->left->value]<<endl;
 
 #endif
-
-
-
-
-
-                }
-
-
-
-
-
-                else{
+                }else{
 
                     if (currentCompOp->code == GREATER_THAN || currentCompOp->code == LESS_THAN) {
                         resultORFactor *= (2.0 / 3.0);
@@ -409,17 +385,10 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
 #ifdef _DEBUG
                     cout<<"or"<<resultORFactor<<endl;
 					cout<<"ikr "<< (*attrData)[leftRelation][currentCompOp->left->value]<<endl;
-
-
 #endif
-
-
-
                 }
 
 #else
-
-
                 if (currentCompOp->code == GREATER_THAN || currentCompOp->code == LESS_THAN) {
                                     resultORFactor *= (2.0 / 3.0);
                                     relOpMap[currentCompOp->left->value] = currentCompOp->code;
@@ -431,18 +400,9 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
                             }
 
 #endif
-
-
-
-
-
-
             }
             currentOr = currentOr->rightOr;
         }
-
-
-
 
 #ifdef _DEP
         if(!isdep)
@@ -464,8 +424,12 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
         currentAnd = currentAnd->rightAnd;
     }
 
+    double rightTupleCount;
+    if ( rightRelation.empty())
+       rightTupleCount=0;
+    else
+      rightTupleCount = (*relationData)[rightRelation];
 
-    double rightTupleCount = (*relationData)[rightRelation];
 
     if (isJoinPerformed == true) {
         double leftTupleCount = (*relationData)[joinLeftRelation];
@@ -475,10 +439,9 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
         resultEstimate = leftTupleCount * resultANDFactor;
     }
 
+
     if (isApply) {
-
-//    		cout<<"is apply is" <<isApply;
-
+        //    		cout<<"is apply is" <<isJoinPerformed;
         map<string, int>::iterator relOpMapITR, distinctCountMapITR;
         set<string> addedJoinAttrSet;
         if (isJoinPerformed) {
@@ -532,6 +495,8 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
                 }
             }
             (*relationData)[joinLeftRelation + "_" + joinRightRelation] =round(resultEstimate);
+
+
             relationData->erase(joinLeftRelation);
             relationData->erase(joinRightRelation);
 
@@ -541,5 +506,5 @@ double Statistics::Estimate(struct AndList *parseTree, char **relNames, int numT
         }
     }
 
-    return (double)((double)resultEstimate);
+    return resultEstimate;
 }

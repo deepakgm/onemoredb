@@ -22,15 +22,16 @@ using namespace std;
 class Statistics
 {
 
-    map<string,int> *relationData;
-    map<string,map <string, int> > *attrData;
-    bool isCalledFrmApply;
-    bool isApply;
 
 public:
     Statistics();
     Statistics(Statistics &copyMe);	 // Performs deep copy
     ~Statistics();
+
+    map<string,int> *relationData;
+    map<string,map <string, int> > *attrData;
+    bool isCalledFrmApply;
+    bool isApply;
 
 
     void AddRel(char *relName, int numTuples);
