@@ -28,8 +28,8 @@ Statistics.o: Statistics.cc
 Meta.o: Meta.cc
 	$(CC) -g -c Meta.cc
 
-main.o: main.cc
-	$(CC) -g -c main.cc
+#main.o: main.cc
+#	$(CC) -g -c main.cc
 
 test.o: test.cc
 	$(CC) -g -c test.cc

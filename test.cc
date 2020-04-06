@@ -1,4 +1,3 @@
-//#include "y.tab.h"
 #include <iostream>
 #include <stdlib.h>
 #include "Statistics.h"
@@ -140,9 +139,9 @@ void q1 (){
     yy_scan_string(cnf);
     yyparse();
 
-    double result = s.Estimate(final, relName, 1);
-    cout<<"Your estimation Result  " <<result;
-    cout<<"\n Correct Answer: 8.5732e+5";
+//    double result = s.Estimate(final, relName, 1);
+//    cout<<"Your estimation Result  " <<result;
+//    cout<<"\n Correct Answer: 8.5732e+5";
 
     s.Apply(final, relName, 1);
 
@@ -298,7 +297,6 @@ void q4 (){
 
     double result = s.Estimate(final, relName2, 5);
 
-    cout << result <<endl;
     if(fabs(result-3200)>0.1)
         cout<<"error in estimating Q4\n";
 
@@ -420,11 +418,10 @@ void q7(){
 
 // Note  OR conditions are not independent.
 void q8 (){
-
     Statistics s;
     char *relName[] = { "part",  "partsupp"};
 
-    //s.Read(fileName);
+    s.Read(fileName);
 
     s.AddRel(relName[0],200000);
     s.AddAtt(relName[0], "p_partkey",200000);
@@ -434,8 +431,7 @@ void q8 (){
     s.AddAtt(relName[1], "ps_partkey",200000);
 
 
-//    char *cnf = "(p_partkey=ps_partkey) AND (p_size =3 OR p_size=6 OR p_size =19)";
-    char *cnf = "(ps_partkey=p_partkey)";
+    char *cnf = "(p_partkey=ps_partkey) AND (p_size =3 OR p_size=6 OR p_size =19)";
 
     yy_scan_string(cnf);
     yyparse();
@@ -443,14 +439,12 @@ void q8 (){
 
     double result = s.Estimate(final, relName,2);
 
-//    cout << result <<endl;
-//    if(fabs(result-48000)>0.1)
-//        cout<<"error in estimating Q8\n";
+    if(fabs(result-48000)>0.1)
+        cout<<"error in estimating Q8\n";
 
-//    s.Apply(final, relName,2);
+    s.Apply(final, relName,2);
 
     s.Write(fileName);
-
 }
 void q9(){
 
@@ -564,8 +558,6 @@ void q11 (){
     s.Apply(final, relName,2);
 
     s.Write(fileName);
-
-
 }
 
 int main(int argc, char *argv[]) {
@@ -587,5 +579,4 @@ int main(int argc, char *argv[]) {
     else {
         cout << " ERROR!!!!\n";
     }
-
 }

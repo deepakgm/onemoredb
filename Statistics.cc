@@ -151,7 +151,6 @@ void Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoi
     set<string> joinAttrSet;
     if (joinFlag2) {
         for (opMapItr = opratorMap.begin(); opMapItr != opratorMap.end(); opMapItr++) {
-
             for (int i = 0; i < relationMap->size(); i++) {
                 if (relNames[i] == NULL)
                     continue;
@@ -159,7 +158,6 @@ void Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoi
                 if (count == 0)
                     continue;
                 else if (count == 1) {
-
                     for (countMapItr = (*attrMap)[relNames[i]].begin();
                          countMapItr != (*attrMap)[relNames[i]].end(); countMapItr++) {
                         if ((opMapItr->second == LESS_THAN) || (opMapItr->second == GREATER_THAN)) {
@@ -170,13 +168,11 @@ void Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoi
                             if (opMapItr->first == countMapItr->first)
                                 (*attrMap)[joinLeftRel + "_" + joinRightRel][countMapItr->first] = 1;
                             else
-                                (*attrMap)[joinLeftRel + "_" + joinRightRel][countMapItr->first] = min(
-                                        (int) round(result), countMapItr->second);
+                                (*attrMap)[joinLeftRel + "_" + joinRightRel][countMapItr->first] = min((int) round(result), countMapItr->second);
                         }
                     }
                     break;
                 } else if (count > 1) {
-
                     for (countMapItr = (*attrMap)[relNames[i]].begin();
                          countMapItr != (*attrMap)[relNames[i]].end(); countMapItr++) {
                         if (opMapItr->second == EQUALS) {
@@ -216,6 +212,13 @@ void Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoi
         attrMap->erase(joinLeftRel);
         attrMap->erase(joinRightRel);
 
+    }else{
+        if(relationMap->size()==1){
+            for (auto entry = relationMap->begin(); entry != relationMap->end(); entry++){
+                entry->second=round(result);
+                break;
+            }
+        }
     }
 }
 
