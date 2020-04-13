@@ -1,6 +1,0 @@
-1
-lineitem:857316
-1
-lineitem l_discount 11
-lineitem l_returnflag 3
-lineitem l_shipmode 7
