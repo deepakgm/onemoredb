@@ -161,6 +161,37 @@ Schema :: ~Schema () {
 }
 
 
+void Schema :: Print () {
+
+    string typeName;
+
+    for (int i = 0; i < numAtts; i++) {
+
+        switch (myAtts[i].myType) {
+
+            case Int :
+                typeName = string ("Int");
+                break;
+
+            case Double :
+                typeName = string ("Double");
+                break;
+
+            case String :
+                typeName = string ("String");
+                break;
+
+            default :// should never come here!!!!!
+                cout << "Wrong Type! " << myAtts[i].myType << endl;
+
+        }
+
+        cout << myAtts[i].name << " : " <<  typeName << endl;
+
+    }
+
+}
+
 Schema* Schema :: Project (NameList* attsLeft, int* &keepMe) {
     int numAttsOutput = 0;
     NameList *cur = attsLeft;

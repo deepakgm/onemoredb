@@ -67,6 +67,8 @@ public:
 
     Schema* Project(NameList* attsLeft, int* &keepMe);
 
+    void Print();
+
 };
 
 #endif
