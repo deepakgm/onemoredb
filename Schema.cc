@@ -160,3 +160,28 @@ Schema :: ~Schema () {
 	myAtts = 0;
 }
 
+
+Schema* Schema :: Project (NameList* attsLeft, int* &keepMe) {
+    int numAttsOutput = 0;
+    NameList *cur = attsLeft;
+    while (cur) {
+        ++numAttsOutput;
+        cur = cur->next;
+    }
+    Attribute *resAtts = new Attribute[numAttsOutput];
+    keepMe = new int[numAttsOutput];
+
+    NameList* tmpList = attsLeft;
+
+    int i = 0;
+    while(tmpList)
+    {
+        resAtts[i].name = tmpList->name;
+        resAtts[i].myType = FindType(tmpList->name);
+        keepMe[i] = Find(tmpList->name);
+        tmpList = tmpList->next;
+        ++i;
+    }
+
+    return new Schema("projectedSchema", numAttsOutput, resAtts);
+}

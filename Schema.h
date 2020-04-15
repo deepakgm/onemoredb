@@ -8,6 +8,10 @@
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
+#include <vector>
+#include <string>
+
+using namespace std;
 
 struct att_pair {
 	char *name;
@@ -32,8 +36,10 @@ class Schema {
 	friend class Record;
 
 public:
+    Schema ();
 
-	// gets the set of attributes, but be careful with this, since it leads
+
+    // gets the set of attributes, but be careful with this, since it leads
 	// to aliasing!!!
 	Attribute *GetAtts ();
 
@@ -58,6 +64,8 @@ public:
 	int GetSortOrder (OrderMaker &order);
 
 	~Schema ();
+
+    Schema* Project(NameList* attsLeft, int* &keepMe);
 
 };
 

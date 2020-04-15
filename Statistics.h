@@ -22,6 +22,8 @@ public:
     bool joinFlag2 = false;
     string joinLeftRel, joinRightRel;
 
+    void initStatistics();
+
     void AddRel(char *relName, int numTuples);
 
     void AddAtt(char *relName, char *attName, int numDistincts);

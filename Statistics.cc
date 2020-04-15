@@ -25,6 +25,102 @@ Statistics::~Statistics() {
     delete attrMap;
 }
 
+
+
+void Statistics::initStatistics() {
+
+    relationMap->clear();
+    attrMap->clear();
+
+    const char *supplier = "supplier";
+    const char *partsupp = "partsupp";
+    const char *part = "part";
+    const char *nation = "nation";
+    const char *customer = "customer";
+    const char *orders = "orders";
+    const char *region = "region";
+    const char *lineitem = "lineitem";
+
+    AddRel((char *)(char *)region,5);
+    AddRel((char *)nation,25);
+    AddRel((char *)part,200000);
+    AddRel((char *)supplier,10000);
+    AddRel((char *)partsupp,800000);
+    AddRel((char *)customer,150000);
+    AddRel((char *)orders,1500000);
+    AddRel((char *)lineitem,6001215);
+
+    // region
+    AddAtt((char *)region, "r_regionkey",5); // r_regionkey=5
+    AddAtt((char *)region, "r_name",5); // r_name=5
+    AddAtt((char *)region, "r_comment",5); // r_comment=5
+    // nation
+    AddAtt((char *)nation, "n_nationkey",25); // n_nationkey=25
+    AddAtt((char *)nation, "n_name",25);  // n_name=25
+    AddAtt((char *)nation, "n_regionkey",5);  // n_regionkey=5
+    AddAtt((char *)nation, "n_comment",25);  // n_comment=25
+    // part
+    AddAtt((char *)part, "p_partkey",200000); // p_partkey=200000
+    AddAtt((char *)part, "p_name",200000); // p_name=199996
+    AddAtt((char *)part, "p_mfgr",200000); // p_mfgr=5
+    AddAtt((char *)part, "p_brand",200000); // p_brand=25
+    AddAtt((char *)part, "p_type",200000); // p_type=150
+    AddAtt((char *)part, "p_size",200000); // p_size=50
+    AddAtt((char *)part, "p_container",200000); // p_container=40
+    AddAtt((char *)part, "p_retailprice",200000); // p_retailprice=20899
+    AddAtt((char *)part, "p_comment",200000); // p_comment=127459
+    // supplier
+    AddAtt((char *)supplier,"s_suppkey",10000);
+    AddAtt((char *)supplier,"s_name",10000);
+    AddAtt((char *)supplier,"s_address",10000);
+    AddAtt((char *)supplier,"s_nationkey",25);
+    AddAtt((char *)supplier,"s_phone",10000);
+    AddAtt((char *)supplier,"s_acctbal",9955);
+    AddAtt((char *)supplier,"s_comment",10000);
+    // partsupp
+    AddAtt((char *)partsupp,"ps_partkey",200000);
+    AddAtt((char *)partsupp,"ps_suppkey",10000);
+    AddAtt((char *)partsupp,"ps_availqty",9999);
+    AddAtt((char *)partsupp,"ps_supplycost",99865);
+    AddAtt((char *)partsupp,"ps_comment",799123);
+    // customer
+    AddAtt((char *)customer,"c_custkey",150000);
+    AddAtt((char *)customer,"c_name",150000);
+    AddAtt((char *)customer,"c_address",150000);
+    AddAtt((char *)customer,"c_nationkey",25);
+    AddAtt((char *)customer,"c_phone",150000);
+    AddAtt((char *)customer,"c_acctbal",140187);
+    AddAtt((char *)customer,"c_mktsegment",5);
+    AddAtt((char *)customer,"c_comment",149965);
+    // orders
+    AddAtt((char *)orders,"o_orderkey",1500000);
+    AddAtt((char *)orders,"o_custkey",99996);
+    AddAtt((char *)orders,"o_orderstatus",3);
+    AddAtt((char *)orders,"o_totalprice",1464556);
+    AddAtt((char *)orders,"o_orderdate",2406);
+    AddAtt((char *)orders,"o_orderpriority",5);
+    AddAtt((char *)orders,"o_clerk",1000);
+    AddAtt((char *)orders,"o_shippriority",1);
+    AddAtt((char *)orders,"o_comment",1478684);
+    // lineitem
+    AddAtt((char *)lineitem,"l_orderkey",1500000);
+    AddAtt((char *)lineitem,"l_partkey",200000);
+    AddAtt((char *)lineitem,"l_suppkey",10000);
+    AddAtt((char *)lineitem,"l_linenumber",7);
+    AddAtt((char *)lineitem,"l_quantity",50);
+    AddAtt((char *)lineitem,"l_extendedprice",933900);
+    AddAtt((char *)lineitem,"l_discount",11);
+    AddAtt((char *)lineitem,"l_tax",9);
+    AddAtt((char *)lineitem,"l_returnflag",3);
+    AddAtt((char *)lineitem,"l_linestatus",2);
+    AddAtt((char *)lineitem,"l_shipdate",2526);
+    AddAtt((char *)lineitem,"l_commitdate",2466);
+    AddAtt((char *)lineitem,"l_receiptdate",2554);
+    AddAtt((char *)lineitem,"l_shipinstruct",4);
+    AddAtt((char *)lineitem,"l_shipmode",7);
+    AddAtt((char *)lineitem,"l_comment",4501941);
+}
+
 void Statistics::AddRel(char *relName, int numTuples) {
     string relation(relName);
 

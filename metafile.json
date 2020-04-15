@@ -1,4 +1,4 @@
 {
-  "path" : "/home/deepak/Desktop/dbi/tpch-dbgen/10MB/bin/partsupp.bin",
+  "path" : "db/nation.bin",
   "type" : "heap"
 }

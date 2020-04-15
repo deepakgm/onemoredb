@@ -65,4 +65,6 @@ add_executable(onemoredb
         testkit.h
         TwoWayList.cc
         TwoWayList.h
+        a42.cc
+        OpTreeNode.cc
         )
