@@ -235,14 +235,7 @@ int main() {
     /*
      * Generate opTree
      */
-    AndList* emptyAndList;
-    cout <<"******************debug:  "<<1<<chosenJoinOrder[0]<<chosenJoinOrder[1]<<endl;
-    CNF cnf;
-    Record literal;
-//    cnf.GrowFromParseTree(boolean, aliasSchemas[chosenJoinOrder[1]], literal);
-
-    OpTreeNode *left = new SelectFileNode(emptyAndList, aliasSchemas[chosenJoinOrder[0]], aliasName[chosenJoinOrder[0]]);
-    cout <<"******************debug:  "<<2<<endl;
+    OpTreeNode *left = new SelectFileNode(boolean, aliasSchemas[chosenJoinOrder[0]], aliasName[chosenJoinOrder[0]]);
 
     OpTreeNode *root = left;
     for (int i = 1; i < numofRels; ++i) {

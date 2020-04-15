@@ -1,16 +1,15 @@
-11
+10
 customer:150000
 lineitem:6001215
+n:25
 nation:25
 orders:1500000
-p:200000
 part:200000
 partsupp:800000
-ps:800000
+r:5
 region:5
-s:10000
 supplier:10000
-11
+10
 customer c_acctbal 140187
 customer c_address 150000
 customer c_comment 149965
@@ -35,6 +34,10 @@ lineitem l_shipinstruct 4
 lineitem l_shipmode 7
 lineitem l_suppkey 10000
 lineitem l_tax 9
+n n.n_comment 25
+n n.n_name 25
+n n.n_nationkey 25
+n n.n_regionkey 5
 nation n_comment 25
 nation n_name 25
 nation n_nationkey 25
@@ -48,15 +51,6 @@ orders o_orderpriority 5
 orders o_orderstatus 3
 orders o_shippriority 1
 orders o_totalprice 1464556
-p p.p_brand 200000
-p p.p_comment 200000
-p p.p_container 200000
-p p.p_mfgr 200000
-p p.p_name 200000
-p p.p_partkey 200000
-p p.p_retailprice 200000
-p p.p_size 200000
-p p.p_type 200000
 part p_brand 200000
 part p_comment 200000
 part p_container 200000
@@ -71,21 +65,12 @@ partsupp ps_comment 799123
 partsupp ps_partkey 200000
 partsupp ps_suppkey 10000
 partsupp ps_supplycost 99865
-ps ps.ps_availqty 9999
-ps ps.ps_comment 799123
-ps ps.ps_partkey 200000
-ps ps.ps_suppkey 10000
-ps ps.ps_supplycost 99865
+r r.r_comment 5
+r r.r_name 5
+r r.r_regionkey 5
 region r_comment 5
 region r_name 5
 region r_regionkey 5
-s s.s_acctbal 9955
-s s.s_address 10000
-s s.s_comment 10000
-s s.s_name 10000
-s s.s_nationkey 25
-s s.s_phone 10000
-s s.s_suppkey 10000
 supplier s_acctbal 9955
 supplier s_address 10000
 supplier s_comment 10000

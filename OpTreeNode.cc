@@ -34,7 +34,7 @@ SelectPipeNode :: SelectPipeNode(OpTreeNode *child, AndList *selectList) {
     this->myType = SELECTPIPE;
     this->left = child;
     this->outputSchema = child->getSchema();
-    cnf.GrowFromParseTree(selectList, outputSchema, literal);
+//    cnf.GrowFromParseTree(selectList, outputSchema, literal);
 };
 
 void SelectPipeNode :: run() {
@@ -80,7 +80,7 @@ JoinNode :: JoinNode(OpTreeNode *leftChild, OpTreeNode *rightChild, AndList *joi
     this->right = rightChild;
     joinSchema();
 
-    this->cnf.GrowFromParseTree(joinList, left->getSchema(), right->getSchema(), literal);
+//    this->cnf.GrowFromParseTree(joinList, left->getSchema(), right->getSchema(), literal);
 };
 
 void JoinNode :: run() {
@@ -133,7 +133,7 @@ SumNode :: SumNode(OpTreeNode *child, FuncOperator *func) {
     this->myType = SUM;
     this->left = child;
     this->func = func;
-    this->computeMe.GrowFromParseTree(func, *child->getSchema());
+//    this->computeMe.GrowFromParseTree(func, *child->getSchema());
     sumSchema();
 };
 
@@ -195,7 +195,7 @@ GroupByNode :: GroupByNode(OpTreeNode *child, NameList *groupingAtts, FuncOperat
     this->myType = GROUPBY;
     this->left = child;
     this->func = func;
-    this->computeMe.GrowFromParseTree(func, *child->getSchema());
+//    this->computeMe.GrowFromParseTree(func, *child->getSchema());
     getOrder(groupingAtts);
     groupBySchema();
 };

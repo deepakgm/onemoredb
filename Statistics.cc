@@ -247,7 +247,7 @@ void Statistics::Apply(struct AndList *parseTree, char *relNames[], int numToJoi
     set<string> joinAttrSet;
     if (joinFlag2) {
         for (opMapItr = opratorMap.begin(); opMapItr != opratorMap.end(); opMapItr++) {
-            for (int i = 0; i < relationMap->size(); i++) {
+            for (int i = 0; (i < relationMap->size()) && (i<numToJoin); i++) {
                 if (relNames[i] == NULL)
                     continue;
                 int count = ((*attrMap)[relNames[i]]).count(opMapItr->first);
