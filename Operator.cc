@@ -33,24 +33,24 @@ string funcToString(FuncOperator *funcOperator) {
     return result;
 }
 
-SelectFileOperator :: SelectFileOperator(AndList *selectList, Schema *schema, string relName) {
+SelectFileOperator::SelectFileOperator(AndList *selectList, Schema *schema, string relName) {
     this->opType = SELECT_FILE;
     this->outputSchema = schema;
 
     schema->Print();
-    cnf.GrowFromParseTree(selectList,schema,literal);
+    cnf.GrowFromParseTree(selectList, schema, literal);
 }
 
-void SelectFileOperator :: print() {
-    cout << endl << "Operation: Select File"<< endl;
-    cout<<"Output pipe: " << this->getPipeID()<<endl;
+void SelectFileOperator::print() {
+    cout << endl << "Operation: Select File" << endl;
+    cout << "Output pipe: " << this->getPipeID() << endl;
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
     cout << endl << "SELECTION CNF:" << endl;
     this->cnf.Print();
 }
 
-SelectPipeOperator :: SelectPipeOperator(Operator *child, AndList *selectList) {
+SelectPipeOperator::SelectPipeOperator(Operator *child, AndList *selectList) {
     this->opType = SELECT_PIPE;
     this->left = child;
     this->outputSchema = child->getSchema();
@@ -58,17 +58,17 @@ SelectPipeOperator :: SelectPipeOperator(Operator *child, AndList *selectList) {
 };
 
 
-void SelectPipeOperator :: print() {
+void SelectPipeOperator::print() {
     cout << endl << "Operation: Select Pipe" << endl;
-    cout << "Input Pipe " << this->left->getPipeID() <<endl;
-    cout<< "Output Pipe " << this->getPipeID()<<endl;
+    cout << "Input Pipe " << this->left->getPipeID() << endl;
+    cout << "Output Pipe " << this->getPipeID() << endl;
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
     cout << endl << "SELECTION CNF:" << endl;
     this->cnf.Print();
 };
 
-ProjectOperator :: ProjectOperator(Operator *child, NameList* attrsLeft) {
+ProjectOperator::ProjectOperator(Operator *child, NameList *attrsLeft) {
     this->opType = PROJECT;
     this->left = child;
     this->attsLeft = attrsLeft;
@@ -76,23 +76,22 @@ ProjectOperator :: ProjectOperator(Operator *child, NameList* attrsLeft) {
 };
 
 
-void ProjectOperator :: print() {
-    cout << endl << "Operation: Project"  << endl;
-    cout <<"Input Pipe " << this->left->getPipeID() <<endl;
-    cout<<"Output Pipe " << this->getPipeID() << endl;
+void ProjectOperator::print() {
+    cout << endl << "Operation: Project" << endl;
+    cout << "Input Pipe " << this->left->getPipeID() << endl;
+    cout << "Output Pipe " << this->getPipeID() << endl;
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
     cout << endl << "Attributes to Keep:" << endl;
-    NameList* tmpList = attsLeft;
-    while (tmpList)
-    {
+    NameList *tmpList = attsLeft;
+    while (tmpList) {
         cout << tmpList->name << " ";
         tmpList = tmpList->next;
     }
     cout << endl;
 };
 
-JoinOperator :: JoinOperator(Operator *leftChild, Operator *rightChild, AndList *joinList) {
+JoinOperator::JoinOperator(Operator *leftChild, Operator *rightChild, AndList *joinList) {
     this->opType = JOIN;
     this->left = leftChild;
     this->right = rightChild;
@@ -114,34 +113,35 @@ JoinOperator :: JoinOperator(Operator *leftChild, Operator *rightChild, AndList 
     outputSchema = new Schema("join", resNumAttrs, resAtts);
 
 
-    cnf.GrowFromParseTree(joinList,leftChild->getSchema(),rightChild->getSchema(),literal);
+    cnf.GrowFromParseTree(joinList, leftChild->getSchema(), rightChild->getSchema(), literal);
 };
 
-void JoinOperator :: print() {
-    cout << endl << "Operation: Join"<<endl;
-    cout << "Input Pipe " << this->left->getPipeID() <<endl;
-    cout<< "Input Pipe " << this->right->getPipeID() <<endl;
-    cout<< "Output Pipe " << this->getPipeID() << endl;
+void JoinOperator::print() {
+    cout << endl << "Operation: Join" << endl;
+    cout << "Input Pipe " << this->left->getPipeID() << endl;
+    cout << "Input Pipe " << this->right->getPipeID() << endl;
+    cout << "Output Pipe " << this->getPipeID() << endl;
     cout << endl << "Outpt Schema:" << endl;
     this->outputSchema->Print();
     cout << endl << "Join CNF:" << endl;
     this->cnf.Print();
 };
 
-DuplicateRemovalOperator :: DuplicateRemovalOperator(Operator *child) {
+DuplicateRemovalOperator::DuplicateRemovalOperator(Operator *child) {
     this->opType = DUPLICATE_REMOVAL;
     this->left = child;
     this->outputSchema = child->getSchema();
 };
 
-void DuplicateRemovalOperator :: print() {
-    cout << endl << "Operation: DuplicateRemoval"<<endl;
-    cout<<"Input Pipe " << this->left->getPipeID() << " Output Pipe " << this->getPipeID() << endl;
+void DuplicateRemovalOperator::print() {
+    cout << endl << "Operation: DuplicateRemoval" << endl;
+    cout << "Input Pipe " << this->left->getPipeID() << endl;
+    cout << "Output Pipe " << this->getPipeID() << endl;
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
 };
 
-SumOperator :: SumOperator(Operator *child, FuncOperator *func) {
+SumOperator::SumOperator(Operator *child, FuncOperator *func) {
     this->opType = SUM;
     this->left = child;
     this->funcOperator = func;
@@ -152,25 +152,24 @@ SumOperator :: SumOperator(Operator *child, FuncOperator *func) {
     atts[0].name = "SUM";
     if (function.returnsInt == 0) {
         atts[0].myType = Double;
-    }
-    else {
+    } else {
         atts[0].myType = Int;
     }
     outputSchema = new Schema("SUM", 1, atts);
 
 };
 
-void SumOperator :: print() {
-    cout << endl << "Operation: Sum" <<endl;
-    cout <<"Input Pipe " << this->left->getPipeID() <<endl;
-    cout<<"Output Pipe " << this->getPipeID() << endl;
+void SumOperator::print() {
+    cout << endl << "Operation: Sum" << endl;
+    cout << "Input Pipe " << this->left->getPipeID() << endl;
+    cout << "Output Pipe " << this->getPipeID() << endl;
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
     cout << endl << "Function:" << endl;
     cout << funcToString(this->funcOperator) << endl;
 }
 
-GroupByOperator :: GroupByOperator(Operator *child, NameList *groupingAtts, FuncOperator *func) {
+GroupByOperator::GroupByOperator(Operator *child, NameList *groupingAtts, FuncOperator *func) {
     this->opType = GROUPBY;
     this->left = child;
     this->funcOperator = func;
@@ -179,17 +178,16 @@ GroupByOperator :: GroupByOperator(Operator *child, NameList *groupingAtts, Func
     createOutputSchema();
 }
 
-void GroupByOperator :: createOutputSchema() {
-    Attribute* atts = new Attribute[groupOrder.numAtts + 1];
+void GroupByOperator::createOutputSchema() {
+    Attribute *atts = new Attribute[groupOrder.numAtts + 1];
     atts[0].name = "SUM";
     stringstream output;
     if (function.returnsInt == 0) {
         atts[0].myType = Double;
-    }
-    else {
+    } else {
         atts[0].myType = Int;
     }
-    Attribute* childAtts = left->getSchema()->GetAtts();
+    Attribute *childAtts = left->getSchema()->GetAtts();
     for (int i = 0; i < groupOrder.numAtts; ++i) {
         atts[i + 1].name = childAtts[groupOrder.whichAtts[i]].name;
         atts[i + 1].myType = childAtts[groupOrder.whichAtts[i]].myType;
@@ -197,8 +195,8 @@ void GroupByOperator :: createOutputSchema() {
     outputSchema = new Schema("group", groupOrder.numAtts + 1, atts);
 }
 
-void GroupByOperator :: getOrder(NameList* groupingAtts) {
-    Schema* inputSchema = left->getSchema();
+void GroupByOperator::getOrder(NameList *groupingAtts) {
+    Schema *inputSchema = left->getSchema();
     while (groupingAtts) {
         groupOrder.whichAtts[groupOrder.numAtts] = inputSchema->Find(groupingAtts->name);
         groupOrder.whichTypes[groupOrder.numAtts] = inputSchema->FindType(groupingAtts->name);
@@ -208,10 +206,10 @@ void GroupByOperator :: getOrder(NameList* groupingAtts) {
 }
 
 
-void GroupByOperator :: print() {
-    cout << endl << "Operation: GroupBy"<<endl;
-    cout <<"Input Pipe " << this->left->getPipeID() <<endl;
-    cout <<"Output Pipe " << this->getPipeID() << endl;
+void GroupByOperator::print() {
+    cout << endl << "Operation: GroupBy" << endl;
+    cout << "Input Pipe " << this->left->getPipeID() << endl;
+    cout << "Output Pipe " << this->getPipeID() << endl;
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
     cout << endl << "OrderMaker:" << endl;

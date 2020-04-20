@@ -37,14 +37,12 @@ Statistics s;
 map<string, Schema *> schemas;
 
 
-void  helper(vector<string> &tableList, int index, vector<vector<string>> &orderList, vector<string> &tempOrder) {
-    if(index == tableList.size())
-    {
+void helper(vector<string> &tableList, int index, vector<vector<string>> &orderList, vector<string> &tempOrder) {
+    if (index == tableList.size()) {
         orderList.push_back(tempOrder);
         return;
     }
-    for(int i = index; i < tableList.size(); i++)
-    {
+    for (int i = index; i < tableList.size(); i++) {
         swap(tableList[index], tableList[i]);
         tempOrder.push_back(tableList[index]);
         helper(tableList, index + 1, orderList, tempOrder);
@@ -79,65 +77,65 @@ void copySchema(map<string, Schema *> &aliasSchemas, char *oldName, char *newNam
 }
 
 
-
 void printRecursively(Operator *currNode) {
     if (!currNode)
         return;
     switch (currNode->getType()) {
         case SELECT_FILE:
-             ((SelectFileOperator*)currNode)->print();
+            ((SelectFileOperator *) currNode)->print();
             break;
         case SELECT_PIPE:
             printRecursively(((SelectPipeOperator *) currNode)->left);
-             ((SelectPipeOperator*)currNode)->print();
+            ((SelectPipeOperator *) currNode)->print();
             break;
         case PROJECT:
             printRecursively(((ProjectOperator *) currNode)->left);
-             ((ProjectOperator*)currNode)->print();
+            ((ProjectOperator *) currNode)->print();
             break;
         case GROUPBY:
             printRecursively(((GroupByOperator *) currNode)->left);
-             ((GroupByOperator*)currNode)->print();
+            ((GroupByOperator *) currNode)->print();
             break;
         case SUM:
             printRecursively(((SumOperator *) currNode)->left);
-             ((SumOperator*)currNode)->print();
+            ((SumOperator *) currNode)->print();
             break;
         case DUPLICATE_REMOVAL:
             printRecursively(((DuplicateRemovalOperator *) currNode)->left);
-             ((DuplicateRemovalOperator*)currNode)->print();
+            ((DuplicateRemovalOperator *) currNode)->print();
             break;
         case JOIN:
             printRecursively(((JoinOperator *) currNode)->left);
             printRecursively(((JoinOperator *) currNode)->right);
-             ((JoinOperator*)currNode)->print();
+            ((JoinOperator *) currNode)->print();
             break;
         default:
             cerr << "ERROR: Unspecified node!" << endl;
             exit(-1);
     }
-     cout << endl << "*******************************************************" << endl;
+    cout << endl << "*******************************************************" << endl;
 }
 
-void createSchemaMap () {
-    schemas["region"] = new Schema ("catalog", "region");
-    schemas["part"] = new Schema ("catalog", "part");
-    schemas["partsupp"] = new Schema ("catalog", "partsupp");
-    schemas["nation"] = new Schema ("catalog", "nation");
-    schemas["customer"] = new Schema ("catalog", "customer");
-    schemas["supplier"] = new Schema ("catalog", "supplier");
-    schemas["lineitem"] = new Schema ("catalog", "lineitem");
-    schemas["orders"] = new Schema ("catalog", "orders");
+void createSchemaMap() {
+    schemas["region"] = new Schema("catalog", "region");
+    schemas["part"] = new Schema("catalog", "part");
+    schemas["partsupp"] = new Schema("catalog", "partsupp");
+    schemas["nation"] = new Schema("catalog", "nation");
+    schemas["customer"] = new Schema("catalog", "customer");
+    schemas["supplier"] = new Schema("catalog", "supplier");
+    schemas["lineitem"] = new Schema("catalog", "lineitem");
+    schemas["orders"] = new Schema("catalog", "orders");
 
 }
+
 int main() {
 
     if (getcwd(statistics_path, sizeof(statistics_path)) != NULL) {
-        strcpy(catalog_path,statistics_path);
-        strcpy(meta_statistics_path,statistics_path);
-        strcat(catalog_path,"/catalog");
-        strcat(statistics_path,"/Statistics.txt");
-        strcat(meta_statistics_path,"/meta/Statistics.txt");
+        strcpy(catalog_path, statistics_path);
+        strcpy(meta_statistics_path, statistics_path);
+        strcat(catalog_path, "/catalog");
+        strcat(statistics_path, "/Statistics.txt");
+        strcat(meta_statistics_path, "/meta/Statistics.txt");
     } else {
         cerr << "error while getting current dir" << endl;
         return 1;
@@ -239,7 +237,7 @@ int main() {
     }
 
     printRecursively(root);
-   
+
     return 0;
 
 }

@@ -365,7 +365,8 @@ Join CNF:
 *******************************************************
 
 Operation: DuplicateRemoval
-Input Pipe 4 Output Pipe 5
+Input Pipe 4
+Output Pipe 5
 
 Output Schema:
 c.c_custkey : Int

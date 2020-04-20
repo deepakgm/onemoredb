@@ -4,7 +4,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
 #include <stdio.h>
 #include "ParseTree.h"
 #include "DBFile.h"
@@ -14,11 +13,13 @@
 #include "Pipe.h"
 #include "RelOp.h"
 
-enum OpType {SELECT_FILE, SELECT_PIPE, PROJECT, JOIN, GROUPBY, DUPLICATE_REMOVAL, SUM};
+enum OpType {
+    SELECT_FILE, SELECT_PIPE, PROJECT, JOIN, GROUPBY, DUPLICATE_REMOVAL, SUM
+};
 
 static int PIPE_ID = 0;
 
-static int generatePipeId(){
+static int generatePipeId() {
     return PIPE_ID++;
 }
 
@@ -36,7 +37,9 @@ public:
     virtual void print() = 0;
 
     int getPipeID() { return pipeId; };
-    Schema* getSchema() { return outputSchema; };
+
+    Schema *getSchema() { return outputSchema; };
+
     OpType getType() { return opType; }
 };
 
@@ -46,7 +49,8 @@ private:
     Record literal;
 public:
     SelectFileOperator(AndList *selectList, Schema *schema, string relName);
-    void print() override ;
+
+    void print() override;
 };
 
 class SelectPipeOperator : public Operator {
@@ -56,6 +60,7 @@ private:
 
 public:
     SelectPipeOperator(Operator *child, AndList *selectList);
+
     void print();
 };
 
@@ -63,9 +68,10 @@ class ProjectOperator : public Operator {
 private:
     int *keepMe;
     NameList *attsLeft;
-    
+
 public:
-    ProjectOperator(Operator *child, NameList* attrsLeft);
+    ProjectOperator(Operator *child, NameList *attrsLeft);
+
     void print();
 };
 
@@ -75,12 +81,14 @@ private:
     Record literal;
 public:
     JoinOperator(Operator *leftChild, Operator *rightChild, AndList *joinList);
+
     void print();
 };
 
 class DuplicateRemovalOperator : public Operator {
 public:
     DuplicateRemovalOperator(Operator *child);
+
     void print();
 };
 
@@ -102,7 +110,8 @@ private:
     OrderMaker groupOrder;
     Function function;
 
-    void getOrder(NameList* groupingAtts);
+    void getOrder(NameList *groupingAtts);
+
     void createOutputSchema();
 
 public:
