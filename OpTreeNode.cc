@@ -5,9 +5,12 @@ using namespace std;
 SelectFileNode :: SelectFileNode(AndList *selectList, Schema *schema, string relName) {
     this->myType = SELECTFILE;
     this->outputSchema = schema;
-    Record literal;
-//    cnf.GrowFromParseTree(selectList,schema,literal);
-//    this->dbfilePath = "db/" + relName + ".bin";
+
+    schema->Print();
+    cout << "before cnf" <<endl;
+    cnf.GrowFromParseTree(selectList,schema,literal);
+    cout << "after cnf" <<endl;
+
 }
 
 void SelectFileNode :: run() {
@@ -28,7 +31,7 @@ SelectPipeNode :: SelectPipeNode(OpTreeNode *child, AndList *selectList) {
     this->myType = SELECTPIPE;
     this->left = child;
     this->outputSchema = child->getSchema();
-//    cnf.GrowFromParseTree(selectList, outputSchema, literal);
+    cnf.GrowFromParseTree(selectList, outputSchema, literal);
 };
 
 void SelectPipeNode :: run() {
@@ -77,6 +80,7 @@ JoinNode :: JoinNode(OpTreeNode *leftChild, OpTreeNode *rightChild, AndList *joi
     this->left = leftChild;
     this->right = rightChild;
     joinSchema();
+    cnf.GrowFromParseTree(joinList,leftChild->getSchema(),rightChild->getSchema(),literal);
 };
 
 void JoinNode :: run() {
@@ -98,14 +102,15 @@ void JoinNode :: joinSchema()
         resAtts[j + left->getSchema()->GetNumAtts()].myType = right->getSchema()->GetAtts()[j].myType;
     }
 
+
     outputSchema = new Schema("joined", resNumAttrs, resAtts);
 };
 
 void JoinNode :: print() {
     cout << endl << "Operation: Join"<<endl;
     cout << "Input Pipe " << this->left->getPipeID() <<endl;
-    cout<< " Input Pipe " << this->right->getPipeID() <<endl;
-    cout<< " Output Pipe " << this->getPipeID() << endl;
+    cout<< "Input Pipe " << this->right->getPipeID() <<endl;
+    cout<< "Output Pipe " << this->getPipeID() << endl;
     cout << endl << "Outpt Schema:" << endl;
     this->outputSchema->Print();
     cout << endl << "Join CNF:" << endl;
@@ -133,7 +138,7 @@ SumNode :: SumNode(OpTreeNode *child, FuncOperator *func) {
     this->myType = SUM;
     this->left = child;
     this->func = func;
-//    this->computeMe.GrowFromParseTree(func, *child->getSchema());
+    this->computeMe.GrowFromParseTree(func, *child->getSchema());
     sumSchema();
 };
 
@@ -197,7 +202,7 @@ GroupByNode :: GroupByNode(OpTreeNode *child, NameList *groupingAtts, FuncOperat
     this->myType = GROUPBY;
     this->left = child;
     this->func = func;
-//    this->computeMe.GrowFromParseTree(func, *child->getSchema());
+    this->computeMe.GrowFromParseTree(func, *child->getSchema());
     getOrder(groupingAtts);
     groupBySchema();
 };

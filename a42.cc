@@ -32,13 +32,6 @@ extern struct NameList *attsToSelect; // the set of attributes in the SELECT (NU
 extern int distinctAtts; // 1 if there is a DISTINCT in a non-aggregate query
 extern int distinctFunc;  // 1 if there is a DISTINCT in an aggregate query
 
-extern int sqlType; // 0 for create, 1 for insert, 2 for drop, 3 for set, 4 for select, 5 for update
-extern int dbfileType; // 0 for heap file, 1 for sorted file, 2 for B plus tree file
-extern string tablename;
-extern string loadFileName; // save the insert file name
-extern string outputFile; // save filename of output, it could be none, string or stdout
-extern struct AttrList *attrList;
-extern struct NameList *sortList;
 
 using namespace std;
 
@@ -207,6 +200,7 @@ int main() {
         strcpy(relNames[0], joinOrder[0][0].c_str());
         minRes = s.Estimate(boolean, relNames, 1);
     } else {
+//        cout << "i'm here!";
         for (int i = 0; i < joinOrder.size(); ++i) {
             s.Read((char *)statistics_path.c_str());
 
@@ -232,9 +226,8 @@ int main() {
     vector<string> chosenJoinOrder = joinOrder[indexofBestChoice];
 
 
-    /*
-     * Generate opTree
-     */
+//    cout << "join order: " << chosenJoinOrder[0] <<"   "<<aliasName[chosenJoinOrder[0]]<<endl;
+
     OpTreeNode *left = new SelectFileNode(boolean, aliasSchemas[chosenJoinOrder[0]], aliasName[chosenJoinOrder[0]]);
 
     OpTreeNode *root = left;

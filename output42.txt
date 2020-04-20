@@ -1,5 +1,11 @@
 TC1
 Input :
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+before cnf
+after cnf
 
 Operation: Select File
 Output pipe: 0
@@ -29,17 +35,403 @@ n.n_nationkey
 ***************************************************************************************************************************
 TC2
 Input :
-ERROR: Could not find attribute n.n_regionkey
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+before cnf
+after cnf
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+before cnf
+after cnf
+
+Operation: Select File
+Output pipe: 0
+
+Output Schema:
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+
+SELECTION CNF:
+
+*******************************************************
+
+Operation: Select File
+Output pipe: 1
+
+Output Schema:
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+
+SELECTION CNF:
+( Att 0 from left record > Att 0 from literal record (Int)) 
+
+*******************************************************
+
+Operation: Join
+Input Pipe 0
+Input Pipe 1
+Output Pipe 2
+
+Outpt Schema:
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+
+Join CNF:
+( Att 2 from right record = Att 0 from left record (Int))  AND
+( Att 0 from right record > Att 0 from literal record (Int)) 
+
+*******************************************************
+
+Operation: Project
+Input Pipe 2
+Output Pipe 3
+
+Output Schema:
+n.n_name : String
+
+Attributes to Keep:
+n.n_name 
+
+*******************************************************
 ***************************************************************************************************************************
 TC3
 Input :
-ERROR: Could not find attribute n.n_regionkey
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+before cnf
+after cnf
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+before cnf
+after cnf
+
+Operation: Select File
+Output pipe: 0
+
+Output Schema:
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+
+SELECTION CNF:
+
+*******************************************************
+
+Operation: Select File
+Output pipe: 1
+
+Output Schema:
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+
+SELECTION CNF:
+( Att 1 from left record = Att 0 from literal record (String)) 
+
+*******************************************************
+
+Operation: Join
+Input Pipe 0
+Input Pipe 1
+Output Pipe 2
+
+Outpt Schema:
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+
+Join CNF:
+( Att 2 from right record = Att 0 from left record (Int))  AND
+( Att 1 from right record = Att 0 from literal record (String)) 
+
+*******************************************************
+
+Operation: Sum
+Input Pipe 2
+Output Pipe 3
+
+Output Schema:
+SUM : Int
+
+Function:
+n.n_nationkey
+
+*******************************************************
 ***************************************************************************************************************************
 TC4
 Input :
-ERROR: Could not find attribute n.n_regionkey
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+before cnf
+after cnf
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+before cnf
+after cnf
+
+Operation: Select File
+Output pipe: 0
+
+Output Schema:
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+
+SELECTION CNF:
+
+*******************************************************
+
+Operation: Select File
+Output pipe: 1
+
+Output Schema:
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+
+SELECTION CNF:
+( Att 1 from left record = Att 0 from literal record (String)) 
+
+*******************************************************
+
+Operation: Join
+Input Pipe 0
+Input Pipe 1
+Output Pipe 2
+
+Outpt Schema:
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+
+Join CNF:
+( Att 2 from right record = Att 0 from left record (Int))  AND
+( Att 1 from right record = Att 0 from literal record (String)) 
+
+*******************************************************
+
+Operation: GroupBy
+Input Pipe 2
+Output Pipe 3
+
+Output Schema:
+SUM : Int
+n.n_regionkey : Int
+
+OrderMaker:
+NumAtts =     1
+  0:     5 Int
+
+Function:
+n.n_regionkey
+
+*******************************************************
+
+Operation: Project
+Input Pipe 3
+Output Pipe 4
+
+Output Schema:
+SUM : Int
+
+Attributes to Keep:
+SUM 
+
+*******************************************************
 ***************************************************************************************************************************
 TC5
 Input :
-ERROR: Could not find attribute n.n_regionkey
+c.c_custkey : Int
+c.c_name : String
+c.c_address : String
+c.c_nationkey : Int
+c.c_phone : String
+c.c_acctbal : Double
+c.c_mktsegment : String
+c.c_comment : String
+before cnf
+after cnf
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+before cnf
+after cnf
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+before cnf
+after cnf
+
+Operation: Select File
+Output pipe: 0
+
+Output Schema:
+c.c_custkey : Int
+c.c_name : String
+c.c_address : String
+c.c_nationkey : Int
+c.c_phone : String
+c.c_acctbal : Double
+c.c_mktsegment : String
+c.c_comment : String
+
+SELECTION CNF:
+
+*******************************************************
+
+Operation: Select File
+Output pipe: 1
+
+Output Schema:
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+
+SELECTION CNF:
+
+*******************************************************
+
+Operation: Join
+Input Pipe 0
+Input Pipe 1
+Output Pipe 2
+
+Outpt Schema:
+c.c_custkey : Int
+c.c_name : String
+c.c_address : String
+c.c_nationkey : Int
+c.c_phone : String
+c.c_acctbal : Double
+c.c_mktsegment : String
+c.c_comment : String
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+
+Join CNF:
+
+*******************************************************
+
+Operation: Select File
+Output pipe: 3
+
+Output Schema:
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+
+SELECTION CNF:
+( Att 0 from left record > Att 0 from literal record (Int)) 
+
+*******************************************************
+
+Operation: Join
+Input Pipe 2
+Input Pipe 3
+Output Pipe 4
+
+Outpt Schema:
+c.c_custkey : Int
+c.c_name : String
+c.c_address : String
+c.c_nationkey : Int
+c.c_phone : String
+c.c_acctbal : Double
+c.c_mktsegment : String
+c.c_comment : String
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+
+Join CNF:
+( Att 2 from right record = Att 8 from left record (Int))  AND
+( Att 0 from right record = Att 3 from left record (Int))  AND
+( Att 0 from right record > Att 0 from literal record (Int)) 
+
+*******************************************************
+
+Operation: DuplicateRemoval
+Input Pipe 4 Output Pipe 5
+
+Output Schema:
+c.c_custkey : Int
+c.c_name : String
+c.c_address : String
+c.c_nationkey : Int
+c.c_phone : String
+c.c_acctbal : Double
+c.c_mktsegment : String
+c.c_comment : String
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+
+*******************************************************
+
+Operation: GroupBy
+Input Pipe 5
+Output Pipe 6
+
+Output Schema:
+SUM : Int
+r.r_regionkey : Int
+
+OrderMaker:
+NumAtts =     1
+  0:     8 Int
+
+Function:
+n.n_nationkey + r.r_regionkey
+
+*******************************************************
+
+Operation: Project
+Input Pipe 6
+Output Pipe 7
+
+Output Schema:
+SUM : Int
+
+Attributes to Keep:
+SUM 
+
+*******************************************************
 ***************************************************************************************************************************
