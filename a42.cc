@@ -37,27 +37,27 @@ Statistics s;
 map<string, Schema *> schemas;
 
 
-void  shuffleOrderHelper(vector<string> &seenTable, int index, vector<vector<string>> &res, vector<string> &tmpres) {
-    if(index == seenTable.size())
+void  helper(vector<string> &tableList, int index, vector<vector<string>> &orderList, vector<string> &tempOrder) {
+    if(index == tableList.size())
     {
-        res.push_back(tmpres);
+        orderList.push_back(tempOrder);
         return;
     }
-    for(int i = index; i < seenTable.size(); i++)
+    for(int i = index; i < tableList.size(); i++)
     {
-        swap(seenTable[index], seenTable[i]);
-        tmpres.push_back(seenTable[index]);
-        shuffleOrderHelper(seenTable, index + 1, res, tmpres);
-        tmpres.pop_back();
-        swap(seenTable[index], seenTable[i]);
+        swap(tableList[index], tableList[i]);
+        tempOrder.push_back(tableList[index]);
+        helper(tableList, index + 1, orderList, tempOrder);
+        tempOrder.pop_back();
+        swap(tableList[index], tableList[i]);
     }
 }
 
-vector<vector<string>> shuffleOrder(vector<string> &seenTable) {
-    vector<vector<string>> res;
-    vector<string> tmpres;
-    shuffleOrderHelper(seenTable, 0, res, tmpres);
-    return res;
+vector<vector<string>> createOrderList(vector<string> &tableList) {
+    vector<vector<string>> orderList;
+    vector<string> tempOrder;
+    helper(tableList, 0, orderList, tempOrder);
+    return orderList;
 }
 
 void copySchema(map<string, Schema *> &aliasSchemas, char *oldName, char *newName) {
@@ -80,7 +80,7 @@ void copySchema(map<string, Schema *> &aliasSchemas, char *oldName, char *newNam
 
 
 
-void traverse(Operator *currNode, int mode) {
+void printRecursively(Operator *currNode) {
     if (!currNode)
         return;
     switch (currNode->getType()) {
@@ -88,28 +88,28 @@ void traverse(Operator *currNode, int mode) {
              ((SelectFileOperator*)currNode)->print();
             break;
         case SELECT_PIPE:
-            traverse(((SelectPipeOperator*)currNode)->left, mode);
+            printRecursively(((SelectPipeOperator *) currNode)->left);
              ((SelectPipeOperator*)currNode)->print();
             break;
         case PROJECT:
-            traverse(((ProjectOperator*)currNode)->left, mode);
+            printRecursively(((ProjectOperator *) currNode)->left);
              ((ProjectOperator*)currNode)->print();
             break;
         case GROUPBY:
-            traverse(((GroupByOperator*)currNode)->left, mode);
+            printRecursively(((GroupByOperator *) currNode)->left);
              ((GroupByOperator*)currNode)->print();
             break;
         case SUM:
-            traverse(((SumOperator*)currNode)->left, mode);
+            printRecursively(((SumOperator *) currNode)->left);
              ((SumOperator*)currNode)->print();
             break;
         case DUPLICATE_REMOVAL:
-            traverse(((DuplicateRemovalOperator*)currNode)->left, mode);
+            printRecursively(((DuplicateRemovalOperator *) currNode)->left);
              ((DuplicateRemovalOperator*)currNode)->print();
             break;
         case JOIN:
-            traverse(((JoinOperator*)currNode)->left, mode);
-            traverse(((JoinOperator*)currNode)->right, mode);
+            printRecursively(((JoinOperator *) currNode)->left);
+            printRecursively(((JoinOperator *) currNode)->right);
              ((JoinOperator*)currNode)->print();
             break;
         default:
@@ -154,71 +154,69 @@ int main() {
     s.Write(statistics_path);
 
     vector<string> tableList;
-    map<string, string> aliasName;
-    map<string, Schema *> aliasSchemas;
+    map<string, string> aliasMap;
+    map<string, Schema *> schemaMap;
 
-    TableList *cur = tables;
+    TableList *curTable = tables;
 
-    while (cur) {
-        if (schemas.count(cur->tableName) == 0) {
+    while (curTable) {
+        if (schemas.count(curTable->tableName) == 0) {
             cerr << "Error: Table hasn't been created!" << endl;
             return 0;
         }
-        s.CopyRel(cur->tableName, cur->aliasAs);
-        copySchema(aliasSchemas, cur->tableName, cur->aliasAs);
-        tableList.push_back(cur->aliasAs);
-        aliasName[cur->aliasAs] = cur->tableName;
-        cur = cur->next;
+        s.CopyRel(curTable->tableName, curTable->aliasAs);
+        copySchema(schemaMap, curTable->tableName, curTable->aliasAs);
+        tableList.push_back(curTable->aliasAs);
+        aliasMap[curTable->aliasAs] = curTable->tableName;
+        curTable = curTable->next;
     }
 
     s.Write(statistics_path);
 
 
-    vector<vector<string>> joinOrder = shuffleOrder(tableList);
+    vector<vector<string>> orderList = createOrderList(tableList);
 
-    int indexofBestChoice = 0;
-    double minRes = DBL_MAX;
-    size_t numofRels = joinOrder[0].size();
-    if (numofRels == 1) {
+    int bestOrderIndex = 0;
+
+    int orderSize = orderList[0].size();
+    if (orderSize == 1) {
         char **relNames = new char *[1];
-        relNames[0] = new char[joinOrder[0][0].size() + 1];
-        strcpy(relNames[0], joinOrder[0][0].c_str());
-        minRes = s.Estimate(boolean, relNames, 1);
+        relNames[0] = new char[orderList[0][0].size() + 1];
+        strcpy(relNames[0], orderList[0][0].c_str());
+//        minEstimation = s.Estimate(boolean, relNames, 1);
     } else {
-//        cout << "i'm here!";
-        for (int i = 0; i < joinOrder.size(); ++i) {
+        double minEstimation = DBL_MAX;
+
+        for (int i = 0; i < orderList.size(); ++i) {
             s.Read(statistics_path);
 
             double result = 0;
-            char **relNames = new char *[numofRels];
-            for (int j = 0; j < numofRels; ++j) {
-                relNames[j] = new char[joinOrder[i][j].size() + 1];
-                strcpy(relNames[j], joinOrder[i][j].c_str());
+            char **relNames = new char *[orderSize];
+            for (int j = 0; j < orderSize; ++j) {
+                relNames[j] = new char[orderList[i][j].size() + 1];
+                strcpy(relNames[j], orderList[i][j].c_str());
             }
 
-            for (int j = 2; j <= numofRels; ++j) {
+            for (int j = 2; j <= orderSize; ++j) {
                 result += s.Estimate(boolean, relNames, j);
                 s.Apply(boolean, relNames, j);
             }
 
-            if (result < minRes) {
-                minRes = result;
-                indexofBestChoice = i;
+            if (result < minEstimation) {
+                minEstimation = result;
+                bestOrderIndex = i;
             }
         }
     }
 
-    vector<string> chosenJoinOrder = joinOrder[indexofBestChoice];
+    vector<string> bestOrder = orderList[bestOrderIndex];
 
-
-//    cout << "join order: " << chosenJoinOrder[0] <<"   "<<aliasName[chosenJoinOrder[0]]<<endl;
-
-    Operator *left = new SelectFileOperator(boolean, aliasSchemas[chosenJoinOrder[0]], aliasName[chosenJoinOrder[0]]);
+    Operator *left = new SelectFileOperator(boolean, schemaMap[bestOrder[0]], aliasMap[bestOrder[0]]);
 
     Operator *root = left;
-    for (int i = 1; i < numofRels; ++i) {
-        Operator *right = new SelectFileOperator(boolean, aliasSchemas[chosenJoinOrder[i]],
-                                                 aliasName[chosenJoinOrder[i]]);
+    for (int i = 1; i < orderSize; ++i) {
+        Operator *right = new SelectFileOperator(boolean, schemaMap[bestOrder[i]],
+                                                 aliasMap[bestOrder[i]]);
         root = new JoinOperator(left, right, boolean);
         left = root;
     }
@@ -240,7 +238,7 @@ int main() {
         root = new ProjectOperator(left, attsToSelect);
     }
 
-    traverse(root, 0);
+    printRecursively(root);
    
     return 0;
 

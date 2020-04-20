@@ -98,7 +98,7 @@ void Page :: ToBinary (char *bits) {
 		memcpy (curPos, b, ((int *) b)[0]);
 		curPos += ((int *) b)[0];
 
-		// and traverse the list
+		// and printRecursively the list
 		myRecs->Advance ();
 	}
 }
