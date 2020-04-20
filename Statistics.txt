@@ -1,4 +1,5 @@
-10
+11
+c:150000
 customer:150000
 lineitem:6001215
 n:25
@@ -9,7 +10,15 @@ partsupp:800000
 r:5
 region:5
 supplier:10000
-10
+11
+c c.c_acctbal 140187
+c c.c_address 150000
+c c.c_comment 149965
+c c.c_custkey 150000
+c c.c_mktsegment 5
+c c.c_name 150000
+c c.c_nationkey 25
+c c.c_phone 150000
 customer c_acctbal 140187
 customer c_address 150000
 customer c_comment 149965

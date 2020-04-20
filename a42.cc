@@ -178,8 +178,8 @@ int main() {
     map<string, Schema *> aliasSchemas;
 
     TableList *cur = tables;
-    cout << endl << "Print TableList :" << endl;
-    PrintTablesAliases (tables);
+//    cout << endl << "Print TableList :" << endl;
+//    PrintTablesAliases (tables);
 
     while (cur) {
         if (schemas.count(cur->tableName) == 0) {

@@ -1,0 +1,45 @@
+TC1
+Input :
+
+Operation: Select File
+Output pipe: 0
+
+Output Schema:
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+
+SELECTION CNF:
+( Att 1 from left record = Att 0 from literal record (String)) 
+
+*******************************************************
+
+Operation: Project
+Input Pipe 0
+Output Pipe 1
+
+Output Schema:
+n.n_nationkey : Int
+
+Attributes to Keep:
+n.n_nationkey 
+
+*******************************************************
+***************************************************************************************************************************
+TC2
+Input :
+ERROR: Could not find attribute n.n_regionkey
+***************************************************************************************************************************
+TC3
+Input :
+ERROR: Could not find attribute n.n_regionkey
+***************************************************************************************************************************
+TC4
+Input :
+ERROR: Could not find attribute n.n_regionkey
+***************************************************************************************************************************
+TC5
+Input :
+ERROR: Could not find attribute n.n_regionkey
+***************************************************************************************************************************

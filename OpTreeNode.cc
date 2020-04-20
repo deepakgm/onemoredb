@@ -1,11 +1,3 @@
-//
-//  OpTreeNode.cc
-//  COP6726_5
-//
-//  Created by Yihao Wu on 5/4/19.
-//  Copyright © 2019 Yihao Wu. All rights reserved.
-//
-
 #include "OpTreeNode.h"
 
 using namespace std;
@@ -13,8 +5,9 @@ using namespace std;
 SelectFileNode :: SelectFileNode(AndList *selectList, Schema *schema, string relName) {
     this->myType = SELECTFILE;
     this->outputSchema = schema;
-    this->dbfilePath = "db/" + relName + ".bin";
-//    cnf.GrowFromParseTree(selectList, schema, literal);
+    Record literal;
+//    cnf.GrowFromParseTree(selectList,schema,literal);
+//    this->dbfilePath = "db/" + relName + ".bin";
 }
 
 void SelectFileNode :: run() {
@@ -23,10 +16,11 @@ void SelectFileNode :: run() {
 }
 
 void SelectFileNode :: print() {
-    cout << endl << "Select File Operation Output pipe ID " << this->getPipeID() << endl;
+    cout << endl << "Operation: Select File"<< endl;
+    cout<<"Output pipe: " << this->getPipeID()<<endl;
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
-    cout << endl << "Select File CNF:" << endl;
+    cout << endl << "SELECTION CNF:" << endl;
     this->cnf.Print();
 }
 
@@ -42,10 +36,12 @@ void SelectPipeNode :: run() {
 }
 
 void SelectPipeNode :: print() {
-    cout << endl << "Select Pipe Operation Input pipe ID " << this->left->getPipeID() << " Output pipe ID " << this->getPipeID() << endl;
+    cout << endl << "Operation: Select Pipe" << endl;
+    cout << "Input Pipe " << this->left->getPipeID() <<endl;
+    cout<< "Output Pipe " << this->getPipeID()<<endl;
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
-    cout << endl << "Select Pipe CNF:" << endl;
+    cout << endl << "SELECTION CNF:" << endl;
     this->cnf.Print();
 };
 
@@ -61,7 +57,9 @@ void ProjectNode :: run() {
 }
 
 void ProjectNode :: print() {
-    cout << endl << "Project Operation Input pipe ID " << this->left->getPipeID() << " Output pipe ID " << this->getPipeID() << endl;
+    cout << endl << "Operation: Project"  << endl;
+    cout <<"Input Pipe " << this->left->getPipeID() <<endl;
+    cout<<"Output Pipe " << this->getPipeID() << endl;
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
     cout << endl << "Attributes to Keep:" << endl;
@@ -79,8 +77,6 @@ JoinNode :: JoinNode(OpTreeNode *leftChild, OpTreeNode *rightChild, AndList *joi
     this->left = leftChild;
     this->right = rightChild;
     joinSchema();
-
-//    this->cnf.GrowFromParseTree(joinList, left->getSchema(), right->getSchema(), literal);
 };
 
 void JoinNode :: run() {
@@ -106,8 +102,11 @@ void JoinNode :: joinSchema()
 };
 
 void JoinNode :: print() {
-    cout << endl << "Join Operation Input pipe ID " << this->left->getPipeID() << " Input pipe ID " << this->right->getPipeID() << " Output pipe ID " << this->getPipeID() << endl;
-    cout << endl << "Output Schema:" << endl;
+    cout << endl << "Operation: Join"<<endl;
+    cout << "Input Pipe " << this->left->getPipeID() <<endl;
+    cout<< " Input Pipe " << this->right->getPipeID() <<endl;
+    cout<< " Output Pipe " << this->getPipeID() << endl;
+    cout << endl << "Outpt Schema:" << endl;
     this->outputSchema->Print();
     cout << endl << "Join CNF:" << endl;
     this->cnf.Print();
@@ -124,7 +123,8 @@ void DuplicateRemovalNode :: run() {
 }
 
 void DuplicateRemovalNode :: print() {
-    cout << endl << "DuplicateRemoval Operation Input pipe ID " << this->left->getPipeID() << " Output pipe ID " << this->getPipeID() << endl;
+    cout << endl << "Operation: DuplicateRemoval"<<endl;
+    cout<<"Input Pipe " << this->left->getPipeID() << " Output Pipe " << this->getPipeID() << endl;
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
 };
@@ -142,10 +142,12 @@ void SumNode :: run() {
 }
 
 void SumNode :: print() {
-    cout << endl << "Sum Operation Input pipe ID " << this->left->getPipeID() << " Output pipe ID " << this->getPipeID() << endl;
+    cout << endl << "Operation: Sum" <<endl;
+    cout <<"Input Pipe " << this->left->getPipeID() <<endl;
+    cout<<"Output Pipe " << this->getPipeID() << endl;
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
-    cout << endl << "Corresponding Function:" << endl;
+    cout << endl << "Function:" << endl;
     cout << joinFunc(this->func) << endl;
 };
 
@@ -236,12 +238,14 @@ void GroupByNode :: getOrder(NameList* groupingAtts) {
 }
 
 void GroupByNode :: print() {
-    cout << endl << "GroupBy Operation Input pipe ID " << this->left->getPipeID() << " Output pipe ID " << this->getPipeID() << endl;
+    cout << endl << "Operation: GroupBy"<<endl;
+    cout <<"Input Pipe " << this->left->getPipeID() <<endl;
+    cout <<"Output Pipe " << this->getPipeID() << endl;
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
-    cout << endl << "Corresponding OrderMaker:" << endl;
+    cout << endl << "OrderMaker:" << endl;
     groupOrder.Print();
-    cout << endl << "Corresponding Function:" << endl;
+    cout << endl << "Function:" << endl;
     cout << joinFunc(this->func) << endl;
 };
 
