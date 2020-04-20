@@ -1,24 +1,17 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <cstring>
-#include <climits>
 #include <iostream>
 #include <algorithm>
 #include "Schema.h"
-#include "DBFile.h"
-#include "Function.h"
 #include "ParseTree.h"
 #include "Statistics.h"
-#include "Comparison.h"
-#include <iostream>
 #include <float.h>
-
-#include "ParseTree.h"
-#include "Statistics.h"
-#include "Schema.h"
-#include "OpTreeNode.h"
+#include "Operator.h"
 #include "string.h"
+#include <limits.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 extern "C" {
 int yyparse(void);   // defined in y.tab.c
@@ -35,12 +28,12 @@ extern int distinctFunc;  // 1 if there is a DISTINCT in an aggregate query
 
 using namespace std;
 
-const string statistics_path = "/home/deepak/Desktop/dbi/onemoredb/Statistics.txt";
-const string catalog_path = "/home/deepak/Desktop/dbi/onemoredb/catalog";
+char meta_statistics_path[PATH_MAX];
+char statistics_path[PATH_MAX];
+char catalog_path[PATH_MAX];
+
 
 Statistics s;
-
-map<string, int> tablesInDB;
 map<string, Schema *> schemas;
 
 
@@ -87,37 +80,37 @@ void copySchema(map<string, Schema *> &aliasSchemas, char *oldName, char *newNam
 
 
 
-void traverse(OpTreeNode *currNode, int mode) {
+void traverse(Operator *currNode, int mode) {
     if (!currNode)
         return;
     switch (currNode->getType()) {
-        case SELECTFILE:
-             ((SelectFileNode*)currNode)->print();
+        case SELECT_FILE:
+             ((SelectFileOperator*)currNode)->print();
             break;
-        case SELECTPIPE:
-            traverse(((SelectPipeNode*)currNode)->left, mode);
-             ((SelectPipeNode*)currNode)->print();
+        case SELECT_PIPE:
+            traverse(((SelectPipeOperator*)currNode)->left, mode);
+             ((SelectPipeOperator*)currNode)->print();
             break;
         case PROJECT:
-            traverse(((ProjectNode*)currNode)->left, mode);
-             ((ProjectNode*)currNode)->print();
+            traverse(((ProjectOperator*)currNode)->left, mode);
+             ((ProjectOperator*)currNode)->print();
             break;
         case GROUPBY:
-            traverse(((GroupByNode*)currNode)->left, mode);
-             ((GroupByNode*)currNode)->print();
+            traverse(((GroupByOperator*)currNode)->left, mode);
+             ((GroupByOperator*)currNode)->print();
             break;
         case SUM:
-            traverse(((SumNode*)currNode)->left, mode);
-             ((SumNode*)currNode)->print();
+            traverse(((SumOperator*)currNode)->left, mode);
+             ((SumOperator*)currNode)->print();
             break;
-        case DUPLICATEREMOVAL:
-            traverse(((DuplicateRemovalNode*)currNode)->left, mode);
-             ((DuplicateRemovalNode*)currNode)->print();
+        case DUPLICATE_REMOVAL:
+            traverse(((DuplicateRemovalOperator*)currNode)->left, mode);
+             ((DuplicateRemovalOperator*)currNode)->print();
             break;
         case JOIN:
-            traverse(((JoinNode*)currNode)->left, mode);
-            traverse(((JoinNode*)currNode)->right, mode);
-             ((JoinNode*)currNode)->print();
+            traverse(((JoinOperator*)currNode)->left, mode);
+            traverse(((JoinOperator*)currNode)->right, mode);
+             ((JoinOperator*)currNode)->print();
             break;
         default:
             cerr << "ERROR: Unspecified node!" << endl;
@@ -126,53 +119,45 @@ void traverse(OpTreeNode *currNode, int mode) {
      cout << endl << "*******************************************************" << endl;
 }
 
-
-void PrintTablesAliases (TableList * tableList)	{
-    while (tableList) {
-        cout << "Table " << tableList->tableName;
-        cout <<	" is aliased to " << tableList->aliasAs << endl;
-        tableList = tableList->next;
-    }
-}
-
-char *supplier = "supplier";
-char *partsupp = "partsupp";
-char *part = "part";
-char *nation = "nation";
-char *customer = "customer";
-char *orders = "orders";
-char *region = "region";
-char *lineitem = "lineitem";
-
-
-void initSchemaMap () {
-    schemas[string(region)] = new Schema ("catalog", region);
-    schemas[string(part)] = new Schema ("catalog", part);
-    schemas[string(partsupp)] = new Schema ("catalog", partsupp);
-    schemas[string(nation)] = new Schema ("catalog", nation);
-    schemas[string(customer)] = new Schema ("catalog", customer);
-    schemas[string(supplier)] = new Schema ("catalog", supplier);
-    schemas[string(lineitem)] = new Schema ("catalog", lineitem);
-    schemas[string(orders)] = new Schema ("catalog", orders);
+void createSchemaMap () {
+    schemas["region"] = new Schema ("catalog", "region");
+    schemas["part"] = new Schema ("catalog", "part");
+    schemas["partsupp"] = new Schema ("catalog", "partsupp");
+    schemas["nation"] = new Schema ("catalog", "nation");
+    schemas["customer"] = new Schema ("catalog", "customer");
+    schemas["supplier"] = new Schema ("catalog", "supplier");
+    schemas["lineitem"] = new Schema ("catalog", "lineitem");
+    schemas["orders"] = new Schema ("catalog", "orders");
 
 }
 int main() {
 
-    initSchemaMap();
+    if (getcwd(statistics_path, sizeof(statistics_path)) != NULL) {
+        strcpy(catalog_path,statistics_path);
+        strcpy(meta_statistics_path,statistics_path);
+        strcat(catalog_path,"/catalog");
+        strcat(statistics_path,"/Statistics.txt");
+        strcat(meta_statistics_path,"/meta/Statistics.txt");
+    } else {
+        cerr << "error while getting current dir" << endl;
+        return 1;
+    }
+
+    createSchemaMap();
 
     cout << "Input :" << endl;;
     yyparse();
 
 
-    s.initStatistics();
+//  Load initial statistics from meta folder
+    s.Read(meta_statistics_path);
+    s.Write(statistics_path);
 
-    vector<string> seenTable;
+    vector<string> tableList;
     map<string, string> aliasName;
     map<string, Schema *> aliasSchemas;
 
     TableList *cur = tables;
-//    cout << endl << "Print TableList :" << endl;
-//    PrintTablesAliases (tables);
 
     while (cur) {
         if (schemas.count(cur->tableName) == 0) {
@@ -181,15 +166,15 @@ int main() {
         }
         s.CopyRel(cur->tableName, cur->aliasAs);
         copySchema(aliasSchemas, cur->tableName, cur->aliasAs);
-        seenTable.push_back(cur->aliasAs);
+        tableList.push_back(cur->aliasAs);
         aliasName[cur->aliasAs] = cur->tableName;
         cur = cur->next;
     }
 
-    s.Write((char *)statistics_path.c_str());
+    s.Write(statistics_path);
 
 
-    vector<vector<string>> joinOrder = shuffleOrder(seenTable);
+    vector<vector<string>> joinOrder = shuffleOrder(tableList);
 
     int indexofBestChoice = 0;
     double minRes = DBL_MAX;
@@ -202,7 +187,7 @@ int main() {
     } else {
 //        cout << "i'm here!";
         for (int i = 0; i < joinOrder.size(); ++i) {
-            s.Read((char *)statistics_path.c_str());
+            s.Read(statistics_path);
 
             double result = 0;
             char **relNames = new char *[numofRels];
@@ -228,31 +213,31 @@ int main() {
 
 //    cout << "join order: " << chosenJoinOrder[0] <<"   "<<aliasName[chosenJoinOrder[0]]<<endl;
 
-    OpTreeNode *left = new SelectFileNode(boolean, aliasSchemas[chosenJoinOrder[0]], aliasName[chosenJoinOrder[0]]);
+    Operator *left = new SelectFileOperator(boolean, aliasSchemas[chosenJoinOrder[0]], aliasName[chosenJoinOrder[0]]);
 
-    OpTreeNode *root = left;
+    Operator *root = left;
     for (int i = 1; i < numofRels; ++i) {
-        OpTreeNode *right = new SelectFileNode(boolean, aliasSchemas[chosenJoinOrder[i]],
-                                               aliasName[chosenJoinOrder[i]]);
-        root = new JoinNode(left, right, boolean);
+        Operator *right = new SelectFileOperator(boolean, aliasSchemas[chosenJoinOrder[i]],
+                                                 aliasName[chosenJoinOrder[i]]);
+        root = new JoinOperator(left, right, boolean);
         left = root;
     }
     if (distinctAtts == 1 || distinctFunc == 1) {
-        root = new DuplicateRemovalNode(left);
+        root = new DuplicateRemovalOperator(left);
         left = root;
     }
     if (groupingAtts) {
-        root = new GroupByNode(left, groupingAtts, finalFunction);
+        root = new GroupByOperator(left, groupingAtts, finalFunction);
         left = root;
         NameList *sum = new NameList();
         sum->name = "SUM";
         sum->next = attsToSelect;
-        root = new ProjectNode(left, sum);
+        root = new ProjectOperator(left, sum);
     } else if (finalFunction) {
-        root = new SumNode(left, finalFunction);
+        root = new SumOperator(left, finalFunction);
         left = root;
     } else if (attsToSelect) {
-        root = new ProjectNode(left, attsToSelect);
+        root = new ProjectOperator(left, attsToSelect);
     }
 
     traverse(root, 0);

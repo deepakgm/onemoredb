@@ -4,8 +4,6 @@ n.n_nationkey : Int
 n.n_name : String
 n.n_regionkey : Int
 n.n_comment : String
-before cnf
-after cnf
 
 Operation: Select File
 Output pipe: 0
@@ -38,14 +36,10 @@ Input :
 r.r_regionkey : Int
 r.r_name : String
 r.r_comment : String
-before cnf
-after cnf
 n.n_nationkey : Int
 n.n_name : String
 n.n_regionkey : Int
 n.n_comment : String
-before cnf
-after cnf
 
 Operation: Select File
 Output pipe: 0
@@ -110,14 +104,10 @@ Input :
 r.r_regionkey : Int
 r.r_name : String
 r.r_comment : String
-before cnf
-after cnf
 n.n_nationkey : Int
 n.n_name : String
 n.n_regionkey : Int
 n.n_comment : String
-before cnf
-after cnf
 
 Operation: Select File
 Output pipe: 0
@@ -182,14 +172,10 @@ Input :
 r.r_regionkey : Int
 r.r_name : String
 r.r_comment : String
-before cnf
-after cnf
 n.n_nationkey : Int
 n.n_name : String
 n.n_regionkey : Int
 n.n_comment : String
-before cnf
-after cnf
 
 Operation: Select File
 Output pipe: 0
@@ -276,19 +262,13 @@ c.c_phone : String
 c.c_acctbal : Double
 c.c_mktsegment : String
 c.c_comment : String
-before cnf
-after cnf
 r.r_regionkey : Int
 r.r_name : String
 r.r_comment : String
-before cnf
-after cnf
 n.n_nationkey : Int
 n.n_name : String
 n.n_regionkey : Int
 n.n_comment : String
-before cnf
-after cnf
 
 Operation: Select File
 Output pipe: 0
@@ -419,7 +399,7 @@ NumAtts =     1
   0:     8 Int
 
 Function:
-n.n_nationkey + r.r_regionkey
+n.n_nationkey+r.r_regionkey
 
 *******************************************************
 

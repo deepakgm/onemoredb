@@ -8,8 +8,8 @@ tag = -n
 endif
 
 
-a42.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o Meta.o Statistics.o OpTreeNode.o a42.o
-	$(CC) -o a42.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o Meta.o Statistics.o OpTreeNode.o a42.o -lfl -lpthread
+a42.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o Meta.o Statistics.o Operator.o a42.o
+	$(CC) -o a42.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o Meta.o Statistics.o Operator.o a42.o -lfl -lpthread
 
 main.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o Meta.o Statistics.o main.o
 	$(CC) -o main.out Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pipe.o BigQ.o RelOp.o Function.o y.tab.o yyfunc.tab.o lex.yy.o lex.yyfunc.o Meta.o Statistics.o main.o -lfl -lpthread
@@ -27,8 +27,8 @@ gtest.out: Record.o Comparison.o ComparisonEngine.o Schema.o File.o DBFile.o Pip
 a42.o: a42.cc
 	$(CC) -g -c a42.cc
 
-OpTreeNode.o: OpTreeNode.cc
-	$(CC) -g -c OpTreeNode.cc
+Operator.o: Operator.cc
+	$(CC) -g -c Operator.cc
 
 Statistics.o: Statistics.cc
 	$(CC) -g -c Statistics.cc
