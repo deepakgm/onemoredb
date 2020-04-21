@@ -14,16 +14,16 @@
 #include <unistd.h>
 
 extern "C" {
-int yyparse(void);   // defined in y.tab.c
+int yyparse(void);
 }
 
-extern struct FuncOperator *finalFunction; // the aggregate function (NULL if no agg)
-extern struct TableList *tables; // the list of tables and aliases in the query
-extern struct AndList *boolean; // the predicate in the WHERE clause
-extern struct NameList *groupingAtts; // grouping atts (NULL if no grouping)
-extern struct NameList *attsToSelect; // the set of attributes in the SELECT (NULL if no such atts)
-extern int distinctAtts; // 1 if there is a DISTINCT in a non-aggregate query
-extern int distinctFunc;  // 1 if there is a DISTINCT in an aggregate query
+extern struct FuncOperator *finalFunction;
+extern struct TableList *tables;
+extern struct AndList *boolean;
+extern struct NameList *groupingAtts;
+extern struct NameList *attsToSelect;
+extern int distinctAtts;
+extern int distinctFunc;
 
 
 using namespace std;
@@ -33,7 +33,7 @@ char statistics_path[PATH_MAX];
 char catalog_path[PATH_MAX];
 
 
-Statistics s;
+Statistics statistics;
 map<string, Schema *> schemas;
 
 
@@ -129,7 +129,6 @@ void createSchemaMap() {
 }
 
 int main() {
-
     if (getcwd(statistics_path, sizeof(statistics_path)) != NULL) {
         strcpy(catalog_path, statistics_path);
         strcpy(meta_statistics_path, statistics_path);
@@ -146,10 +145,9 @@ int main() {
     cout << "Input :" << endl;;
     yyparse();
 
-
 //  Load initial statistics from meta folder
-    s.Read(meta_statistics_path);
-    s.Write(statistics_path);
+    statistics.Read(meta_statistics_path);
+    statistics.Write(statistics_path);
 
     vector<string> tableList;
     map<string, string> aliasMap;
@@ -162,14 +160,14 @@ int main() {
             cerr << "Error: Table hasn't been created!" << endl;
             return 0;
         }
-        s.CopyRel(curTable->tableName, curTable->aliasAs);
+        statistics.CopyRel(curTable->tableName, curTable->aliasAs);
         copySchema(schemaMap, curTable->tableName, curTable->aliasAs);
         tableList.push_back(curTable->aliasAs);
         aliasMap[curTable->aliasAs] = curTable->tableName;
         curTable = curTable->next;
     }
 
-    s.Write(statistics_path);
+    statistics.Write(statistics_path);
 
 
     vector<vector<string>> orderList = createOrderList(tableList);
@@ -186,7 +184,7 @@ int main() {
         double minEstimation = DBL_MAX;
 
         for (int i = 0; i < orderList.size(); ++i) {
-            s.Read(statistics_path);
+            statistics.Read(statistics_path);
 
             double result = 0;
             char **relNames = new char *[orderSize];
@@ -196,8 +194,8 @@ int main() {
             }
 
             for (int j = 2; j <= orderSize; ++j) {
-                result += s.Estimate(boolean, relNames, j);
-                s.Apply(boolean, relNames, j);
+                result += statistics.Estimate(boolean, relNames, j);
+                statistics.Apply(boolean, relNames, j);
             }
 
             if (result < minEstimation) {

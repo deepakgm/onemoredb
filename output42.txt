@@ -1,9 +1,5 @@
 TC1
 Input :
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
 
 Operation: Select File
 Output pipe: 0
@@ -33,13 +29,6 @@ n.n_nationkey
 ***************************************************************************************************************************
 TC2
 Input :
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
 
 Operation: Select File
 Output pipe: 0
@@ -101,13 +90,6 @@ n.n_name
 ***************************************************************************************************************************
 TC3
 Input :
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
 
 Operation: Select File
 Output pipe: 0
@@ -169,13 +151,6 @@ n.n_nationkey
 ***************************************************************************************************************************
 TC4
 Input :
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
 
 Operation: Select File
 Output pipe: 0
@@ -254,21 +229,6 @@ SUM
 ***************************************************************************************************************************
 TC5
 Input :
-c.c_custkey : Int
-c.c_name : String
-c.c_address : String
-c.c_nationkey : Int
-c.c_phone : String
-c.c_acctbal : Double
-c.c_mktsegment : String
-c.c_comment : String
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
 
 Operation: Select File
 Output pipe: 0

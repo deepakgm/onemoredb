@@ -720,7 +720,7 @@ char *yytext;
 #include "yyfunc.tab.h"
 
 //int yyfunclineno = 1;
-void yyfuncerror(char*s);
+void yyfuncerror(char*statistics);
 
 static YY_BUFFER_STATE yyfunc_buf_state;
 void init_lexical_parser_func (char *src) { yyfunc_buf_state = yyfunc_scan_string (src); }
@@ -2097,8 +2097,8 @@ void yyfree (void * ptr )
 #line 73 "LexerFunc.l"
 
 
-void yyfuncerror(char *s) {
-  printf("%d: %s at %s\n", yyfunclineno, s, yyfunctext);
+void yyfuncerror(char *statistics) {
+  printf("%d: %statistics at %statistics\n", yyfunclineno, statistics, yyfunctext);
 }
 
 int yyfuncwrap(void){

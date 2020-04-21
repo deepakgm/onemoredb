@@ -2,42 +2,9 @@
 
 using namespace std;
 
-
-string funcToString(FuncOperator *funcOperator) {
-    string result;
-    if (funcOperator) {
-        if (funcOperator->leftOperator) {
-            result.append(funcToString(funcOperator->leftOperator));
-        }
-        if (funcOperator->leftOperand) {
-            result.append(funcOperator->leftOperand->value);
-        }
-        switch (funcOperator->code) {
-            case 42:
-                result.append("*");
-                break;
-            case 43:
-                result.append("+");
-                break;
-            case 44:
-                result.append("/");
-                break;
-            case 45:
-                result.append("-");
-                break;
-        }
-        if (funcOperator->right) {
-            result.append(funcToString(funcOperator->right));
-        }
-    }
-    return result;
-}
-
 SelectFileOperator::SelectFileOperator(AndList *selectList, Schema *schema, string relName) {
     this->opType = SELECT_FILE;
     this->outputSchema = schema;
-
-    schema->Print();
     cnf.GrowFromParseTree(selectList, schema, literal);
 }
 
@@ -169,6 +136,10 @@ void SumOperator::print() {
     cout << funcToString(this->funcOperator) << endl;
 }
 
+GroupByOperator::GroupByOperator(Operator *child,OrderMaker orderMaker) {
+    left=child;
+    groupOrder=orderMaker;
+}
 GroupByOperator::GroupByOperator(Operator *child, NameList *groupingAtts, FuncOperator *func) {
     this->opType = GROUPBY;
     this->left = child;

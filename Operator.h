@@ -60,7 +60,6 @@ private:
 
 public:
     SelectPipeOperator(Operator *child, AndList *selectList);
-
     void print();
 };
 
@@ -112,12 +111,43 @@ private:
 
     void getOrder(NameList *groupingAtts);
 
-    void createOutputSchema();
 
 public:
     GroupByOperator(Operator *child, NameList *groupingAtts, FuncOperator *func);
-
+    GroupByOperator(Operator *child,OrderMaker orderMaker);
+    void createOutputSchema();
     void print();
 };
 
+
+static string funcToString(FuncOperator *funcOperator) {
+    string result;
+
+    if (funcOperator) {
+        if (funcOperator->leftOperator) {
+            result.append(funcToString(funcOperator->leftOperator));
+        }
+        if (funcOperator->leftOperand) {
+            result.append(funcOperator->leftOperand->value);
+        }
+        switch (funcOperator->code) {
+            case 42:
+                result.append("*");
+                break;
+            case 43:
+                result.append("+");
+                break;
+            case 44:
+                result.append("/");
+                break;
+            case 45:
+                result.append("-");
+                break;
+        }
+        if (funcOperator->right) {
+            result.append(funcToString(funcOperator->right));
+        }
+    }
+    return result;
+}
 #endif

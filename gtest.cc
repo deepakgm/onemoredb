@@ -3,19 +3,36 @@
 #include <iostream>
 #include <cstring>
 #include "Statistics.h"
-#include "testkit.h"
+#include "Operator.h"
+#include "Schema.h"
 
 using namespace std;
 
+extern "C" {
+int yyparse(void);
+}
+
+extern struct FuncOperator *finalFunction;
+extern struct TableList *tables;
+extern struct AndList *boolean;
+extern struct NameList *groupingAtts;
+extern struct NameList *attsToSelect;
+extern int distinctAtts;
+extern int distinctFunc;
+
+
 char stat_file_path[PATH_MAX];
 char cur_dir1[PATH_MAX];
-char *relName[] = {"relation1","relation2"};
+char catalog_path[PATH_MAX];
 
 int main(int argc, char **argv) {
     // get the current dir
     if (getcwd(cur_dir1, sizeof(cur_dir1)) != NULL) {
         clog << "current working dir:" << cur_dir1 << endl;
-        strcat(stat_file_path, "Statistics.txt");
+        strcpy(stat_file_path,cur_dir1);
+        strcpy(catalog_path,cur_dir1);
+        strcat(stat_file_path, "/Statistics.txt");
+        strcat(catalog_path, "/catalog");
     } else {
         cerr << "error while getting curent dir" << endl;
         return 1;
@@ -26,8 +43,8 @@ int main(int argc, char **argv) {
 }
 
 
-class StatisticTest : public ::testing::Test {
-public:
+class QueryOptimizationTest : public ::testing::Test {
+/*public:
     Statistics s;
 protected:
     virtual void SetUp() {
@@ -36,105 +53,74 @@ protected:
 
     virtual void TearDown() {
         clog << "clearing memory.." << endl;
-        s.relationMap->clear();
-        s.attrMap->clear();
-    }
+    }*/
 };
 
 
-//Add rel test
-TEST_F(StatisticTest, addRelTest1) {
+//Test funcToString method
+TEST_F(QueryOptimizationTest, funcToStringTest) {
+    FuncOperator* root=new(FuncOperator);
+    FuncOperator* left=new(FuncOperator);
+    FuncOperator* right=new(FuncOperator);
 
-    ASSERT_EQ(s.relationMap->size(),0);
-    ASSERT_EQ(s.attrMap->size(),0);
+    left->code=42;
+    root->code=43;
+    right->code=44;
+    root->leftOperand=NULL;
 
-    s.AddRel(relName[0],800000);
-    s.AddAtt(relName[0], "key", 10000);
+    root->leftOperator=left;
+    root->right=right;
+    string result=funcToString(root);
 
-    ASSERT_EQ(s.relationMap->size(),1);
-    ASSERT_EQ(s.attrMap->size(),1);
+    ASSERT_EQ(result,"*+/");
+
+    delete root;
+    delete left;
+    delete right;
 }
 
-//Copy rel test
-TEST_F(StatisticTest, copyRelTest1) {
+//Pipe ID generation test
+TEST_F(QueryOptimizationTest, pipeIdGenerationTest) {
+    SelectFileOperator* sel=new SelectFileOperator(boolean,new Schema("catalog","nation"),"rel");
 
-    s.AddRel(relName[0],10000);
-    s.AddAtt(relName[0], "key",10000);
+    int pipeId=sel->getPipeID();
+    ASSERT_EQ(pipeId,0);
 
-    ASSERT_EQ(s.relationMap->size(),1);
+    ProjectOperator* proj=new ProjectOperator(sel, attsToSelect);
+    pipeId=proj->getPipeID();
+    ASSERT_EQ(pipeId,1);
 
-    s.CopyRel("relation1","relation1Copy");
-
-    ASSERT_EQ(s.relationMap->size(),2);
+    delete sel;
+    delete proj;
 }
 
-
-//Write and Read Test
-TEST_F(StatisticTest, readWriteTest1) {
-    s.AddRel(relName[0],10000);
-    s.AddAtt(relName[0], "key",10000);
-
-    ASSERT_EQ(s.relationMap->size(),1);
-
-    s.Write(stat_file_path);
-
-    s.relationMap->clear();
-    s.attrMap->clear();
-
-    s.Read(stat_file_path);
-    ASSERT_EQ(s.relationMap->size(),1);
+//Operator initialization test
+TEST_F(QueryOptimizationTest, operatorInitializationTest) {
+    SelectFileOperator* sel=new SelectFileOperator(boolean,new Schema("catalog","nation"),"rel");
+    ASSERT_EQ(sel->getType(),SELECT_FILE);
+    delete(sel);
 }
 
-//Estimate Test 1
-TEST_F(StatisticTest, estimateTest1) {
-    s.AddRel(relName[0],10000);
-    s.AddAtt(relName[0], "key1",25);
+//Order initialization test
+TEST_F(QueryOptimizationTest, groupByOutSchemaTest) {
+    Schema nation(catalog_path,"nation");
+    OrderMaker orderMaker=OrderMaker(&nation);
 
 
-    char *cnf = "(key1 > 1)";
-    yy_scan_string(cnf);
-    yyparse();
+    SelectFileOperator* sel=new SelectFileOperator(boolean,&nation,"rel");
 
-    double result = s.Estimate(final, relName, 2);
+    int numOfAttr=sel->getSchema()->GetNumAtts();
 
-    ASSERT_LE(fabs(result-3333.34),0.01);
-}
+    ASSERT_EQ(numOfAttr,4);
 
+    GroupByOperator* groupByOperator=new  GroupByOperator(sel,orderMaker);
+    groupByOperator->createOutputSchema();
+    numOfAttr=groupByOperator->getSchema()->GetNumAtts();
+    ASSERT_EQ(numOfAttr,5);
 
+    string attrName=groupByOperator->getSchema()->GetAtts()[0].name;
+    ASSERT_EQ(attrName,"SUM");
 
-//Estimate Test 2
-TEST_F(StatisticTest, estimateTest2) {
-    s.AddRel(relName[0],10000);
-    s.AddAtt(relName[0], "key1",25);
-
-    s.AddRel(relName[1],25);
-    s.AddAtt(relName[1], "key2",25);
-
-    
-    char *cnf = "(key1 = key2)";
-    yy_scan_string(cnf);
-    yyparse();
-
-    double result = s.Estimate(final, relName, 2);
-
-    //verify estimate method does not changes state of the object
-    ASSERT_EQ(s.relationMap->size() ,2);
-}
-
-//Apply Test
-TEST_F(StatisticTest, applyTest1) {
-    s.AddRel(relName[0],10000);
-    s.AddAtt(relName[0], "key1",25);
-
-    s.AddRel(relName[1],25);
-    s.AddAtt(relName[1], "key2",25);
-
-
-    char *cnf = "(key1 = key2)";
-    yy_scan_string(cnf);
-    yyparse();
-
-    s.Apply(final, relName, 2);
-
-    ASSERT_EQ(s.relationMap->size() ,1);
+    delete groupByOperator;
+    delete sel;
 }

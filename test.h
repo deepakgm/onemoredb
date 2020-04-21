@@ -160,7 +160,7 @@ char *orders = "orders";
 char *region = "region"; 
 char *lineitem = "lineitem"; 
 
-relation *s, *p, *ps, *n, *li, *r, *o, *c;
+relation *statistics, *p, *ps, *n, *li, *r, *o, *c;
 
 void setup () {
 	FILE *fp = fopen (settings, "r");
@@ -193,7 +193,7 @@ void setup () {
 	cout << " heap files dir: \t" << dbfile_dir << endl;
 	cout << " \n\n";
 
-	s = new relation (supplier, new Schema (catalog_path, supplier), dbfile_dir);
+    statistics = new relation (supplier, new Schema (catalog_path, supplier), dbfile_dir);
 	p = new relation (part, new Schema (catalog_path, part), dbfile_dir);
 	ps = new relation (partsupp, new Schema (catalog_path, partsupp), dbfile_dir);
 	n = new relation (nation, new Schema (catalog_path, nation), dbfile_dir);
@@ -204,7 +204,7 @@ void setup () {
 }
 
 void cleanup () {
-	delete s, p, ps, n, li, r, o, c;
+	delete statistics, p, ps, n, li, r, o, c;
 	free (catalog_path);
 }
 

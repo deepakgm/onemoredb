@@ -14,7 +14,7 @@
 #include "y.tab.h"
 
 int lineno = 1;
-void yyerror(char*s);
+void yyerror(char*statistics);
 
 %}
 
@@ -109,8 +109,8 @@ void yyerror(char*s);
 
 %%
 
-void yyerror(char *s) {
-  printf("%d: %s at %s\n", lineno, s, yytext);
+void yyerror(char *statistics) {
+  printf("%d: %statistics at %statistics\n", lineno, statistics, yytext);
 }
 
 int yywrap(void){

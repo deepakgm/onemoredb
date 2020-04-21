@@ -55,7 +55,7 @@ Q5: relations:  supplier, customer,nation
      v(supplier,s_nationkey) = 25
      v(customer, c_nationkey) = 25
 
-    CNF: (s.s_nationkey = n1.n_nationkey) AND (c.c_nationkey = n2.n_nationkey) AND (n1.n_nationkey = n2.n_nationkey)
+    CNF: (statistics.s_nationkey = n1.n_nationkey) AND (c.c_nationkey = n2.n_nationkey) AND (n1.n_nationkey = n2.n_nationkey)
 	Answer:  60000000
 
    	
