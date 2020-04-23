@@ -31,6 +31,7 @@ GenericDBFile::GenericDBFile() {
 
 BTree::BTree(const char *fpath,int size){
     bdb=  new bpt::bplus_tree(fpath,size, true);
+    this->rsize=size;
 }
 
 int GenericDBFile::Create(const char *f_path, fType type, void *startup) {
@@ -43,7 +44,7 @@ int GenericDBFile::Create(const char *f_path, fType type, void *startup) {
         myOrder = ((SortInfo *) startup)->myOrder;
         runLength = ((SortInfo *) startup)->runLength;
     }
-    if(type!=tree)
+//    if(type!=tree)
       MoveFirst();
     return 1;
 }
@@ -54,7 +55,6 @@ int DBFile::Create(const char *f_path, fType type, void *startup) {
     } else if (type == sorted) {
         myInternalVar = new Sorted();
     } else if (type==tree){
-//        startup
         myInternalVar = new BTree(f_path,(((SortInfo*)startup)->myOrder->numAtts+1)*4);
     }
     return myInternalVar->Create(f_path, type, startup);
@@ -83,7 +83,6 @@ int DBFile::Open(const char *f_path) {
     }
     return myInternalVar->Open(f_path);
 }
-
 
 
 int GenericDBFile::Open(const char *fpath) {
@@ -423,30 +422,6 @@ int Sorted::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //BTREE
 void BTree::writingMode() {
     if (mode == writing) return;
@@ -496,32 +471,40 @@ void BTree::Load(Schema &schema, const char *loadpath) {
 
 void BTree::Add(Record &rec) {
     int pointer = ((int *) rec.bits)[1];
-    int *myInt = (int *) &(rec.bits[pointer]);
+//    int *myInt = (int *) &(rec.bits[pointer]);
 
     char key[32] = { 0 };
-    sprintf(key, "%d", *myInt);
+//    sprintf(key, "%d", *myInt);
+    sprintf(key, "%d", hash++);
     cout << "inserting "<<key<<endl;
     bdb->insert(key,rec.bits);
 }
 
 
 void BTree::MoveFirst() {
-    bdb->move_first();
+    curKey=0;
+//    bdb->move_first();
 }
 
 int BTree::GetNext(Record &fetchme){
-    bdb->move_first();
     bpt::value_t  val;
-    bdb->get_next(&val);
-
-//    bpt::value_t  val;
-//    char key2[32] = { 0 };
-//    sprintf(key2, "%d", 4);
-//    bdb->search(key2,&val);
-    fetchme.CopyBits(val,160);
-    return 0;
+    char key2[32] = { 0 };
+    sprintf(key2, "%d", curKey++);
+    if(bdb->search(key2,&val)==-1){
+        return 0;
+    }
+    fetchme.CopyBits(val,rsize*8);
+    return 1;
 }
-int BTree::GetNext(Record &fetchme, CNF &cnf, Record &literal){
 
+
+int BTree::GetNext(Record &fetchme, CNF &cnf, Record &literal){
+    if (mode == writing)
+        readingMode();
+
+    while (GetNext(fetchme))
+        if (compEngine.Compare(&fetchme, &literal, &cnf)) {
+            return 1;
+        }
     return 0;
 }

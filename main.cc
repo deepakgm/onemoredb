@@ -58,10 +58,31 @@ dbFile->myInternalVar->Load(nation,"/home/deepak/Desktop/dbi/tpch-dbgen/10MB/nat
 
 
 //
+//dbFile->MoveFirst();
 Record tempRecord;
-dbFile->myInternalVar->GetNext(tempRecord);
-tempRecord.Print(&nation);
-
+while(dbFile->myInternalVar->GetNext(tempRecord)==1){
+    tempRecord.Print(&nation);
+}
+//dbFile->myInternalVar->GetNext(tempRecord);
+//dbFile->myInternalVar->GetNext
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+// (tempRecord);
+//tempRecord.Print(&nation);
+//    dbFile->myInternalVar->GetNext(tempRecord);
+//    tempRecord.Print(&nation);
+//    dbFile->myInternalVar->GetNext(tempRecord);
+//    tempRecord.Print(&nation);
 
 
 //    FILE *tableFile = fopen("/home/deepak/Desktop/dbi/tpch-dbgen/10MB/lineitem.tbl", "r");

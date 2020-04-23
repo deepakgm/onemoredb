@@ -97,6 +97,8 @@ private:
 //    int binarySearch(Record& fetchme, Record& literal);
 
 public:
+    int curKey=0;
+    int rsize=20;
     BTree(const char* fpath,int size);
     void Load(Schema &myschema, const char *loadpath);
     void Add(Record &addme);
