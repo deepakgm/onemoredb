@@ -1,4 +1,8 @@
 {
+  "num_atts" : 4,
   "path" : "/home/deepak/Desktop/dbi/onemoredb/temp/tmpf1",
-  "type" : "heap"
+  "runlen" : 0,
+  "type" : "tree",
+  "which_atts" : [0, 2, 1, 3],
+  "which_types" : ["Int", "Int", "String", "String"]
 }

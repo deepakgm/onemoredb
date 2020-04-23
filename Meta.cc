@@ -81,8 +81,8 @@ void WriteMetaInfo(string path, fType type, void *startup) {
     json::JSON obj;
     obj["path"] = path;
     if ((out = fopen(meta_path, "w")) != NULL) {
-        if (type == sorted) {
-            obj["type"] = "sorted";
+        if (type == sorted || type == tree) {
+            obj["type"] = "tree";
             SortInfo *sortInfo = (SortInfo *) startup;
             obj["runlen"] = sortInfo->runLength;
             obj["num_atts"] = sortInfo->myOrder->numAtts;
