@@ -11,7 +11,7 @@ n.n_regionkey : Int
 n.n_comment : String
 
 SELECTION CNF:
-( Att 1 from left record = Att 0 from literal record (String)) 
+( Att: n.n_name from left record = Att: n.n_nationkey from literal record (String)) 
 
 *******************************************************
 
@@ -52,7 +52,7 @@ n.n_regionkey : Int
 n.n_comment : String
 
 SELECTION CNF:
-( Att 0 from left record > Att 0 from literal record (Int)) 
+( Att: n.n_nationkey from left record > Att: n.n_nationkey from literal record (Int)) 
 
 *******************************************************
 
@@ -71,8 +71,8 @@ n.n_regionkey : Int
 n.n_comment : String
 
 Join CNF:
-( Att 2 from right record = Att 0 from left record (Int))  AND
-( Att 0 from right record > Att 0 from literal record (Int)) 
+( Att: r.r_comment from right record = Att: r.r_regionkey from left record (Int))  AND
+( Att: r.r_regionkey from right record > Att: r.r_regionkey from literal record (Int)) 
 
 *******************************************************
 
@@ -113,7 +113,7 @@ n.n_regionkey : Int
 n.n_comment : String
 
 SELECTION CNF:
-( Att 1 from left record = Att 0 from literal record (String)) 
+( Att: n.n_name from left record = Att: n.n_nationkey from literal record (String)) 
 
 *******************************************************
 
@@ -132,8 +132,8 @@ n.n_regionkey : Int
 n.n_comment : String
 
 Join CNF:
-( Att 2 from right record = Att 0 from left record (Int))  AND
-( Att 1 from right record = Att 0 from literal record (String)) 
+( Att: r.r_comment from right record = Att: r.r_regionkey from left record (Int))  AND
+( Att: r.r_name from right record = Att: r.r_regionkey from literal record (String)) 
 
 *******************************************************
 
@@ -174,7 +174,7 @@ n.n_regionkey : Int
 n.n_comment : String
 
 SELECTION CNF:
-( Att 1 from left record = Att 0 from literal record (String)) 
+( Att: n.n_name from left record = Att: n.n_nationkey from literal record (String)) 
 
 *******************************************************
 
@@ -193,8 +193,8 @@ n.n_regionkey : Int
 n.n_comment : String
 
 Join CNF:
-( Att 2 from right record = Att 0 from left record (Int))  AND
-( Att 1 from right record = Att 0 from literal record (String)) 
+( Att: r.r_comment from right record = Att: r.r_regionkey from left record (Int))  AND
+( Att: r.r_name from right record = Att: r.r_regionkey from literal record (String)) 
 
 *******************************************************
 
@@ -291,7 +291,7 @@ n.n_regionkey : Int
 n.n_comment : String
 
 SELECTION CNF:
-( Att 0 from left record > Att 0 from literal record (Int)) 
+( Att: n.n_nationkey from left record > Att: n.n_nationkey from literal record (Int)) 
 
 *******************************************************
 
@@ -318,9 +318,9 @@ n.n_regionkey : Int
 n.n_comment : String
 
 Join CNF:
-( Att 2 from right record = Att 8 from left record (Int))  AND
-( Att 0 from right record = Att 3 from left record (Int))  AND
-( Att 0 from right record > Att 0 from literal record (Int)) 
+( Att: c.c_address from right record = Att: r.r_regionkey from left record (Int))  AND
+( Att: c.c_custkey from right record = Att: c.c_nationkey from left record (Int))  AND
+( Att: c.c_custkey from right record > Att: c.c_custkey from literal record (Int)) 
 
 *******************************************************
 

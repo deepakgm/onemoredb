@@ -470,3 +470,34 @@ void Record :: Print (Schema *mySchema) {
 
 	cout << "\n";
 }
+
+
+
+void Record :: Print (Schema *mySchema,int attrNo) {
+
+
+//    cout << " "
+//    int n = mySchema->GetNumAtts();
+    Attribute *atts = mySchema->GetAtts();
+
+
+        int pointer = ((int *) bits)[attrNo + 1];
+
+
+        // first is integer
+        if (atts[attrNo].myType == Int) {
+            int *myInt = (int *) &(bits[pointer]);
+            cout << *myInt;
+
+            // then is a double
+        } else if (atts[attrNo].myType == Double) {
+            double *myDouble = (double *) &(bits[pointer]);
+            cout << *myDouble;
+
+            // then is a character string
+        } else if (atts[attrNo].myType == String) {
+            char *myString = (char *) &(bits[pointer]);
+            cout << myString;
+        }
+//    cout << "\n";
+}

@@ -23,6 +23,48 @@ Comparison::Comparison(const Comparison &copy_me)
 }
 
 
+void Comparison :: Print (Schema* schema,Record* literal) {
+
+//    cout << "Att " << whichAtt1 << " from ";
+    cout << "Att: " << schema->GetAtts()[whichAtt1].name<<" from ";
+
+    if (operand1 == Left)
+        cout << "left record ";
+    else if (operand1 == Right)
+        cout << "right record ";
+    else{
+//        literal->Print(schema,whichAtt1);
+        cout << "literal record ";
+    }
+
+    if (op == LessThan)
+        cout << "< ";
+    else if (op == GreaterThan)
+        cout << "> ";
+    else
+        cout << "= ";
+
+    cout << "Att: " << schema->GetAtts()[whichAtt2].name<<" from ";
+//    cout << "Att " << whichAtt2 << " from ";
+
+    if (operand2 == Left)
+        cout << "left record ";
+    else if (operand2 == Right)
+        cout << "right record ";
+    else{
+//        literal->Print(schema,whichAtt2);
+        cout << "literal record ";
+    }
+
+
+    if (attType == Int)
+        cout << "(Int)";
+    else if (attType == Double)
+        cout << "(Double)";
+    else
+        cout << "(String)";
+}
+
 void Comparison :: Print () {
 
 	cout << "Att " << whichAtt1 << " from ";
@@ -175,6 +217,24 @@ int CNF :: GetSortOrders (OrderMaker &left, OrderMaker &right) {
 	return left.numAtts;
 }
 
+
+void CNF :: Print (Schema* schema,Record* literal) {
+
+    for (int i = 0; i < numAnds; i++) {
+
+        cout << "( ";
+        for (int j = 0; j < orLens[i]; j++) {
+            orList[i][j].Print (schema,literal);
+            if (j < orLens[i] - 1)
+                cout << " OR ";
+        }
+        cout << ") ";
+        if (i < numAnds - 1)
+            cout << " AND\n";
+        else
+            cout << "\n";
+    }
+}
 
 void CNF :: Print () {
 
@@ -802,6 +862,9 @@ void CNF :: GrowFromParseTree (struct AndList *parseTree, Schema *mySchema,
 
     // and get the record
     literal.SuckNextRecord (&outSchema, outRecFile);
+//    cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "<<endl;
+//    literal.Print(&outSchema);
+//    cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---- "<<endl;
 
     // close the record file
     fclose (outRecFile);

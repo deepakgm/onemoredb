@@ -14,7 +14,8 @@ void SelectFileOperator::print() {
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
     cout << endl << "SELECTION CNF:" << endl;
-    this->cnf.Print();
+//    this->cnf.Print();
+    this->cnf.Print(this->getSchema(),&literal);
 }
 
 SelectPipeOperator::SelectPipeOperator(Operator *child, AndList *selectList) {
@@ -32,7 +33,7 @@ void SelectPipeOperator::print() {
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
     cout << endl << "SELECTION CNF:" << endl;
-    this->cnf.Print();
+    this->cnf.Print(this->getSchema(),&literal);
 };
 
 ProjectOperator::ProjectOperator(Operator *child, NameList *attrsLeft) {
@@ -91,7 +92,7 @@ void JoinOperator::print() {
     cout << endl << "Outpt Schema:" << endl;
     this->outputSchema->Print();
     cout << endl << "Join CNF:" << endl;
-    this->cnf.Print();
+    this->cnf.Print(this->getSchema(),&literal);
 };
 
 DuplicateRemovalOperator::DuplicateRemovalOperator(Operator *child) {
