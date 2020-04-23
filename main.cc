@@ -11,6 +11,7 @@
 #include "Schema.h"
 #include <algorithm>
 #include "DBFile.h"
+#include "Operator.h"
 //#include "PrintParseTree.h"
 
 extern "C"
@@ -714,14 +715,53 @@ void CopyNameList(NameList *nameList, vector<string> &names)
 void initSchemaMap(map1 &map)
 {
 
-    map[string(region)] = Schema("catalog", region);
-    map[string(nation)] = Schema("catalog", nation);
+    map[string(region)] = Schema("/home/deepak/Desktop/dbi/onemoredb/catalog", region);
+    map[string(nation)] = Schema("/home/deepak/Desktop/dbi/onemoredb/catalog", nation);
     map[string(customer)] = Schema("catalog", customer);
     map[string(part)] = Schema("catalog", part);
     map[string(supplier)] = Schema("catalog", supplier);
     map[string(partsupp)] = Schema("catalog", partsupp);
     map[string(orders)] = Schema("catalog", orders);
     map[string(lineitem)] = Schema("catalog", lineitem);
+}
+
+void printRecursively(Operator *currNode) {
+    if (!currNode)
+        return;
+    switch (currNode->getType()) {
+        case SELECT_FILE:
+            ((SelectFileOperator *) currNode)->print();
+            break;
+        case SELECT_PIPE:
+            printRecursively(((SelectPipeOperator *) currNode)->left);
+            ((SelectPipeOperator *) currNode)->print();
+            break;
+        case PROJECT:
+            printRecursively(((ProjectOperator *) currNode)->left);
+            ((ProjectOperator *) currNode)->print();
+            break;
+        case GROUPBY:
+            printRecursively(((GroupByOperator *) currNode)->left);
+            ((GroupByOperator *) currNode)->print();
+            break;
+        case SUM:
+            printRecursively(((SumOperator *) currNode)->left);
+            ((SumOperator *) currNode)->print();
+            break;
+        case DUPLICATE_REMOVAL:
+            printRecursively(((DuplicateRemovalOperator *) currNode)->left);
+            ((DuplicateRemovalOperator *) currNode)->print();
+            break;
+        case JOIN:
+            printRecursively(((JoinOperator *) currNode)->left);
+            printRecursively(((JoinOperator *) currNode)->right);
+            ((JoinOperator *) currNode)->print();
+            break;
+        default:
+            cerr << "ERROR: Unspecified node!" << endl;
+            exit(-1);
+    }
+    cout << endl << "*******************************************************" << endl;
 }
 
 int main()
@@ -776,158 +816,196 @@ int main()
 
     } while (next_permutation(tblNam.begin(), tblNam.end()));
 
+
+
     QueryNode *newNode;
+    Operator *newNode1;
+
     int NewValue11 = 0;
     auto indx = joinOrder.begin();
     char fp[50];
-    SelectFileNode *sf = new SelectFileNode();
-    SelectPipeNode *pp = new SelectPipeNode();
-    pp->schemaVal = Schema(inputMap2[inputMap1[*indx]]);
-    pp->schemaVal.Reseat(*indx);
-    pp->myCnf.GrowFromParseTree(boolean, &(pp->schemaVal), pp->rec);
-    sf->checkIfOpen = true;
-    sf->numUniqID = getPid();
-    sf->schemaVal = Schema(inputMap2[inputMap1[*indx]]);
-    sf->schemaVal.Reseat(*indx);
-    sf->myCnf.GrowFromParseTree(boolean, &(sf->schemaVal), sf->rec);
-    sf->qNode = pp;
-    bufOutputVal = sf->numUniqID;
-    pp->numUniqID = getPid();
+//    SelectFileNode *sf = new SelectFileNode();
+//    SelectPipeNode *pp = new SelectPipeNode();
+//    pp->schemaVal = Schema(inputMap2[inputMap1[*indx]]);
+
+//    Schema sch1=Schema(inputMap2[inputMap1[*indx]]);
+//    Schema sch2=Schema(inputMap2[inputMap1[*indx]]);
+//    Operator *right = new SelectFileOperator(boolean, &sch2,inputMap1[*indx]);
+//    pp->schemaVal.Reseat(*indx);
+//    pp->myCnf.GrowFromParseTree(boolean, &(pp->schemaVal), pp->rec);
+//    sf->checkIfOpen = true;
+//    sf->numUniqID = getPid();
+//    sf->schemaVal = Schema(inputMap2[inputMap1[*indx]]);
+//    sf->schemaVal.Reseat(*indx);
+//    sf->myCnf.GrowFromParseTree(boolean, &(sf->schemaVal), sf->rec);
+//    sf->qNode = pp;
+    cout <<"im here"<<inputMap1[*indx] <<endl;
+    Schema sch3=  Schema("/home/deepak/Desktop/dbi/onemoredb/catalog", (char*)inputMap1[*indx].c_str());
+    Operator *sf1 = new SelectFileOperator(boolean, &sch3,inputMap1[*indx]);
+    Operator *pp1 = new SelectFileOperator(boolean, &sch3,inputMap1[*indx]);
+//    bufOutputVal = sf->numUniqID;
+//    pp->numUniqID = getPid();
+    cout <<"im here" <<endl;
 
     indx++;
     if (indx == joinOrder.end())
     {
-        newNode = sf;
+//        newNode = sf;
+        newNode1=sf1;
     }
     else
     {
         JoinNode *joinNode = new JoinNode();
-        joinNode->left = sf;
-        joinNode->uniqIdVal = pp->numUniqID;
+//        joinNode->left = sf;
+//        joinNode->uniqIdVal = pp->numUniqID;
 
-        sf = new SelectFileNode();
-        sf->checkIfOpen = true;
-        sf->numUniqID = getPid();
-        sf->schemaVal = Schema(inputMap2[inputMap1[*indx]]);
-        sf->schemaVal.Reseat(*indx);
-        sf->myCnf.GrowFromParseTree(boolean, &(sf->schemaVal), sf->rec);
+//        sf = new SelectFileNode();
+//        sf->checkIfOpen = true;
+//        sf->numUniqID = getPid();
+//        sf->schemaVal = Schema(inputMap2[inputMap1[*indx]]);
+//        sf->schemaVal.Reseat(*indx);
+//        sf->myCnf.GrowFromParseTree(boolean, &(sf->schemaVal), sf->rec);
 
-        joinNode->right = sf;
-        joinNode->schemaVal.JoinSchema(joinNode->left->schemaVal, joinNode->right->schemaVal);
-        joinNode->myCnf.GrowFromParseTree(boolean, &(joinNode->left->schemaVal), &(joinNode->right->schemaVal), joinNode->rec);
+        Operator* sf1_old=sf1;
+//        Schema sch3=Schema(inputMap2[inputMap1[*indx]]);
+        Schema sch3= Schema("/home/deepak/Desktop/dbi/onemoredb/catalog",(char *) inputMap1[*indx].c_str());
+        sf1 = new SelectFileOperator(boolean, &sch3,inputMap1[*indx]);
+
+//        joinNode->right = sf;
+//        joinNode->schemaVal.JoinSchema(joinNode->left->schemaVal, joinNode->right->schemaVal);
+//        joinNode->myCnf.GrowFromParseTree(boolean, &(joinNode->left->schemaVal), &(joinNode->right->schemaVal), joinNode->rec);
+
+        JoinOperator* joinOperator=new JoinOperator(sf1_old,sf1,boolean);
         indx++;
         NewValue11++;
-        joinNode->numUniqID = getPid();
+//        joinNode->numUniqID = getPid();
 
         while (indx != joinOrder.end())
         {
-            JoinNode *p = joinNode;
+            cout <<"here$$$" <<endl;
+//            JoinNode *p = joinNode;
+            JoinOperator *p1=joinOperator;
 
-            sf = new SelectFileNode();
-            sf->checkIfOpen = true;
-            sf->numUniqID = getPid();
-            sf->schemaVal = Schema(inputMap2[inputMap1[*indx]]);
-            sf->schemaVal.Reseat(*indx);
-            sf->myCnf.GrowFromParseTree(boolean, &(sf->schemaVal), sf->rec);
+//            sf = new SelectFileNode();
+//            sf->checkIfOpen = true;
+//            sf->numUniqID = getPid();
+//            sf->schemaVal = Schema(inputMap2[inputMap1[*indx]]);
+//            sf->schemaVal.Reseat(*indx);
+//            sf->myCnf.GrowFromParseTree(boolean, &(sf->schemaVal), sf->rec);
 
-            joinNode = new JoinNode();
-            joinNode->numUniqID = getPid();
-            joinNode->left = p;
-            joinNode->uniqIdVal = joinNode->left->numUniqID;
-            joinNode->right = sf;
+            Schema sch3=Schema(inputMap2[inputMap1[*indx]]);
+            sf1 = new SelectFileOperator(boolean, &sch3,inputMap1[*indx]);
 
-            joinNode->schemaVal.JoinSchema(joinNode->left->schemaVal, joinNode->right->schemaVal);
-            joinNode->myCnf.GrowFromParseTree(boolean, &(joinNode->left->schemaVal), &(joinNode->right->schemaVal), joinNode->rec);
+//            joinNode = new JoinNode();
+//            joinNode->numUniqID = getPid();
+//            joinNode->left = p;
+//            joinNode->uniqIdVal = joinNode->left->numUniqID;
+//            joinNode->right = sf;
+
+//            joinNode->schemaVal.JoinSchema(joinNode->left->schemaVal, joinNode->right->schemaVal);
+//            joinNode->myCnf.GrowFromParseTree(boolean, &(joinNode->left->schemaVal), &(joinNode->right->schemaVal), joinNode->rec);
+
+            joinOperator=new JoinOperator(p1,sf1,boolean);
+            p1=joinOperator;
+//            Schema sch4=Schema(inputMap2[inputMap1[*indx]]);
+//            right = new SelectFileOperator(boolean, &sch4,inputMap1[*indx]);
+//            joinOperator=new JoinOperator(p1,right,boolean);
+
             indx++;
             NewValue11++;
         }
-        newNode = joinNode;
-    }
-    QueryNode *temp = newNode;
-    if (groupingAtts)
-    {
-        newNode = new GroupByNode();
-        vector<string> groupAtts;
-        CopyNameList(groupingAtts, groupAtts);
-        newNode->numUniqID = getPid();
-        ((GroupByNode *)newNode)->compute.GrowFromParseTree(finalFunction, temp->schemaVal);
-        ((GroupByNode *)newNode)->funcOperator = finalFunction;
-        ((GroupByNode *)newNode)->distinctFunc = distinctFunc;
-        int* keepMe;
-
-        Attribute atts[2][1] = {{{"sum", Int}}, {{"sum", Double}}};
-        Schema sumSchema(NULL, 1, ((GroupByNode *)newNode)->compute.ReturnInt() ? atts[0] : atts[1]);
-        Schema groupBySchema(&temp->schemaVal, groupingAtts, keepMe);
-        newNode->schemaVal.JoinSchema(sumSchema , groupBySchema);
-
-        NameList *nameList = new NameList();
-        nameList->name = "sum";
-        nameList->next = attsToSelect;
-        attsToSelect = nameList;
-
-        // newNode->schemaVal.GroupBySchema(temp->schemaVal, ((GroupByNode *)newNode)->compute.ReturnInt());
-
-        ((GroupByNode *)newNode)->group.growFromParseTree(groupingAtts, &(newNode->schemaVal));
-        ((GroupByNode *)newNode)->qNode = temp;
-        grp = ((GroupByNode *)newNode)->group.Printgrp();
-        temp = ((GroupByNode *)newNode);
+//        newNode = joinNode;
+        newNode1=joinOperator;
     }
 
-    if (!groupingAtts && finalFunction)
-    {
-        newNode = new SumNode();
-        newNode->numUniqID = getPid();
-        ((SumNode *)newNode)->compute.GrowFromParseTree(finalFunction, temp->schemaVal);
-        ((SumNode *)newNode)->funcOperator = finalFunction;
-        ((SumNode *)newNode)->distinctFunc = distinctFunc;
-        Attribute atts[2][1] = {{{"sum", Int}}, {{"sum", Double}}};
-        newNode->schemaVal = Schema(NULL, 1, ((SumNode *)newNode)->compute.ReturnInt() ? atts[0] : atts[1]);
-        ((SumNode *)newNode)->qNode = temp;
-        temp = ((SumNode *)newNode);
-    }
+    cout << "here finish" <<endl;
+    Operator *temp1=newNode1;
+//    QueryNode *temp = newNode;
+//    if (groupingAtts)
+//    {
+//        newNode = new GroupByNode();
+//        vector<string> groupAtts;
+//        CopyNameList(groupingAtts, groupAtts);
+//        newNode->numUniqID = getPid();
+//        ((GroupByNode *)newNode)->compute.GrowFromParseTree(finalFunction, temp->schemaVal);
+//        ((GroupByNode *)newNode)->funcOperator = finalFunction;
+//        ((GroupByNode *)newNode)->distinctFunc = distinctFunc;
+//        int* keepMe;
+//
+//        Attribute atts[2][1] = {{{"sum", Int}}, {{"sum", Double}}};
+//        Schema sumSchema(NULL, 1, ((GroupByNode *)newNode)->compute.returnsInt==1? atts[0] : atts[1]);
+//        Schema groupBySchema(&temp->schemaVal, groupingAtts, keepMe);
+//        newNode->schemaVal.JoinSchema(sumSchema , groupBySchema);
+//
+//        NameList *nameList = new NameList();
+//        nameList->name = "sum";
+//        nameList->next = attsToSelect;
+//        attsToSelect = nameList;
+//
+//        // newNode->schemaVal.GroupBySchema(temp->schemaVal, ((GroupByNode *)newNode)->compute.ReturnInt());
+//
+//        ((GroupByNode *)newNode)->group.growFromParseTree(groupingAtts, &(newNode->schemaVal));
+//        ((GroupByNode *)newNode)->qNode = temp;
+//        grp = ((GroupByNode *)newNode)->group.Printgrp();
+//        temp = ((GroupByNode *)newNode);
+//    }
+//
+//    if (!groupingAtts && finalFunction)
+//    {
+//        newNode = new SumNode();
+//        newNode->numUniqID = getPid();
+//        ((SumNode *)newNode)->compute.GrowFromParseTree(finalFunction, temp->schemaVal);
+//        ((SumNode *)newNode)->funcOperator = finalFunction;
+//        ((SumNode *)newNode)->distinctFunc = distinctFunc;
+//        Attribute atts[2][1] = {{{"sum", Int}}, {{"sum", Double}}};
+//        newNode->schemaVal = Schema(NULL, 1, ((SumNode *)newNode)->compute.returnsInt==1 ? atts[0] : atts[1]);
+//        ((SumNode *)newNode)->qNode = temp;
+//        temp = ((SumNode *)newNode);
+//    }
+//
+//    if (attsToSelect)
+//    {
+//        newNode = new ProjectNode();
+//        vector<string> atts;
+//        CopyNameList(attsToSelect, atts);
+//        vector<int> attsToKeep;
+//        newNode->numUniqID = getPid();
+//        newNode->schemaVal.ProjectSchema(temp->schemaVal, atts, attsToKeep);
+//        ((ProjectNode *)newNode)->attsToKeep = &attsToKeep[0];
+//        ((ProjectNode *)newNode)->inputVal1 = temp->schemaVal.GetNumAtts();
+//        ((ProjectNode *)newNode)->outputVal2 = atts.size();
+//        ((ProjectNode *)newNode)->qNode = temp;
+//        temp = ((ProjectNode *)newNode);
+//    }
+//
+//    if (distinctAtts)
+//    {
+//        newNode = new DistinctNode();
+//        newNode->numUniqID = getPid();
+//        newNode->schemaVal = temp->schemaVal;
+//        ((DistinctNode *)newNode)->qNode = temp;
+//        temp = ((DistinctNode *)newNode);
+//    }
 
-    if (attsToSelect)
-    {
-        newNode = new ProjectNode();
-        vector<string> atts;
-        CopyNameList(attsToSelect, atts);
-        vector<int> attsToKeep;
-        newNode->numUniqID = getPid();
-        newNode->schemaVal.ProjectSchema(temp->schemaVal, atts, attsToKeep);
-        ((ProjectNode *)newNode)->attsToKeep = &attsToKeep[0];
-        ((ProjectNode *)newNode)->inputVal1 = temp->schemaVal.GetNumAtts();
-        ((ProjectNode *)newNode)->outputVal2 = atts.size();
-        ((ProjectNode *)newNode)->qNode = temp;
-        temp = ((ProjectNode *)newNode);
-    }
-
-    if (distinctAtts)
-    {
-        newNode = new DistinctNode();
-        newNode->numUniqID = getPid();
-        newNode->schemaVal = temp->schemaVal;
-        ((DistinctNode *)newNode)->qNode = temp;
-        temp = ((DistinctNode *)newNode);
-    }
-
-    cout << "Number of selects: 1" << endl;
-    cout << "Number of joins: " << NewValue11 << endl;
-    if (groupingAtts)
-    {
-        cout << "GROUPING ON ";
-        cout << groupingAtts->name << endl;
-        cout << "	Att " << groupingAtts->name << ":";
-        if (grp == 1)
-            cout << " Int";
-        else if (grp == 2)
-            cout << " Double";
-        else
-            cout << " String";
-    }
-    cout << endl;
+//
+//    cout << "Number of selects: 1" << endl;
+//    cout << "Number of joins: " << NewValue11 << endl;
+//    if (groupingAtts)
+//    {
+//        cout << "GROUPING ON ";
+//        cout << groupingAtts->name << endl;
+//        cout << "	Att " << groupingAtts->name << ":";
+//        if (grp == 1)
+//            cout << " Int";
+//        else if (grp == 2)
+//            cout << " Double";
+//        else
+//            cout << " String";
+//    }
+//    cout << endl;
     cout << "IN ORDER TRAVERSAL " << endl;
-    newNode->Print();
-
+//    newNode->Print();
+ printRecursively(temp1);
     return 0;
 }
 

@@ -69,6 +69,17 @@ public:
 
     void Print();
 
+    void Reseat (string prefix);
+
+    void GroupBySchema (Schema s, bool returnInt);
+
+    void ProjectSchema (Schema s, vector<string> names, vector<int> &attsToKeep);
+
+    void JoinSchema (Schema left, Schema right);
+    Schema(Schema *baseSchema, NameList *nameList, int* keepMe);
+
+//    Schema();
+
 };
 
 #endif

@@ -90,12 +90,13 @@ void JoinOperator::print() {
     cout << "Input Pipe " << this->left->getPipeID() << endl;
     cout << "Input Pipe " << this->right->getPipeID() << endl;
     cout << "Output Pipe " << this->getPipeID() << endl;
-    cout << endl << "Outpt Schema:" << endl;
+    cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
 
     cout << endl << "Join CNF:" << endl;
 //    this->cnf.PrintJoin(right->getSchema(),left->getSchema(),&literal);
-    this->cnf.PrintJoin(right->getSchema(),left->getSchema(),&literal);
+//    this->cnf.PrintJoin(right->getSchema(),left->getSchema(),&literal);
+    this->cnf.PrintJoin(left->getSchema(),right->getSchema(),&literal);
     //    this->cnf.Print(this->getSchema(), &literal);
 };
 

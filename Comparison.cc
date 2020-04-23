@@ -49,11 +49,11 @@ void Comparison::Print(Schema* leftSchema,Schema* rightSchema, Record *literal) 
             cout << "(Double)";
         else
             cout << "(String)";
-        cout << "" << rightSchema->GetAtts()[whichAtt2].name << " from ";
         if (operand2 == Left) {
+            cout << "" << leftSchema->GetAtts()[whichAtt2].name << " from ";
             cout << "left record ";
-
         } else {
+            cout << "" << rightSchema->GetAtts()[whichAtt2].name << " from ";
             cout << "right record ";
         }
     } else {
@@ -198,6 +198,25 @@ void OrderMaker::Print() {
     }
 }
 
+int OrderMaker :: Printgrp () {
+    if (whichTypes[numAtts] == Int)
+        return 1;
+    else if (whichTypes[numAtts] == Double)
+        return 2;
+    else
+        return 3;
+}
+
+void OrderMaker::growFromParseTree (NameList* gAtts, Schema* inputSchema) {
+
+    for(; gAtts; gAtts = gAtts->next, numAtts++) {
+
+        whichAtts[numAtts] = inputSchema->Find(gAtts->name);
+        whichTypes[numAtts] = inputSchema->FindType(gAtts->name);
+
+    }
+
+}
 
 int CNF::GetSortOrders(OrderMaker &left, OrderMaker &right) {
 
@@ -259,8 +278,13 @@ int CNF::GetSortOrders(OrderMaker &left, OrderMaker &right) {
 
 
 void CNF::PrintJoin(Schema* leftSchema,Schema* rightSchema,Record* literal) {
-    cout << "join cnf details" <<endl;
-//    if (numAnds<=2){
+//    cout << "join details" <<endl;
+//    cout << "left" <<endl;
+//    leftSchema->Print();
+//    cout << "right" <<endl;
+//    rightSchema->Print();
+
+    //    if (numAnds<=2){
 //        Schema* temp;
 //        temp=leftSchema;
 //        leftSchema=rightSchema;

@@ -198,7 +198,7 @@ int main() {
                 statistics.Apply(boolean, relNames, j);
             }
 
-            if (result < minEstimation) {
+            if (result <= minEstimation) {
                 minEstimation = result;
                 bestOrderIndex = i;
             }
@@ -218,17 +218,16 @@ int main() {
     for (int i = 1; i < orderSize; ++i) {
         Operator *right = new SelectFileOperator(boolean, schemaMap[bestOrder[i]],
                                                  aliasMap[bestOrder[i]]);
-
         cout <<"chao chao join " <<endl;
         cout <<"left " <<endl;
         left->getSchema()->Print();
         cout <<"right " <<endl;
         right->getSchema()->Print();
         cout <<"chao chao " <<endl;
-
         root = new JoinOperator(left, right, boolean);
         left = root;
     }
+
     if (distinctAtts == 1 || distinctFunc == 1) {
         root = new DuplicateRemovalOperator(left);
         left = root;

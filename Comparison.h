@@ -64,6 +64,9 @@ public:
 
 	// print to the screen
 	void Print ();
+
+    int Printgrp ();
+    void growFromParseTree(NameList* gAtts, Schema* inputSchema);
 };
 
 class Record;
