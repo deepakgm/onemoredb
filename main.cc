@@ -7,102 +7,82 @@
 #include <cstring>
 #include "Meta.h"
 #include <chrono>
-#include "Statistics.h"
+#include "bpt.h"
 
 using namespace std;
 
+
+bool compare(string a,string b){
+    return a>b;
+}
+
+void print(string a){
+    cout<<a<<endl;
+    return;
+}
+
 int main() {
 
-    /*SortInfo* sortInfo=new SortInfo;
-    sortInfo->runLength=2;
-    OrderMaker* orderMaker=new(OrderMaker);
-
-    char cur_dir[PATH_MAX];
-    char dbfile_dir[PATH_MAX];
-    char table_path[PATH_MAX];
-    char catalog_path[PATH_MAX];
-    char tempfile_path[PATH_MAX];
-    if (getcwd(cur_dir, sizeof(cur_dir)) != NULL) {
-        clog <<"current working dir:" << cur_dir << endl;
-        strcpy(dbfile_dir,cur_dir);
-        strcpy(table_path,cur_dir);
-        strcpy(catalog_path,cur_dir);
-        strcpy(tempfile_path,cur_dir);
-        strcat(dbfile_dir,"/test/test.bin");
-        strcat(table_path,"/test/nation.tbl");
-        strcat(catalog_path,"/test/catalog");
-        strcat(tempfile_path,"/test/tempfile");
-    } else {
-        cerr << "error while getting curent dir" << endl;
-        return 1;
-    }
-
-
+//6 4
 //    for part table
-    strcpy(table_path,"/home/deepak/Desktop/dbi/tpch-dbgen/1GB/customer.tbl");
-    Schema nation (catalog_path, (char*)"customer");
-    orderMaker->numAtts=1;
-    orderMaker->whichTypes[0]=String;
-    orderMaker->whichAtts[0]=6;
-    sortInfo->myOrder=orderMaker;
-
-//  for nation table
-//    Schema nation (catalog_path, (char*)"nation");
-//    orderMaker->numAtts=1;
-//    orderMaker->whichTypes[0]=String;
-//    orderMaker->whichAtts[0]=1;
-//    sortInfo->myOrder=orderMaker;
+//    strcpy(table_path,"/home/deepak/Desktop/dbi/tpch-dbgen/1GB/nation.tbl");
+    Schema nation ("/home/deepak/Desktop/dbi/onemoredb/catalog", "nation");
 
 
 
-    DBFile* dbFile=new DBFile();
+//    bpt::bplus_tree database("/home/deepak/Desktop/dbi/onemoredb/temp/tmp11", true);
+//    for (int i = 0; i <= 10000; i++) {
+//        if (i % 1000 == 0)
+//            printf("%d\n", i);
+//        char key[16] = { 0 };
+//        sprintf(key, "%d", i);
+//        string aa="12345678901234567890";
+//
+//        database.insert(key, (char *)aa.c_str());
+//    }
+//
+//
+//    database.search("1", reinterpret_cast<bpt::value_t *>(1));
 
-//    dbFile->Open(dbfile_dir);
+//cout << sizeof(string)<<endl;
+DBFile* dbFile=new DBFile();
 
-    cout << "\n specify sort ordering (when done press ctrl-D):\n\t ";
-    if (yyparse() != 0) {
-        cout << " Error: can't parse your CNF.\n";
-        exit (1);
-    }
-    Record literal;
-    CNF sort_pred;
-    sort_pred.GrowFromParseTree (final, &nation, literal); // constructs CNF predicate
-
-    dbFile->Create(dbfile_dir,sorted,sortInfo);
-    dbFile->Load(nation,table_path);
-    dbFile->MoveFirst();
-
-    Record record;
-    int counter = 0;
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    while (dbFile->GetNext (record,sort_pred,literal) == 1) {
-        if(counter==0){
-            cout<< "first record:" <<endl;
-//            record.Print(&nation);
-        }
-//        record.Print(&nation);
-        counter ++;
-    }
-    cout<< "last record:" <<endl;
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-
-    std::cout << "Time taken for the query = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
-    //    record.Print(&nation);
-
-    cout << " scanned " << counter << " recs \n";
-    dbFile->Close();*/
-
-    Statistics s;
-    char *relName[] = {"supplier","partsupp"};
+SortInfo* sortInfo=new SortInfo();
+OrderMaker* omg=new OrderMaker(&nation);
+sortInfo->myOrder=omg;
 
 
-    s.AddRel(relName[0],10000);
-    s.AddAtt(relName[0], "s_suppkey",10000);
+dbFile->Create("/home/deepak/Desktop/dbi/onemoredb/temp/tmpf1",tree, (void *)sortInfo);
+dbFile->myInternalVar->Load(nation,"/home/deepak/Desktop/dbi/tpch-dbgen/10MB/nation.tbl");
 
-    s.AddRel(relName[1],800000);
-    s.AddAtt(relName[1], "ps_suppkey", 10000);
 
-    s.CopyRel("supplier","supplier2");
 
+//
+Record tempRecord;
+dbFile->myInternalVar->GetNext(tempRecord);
+tempRecord.Print(&nation);
+
+
+
+//    FILE *tableFile = fopen("/home/deepak/Desktop/dbi/tpch-dbgen/10MB/lineitem.tbl", "r");
+//
+//    tempRecord.SuckNextRecord(&nation, tableFile);
+//    tempRecord.SuckNextRecord(&nation, tableFile);
+//    tempRecord.SuckNextRecord(&nation, tableFile);
+//    tempRecord.SuckNextRecord(&nation, tableFile);
+//    tempRecord.SuckNextRecord(&nation, tableFile);
+//
+//    tempRecord.Print(&nation);
+//
+//    string str(tempRecord.bits);
+//    char *curPos = tempRecord.bits + sizeof (int);
+//    int len = ((int *) curPos)[0];
+////
+//    cout <<len<<endl;
+//
+//    Record newRecord;
+//    newRecord.CopyBits(tempRecord.bits,160);
+////    newRecord.Print(&nation);
+//
     cout << "done" <<endl;
 }

@@ -140,6 +140,7 @@ GroupByOperator::GroupByOperator(Operator *child,OrderMaker orderMaker) {
     left=child;
     groupOrder=orderMaker;
 }
+
 GroupByOperator::GroupByOperator(Operator *child, NameList *groupingAtts, FuncOperator *func) {
     this->opType = GROUPBY;
     this->left = child;
@@ -187,6 +188,4 @@ void GroupByOperator::print() {
     groupOrder.Print();
     cout << endl << "Function:" << endl;
     cout << funcToString(this->funcOperator) << endl;
-};
-
-
+}

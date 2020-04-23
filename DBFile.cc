@@ -8,6 +8,9 @@
 #include "Comparison.h"
 #include "DBFile.h"
 #include "Meta.h"
+#include "bpt.h"
+#include <stdlib.h>	// for itoa() call
+
 
 using namespace std;
 
@@ -26,6 +29,10 @@ GenericDBFile::GenericDBFile() {
     myOrder = new(OrderMaker);
 }
 
+BTree::BTree(const char *fpath,int size){
+    bdb=  new bpt::bplus_tree(fpath,size, true);
+}
+
 int GenericDBFile::Create(const char *f_path, fType type, void *startup) {
     file.Open(0, strdup(f_path));
     readingPage.EmptyItOut();
@@ -36,7 +43,8 @@ int GenericDBFile::Create(const char *f_path, fType type, void *startup) {
         myOrder = ((SortInfo *) startup)->myOrder;
         runLength = ((SortInfo *) startup)->runLength;
     }
-    MoveFirst();
+    if(type!=tree)
+      MoveFirst();
     return 1;
 }
 
@@ -45,6 +53,9 @@ int DBFile::Create(const char *f_path, fType type, void *startup) {
         myInternalVar = new Heap();
     } else if (type == sorted) {
         myInternalVar = new Sorted();
+    } else if (type==tree){
+//        startup
+        myInternalVar = new BTree(f_path,(((SortInfo*)startup)->myOrder->numAtts+1)*4);
     }
     return myInternalVar->Create(f_path, type, startup);
 }
@@ -65,11 +76,15 @@ int DBFile::Open(const char *f_path) {
         myInternalVar = new Heap();
     } else if (metaInfo.fileType == sorted) {
         myInternalVar = new Sorted();
-    } else {
+    } else if (metaInfo.fileType==tree){
+//        myInternalVar = new BTree();
+    }else {
         return 0;
     }
     return myInternalVar->Open(f_path);
 }
+
+
 
 int GenericDBFile::Open(const char *fpath) {
     MetaInfo metaInfo = GetMetaInfo();
@@ -221,7 +236,15 @@ void DBFile::MoveFirst() {
     myInternalVar->MoveFirst();
 }
 
-void GenericDBFile::MoveFirst() {
+void Heap::MoveFirst() {
+    readingMode();
+    readingPage.EmptyItOut();
+    delete queryOrder;
+    delete literalOrder;
+    curPageIndex = -1;
+}
+
+void Sorted::MoveFirst() {
     readingMode();
     readingPage.EmptyItOut();
     delete queryOrder;
@@ -322,7 +345,7 @@ int Sorted::binarySearch(Record &fetchme, Record &literal) {
     if (compare > 0) return 0;
     else if (compare == 0) return 1;
 
-    off_t low = curPageIndex, high = file.GetLength() - 2, mid = (low + high) / 2;
+    off_t low = 0, high = file.GetLength() - 2, mid = (low + high) / 2;
 //    cout << "binarySearch:   low" << low << "    high: " << high << endl;
     while (low < mid) {
         mid = (low + high) / 2;
@@ -395,6 +418,110 @@ int Sorted::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
             return 1;
         }
     }
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//BTREE
+void BTree::writingMode() {
+    if (mode == writing) return;
+    mode = writing;
+//    bigQ = new BigQ(inPipe, outPipe, *myOrder, runLength);
+}
+
+//todo change
+void BTree::readingMode() {
+    if (mode == reading)
+        return;
+    mode = reading;
+}
+
+
+void BTree::Load(Schema &schema, const char *loadpath) {
+    FILE *tableFile = fopen(loadpath, "r");
+    int numofRecords = 0;
+    if (tableFile == NULL) {
+        cerr << "invalid load_path" << loadpath << endl;
+        exit(1);
+    } else {
+        cout <<"here it is!" <<endl;
+        Record tempRecord = Record();
+        while (tempRecord.SuckNextRecord(&schema, tableFile)) {
+//            int pointer = ((int *) tempRecord.bits)[1];
+//            int *myInt = (int *) &(tempRecord.bits[pointer]);
+////            tempRecord.Print()
+////        const char* key=to_string(hash++).c_str();
+//        char key[32] = { 0 };
+//        sprintf(key, "%d", hash++);
+////        sprintf(key, "%d", *myInt);
+//            cout <<"inserting key "<<key <<endl;
+//            bdb->insert(key,tempRecord.bits);
+//            cout <<"success key" <<endl;
+            Add(tempRecord);
+            tempRecord = Record();
+            //            inPipe.Insert(&tempRecord);
+            ++numofRecords;
+        }
+        fclose(tableFile);
+        cout << "Loaded " << numofRecords << " records" << endl;
+    }
+}
+
+
+
+void BTree::Add(Record &rec) {
+    int pointer = ((int *) rec.bits)[1];
+    int *myInt = (int *) &(rec.bits[pointer]);
+
+    char key[32] = { 0 };
+    sprintf(key, "%d", *myInt);
+    cout << "inserting "<<key<<endl;
+    bdb->insert(key,rec.bits);
+}
+
+
+void BTree::MoveFirst() {
+    bdb->move_first();
+}
+
+int BTree::GetNext(Record &fetchme){
+    bdb->move_first();
+    bpt::value_t  val;
+    bdb->get_next(&val);
+
+//    bpt::value_t  val;
+//    char key2[32] = { 0 };
+//    sprintf(key2, "%d", 4);
+//    bdb->search(key2,&val);
+    fetchme.CopyBits(val,160);
+    return 0;
+}
+int BTree::GetNext(Record &fetchme, CNF &cnf, Record &literal){
 
     return 0;
 }

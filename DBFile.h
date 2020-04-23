@@ -9,6 +9,7 @@
 #include "ComparisonEngine.h"
 #include "Pipe.h"
 #include "BigQ.h"
+#include "bpt.h"
 
 typedef enum {
     heap, sorted, tree
@@ -46,7 +47,7 @@ public:
     int Create(const char *fpath, fType f_type, void *startup);
     int Open(const char *fpath);
     int Close();
-    void MoveFirst();
+    virtual void MoveFirst()=0;
     virtual void Load(Schema &myschema, const char *loadpath) = 0;
     virtual void Add(Record &addme) = 0;
     virtual int GetNext(Record &fetchme) = 0;
@@ -63,6 +64,7 @@ public:
     void Add(Record &addme);
     int GetNext(Record &fetchme);
     int GetNext(Record &fetchme, CNF &cnf, Record &literal);
+    void MoveFirst();
 };
 
 class Sorted : public GenericDBFile {
@@ -81,6 +83,26 @@ public:
     void Add(Record &addme);
     int GetNext(Record &fetchme);
     int GetNext(Record &fetchme, CNF &cnf, Record &literal);
+    void MoveFirst();
+};
+
+
+class BTree : public GenericDBFile {
+private:
+    int hash=0;
+    bpt::bplus_tree* bdb;
+    void readingMode();
+    void writingMode();
+//    void constructQueryOrder(CNF &cnf, Record &literal);
+//    int binarySearch(Record& fetchme, Record& literal);
+
+public:
+    BTree(const char* fpath,int size);
+    void Load(Schema &myschema, const char *loadpath);
+    void Add(Record &addme);
+    int GetNext(Record &fetchme);
+    int GetNext(Record &fetchme, CNF &cnf, Record &literal);
+    void MoveFirst();
 };
 
 class DBFile {

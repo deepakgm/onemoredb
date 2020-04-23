@@ -30,9 +30,9 @@ friend class Page;
 private:
 	char* GetBits ();
 	void SetBits (char *bits);
-	void CopyBits(char *bits, int b_len);
 
 public:
+    void CopyBits(char *bits, int b_len);
 	char *bits;
 	Record ();
 	~Record();

@@ -5,16 +5,19 @@ set(CMAKE_CXX_STANDARD 14)
 
 include_directories(.)
 
-add_library(
-                lex.yy.c
-                lex.yyfunc.c
-                y.tab.c
-                y.tab.h
-                yyfunc.tab.c
-                yyfunc.tab.h
-                ParseFunc.h
-                ParseTree.h
-)
+
+SET(CMAKE_CXX_FLAGS -pthread)
+
+#add_library(
+#                lex.yy.c
+#                lex.yyfunc.c
+#                y.tab.c
+#                y.tab.h
+#                yyfunc.tab.c
+#                yyfunc.tab.h
+#                ParseFunc.h
+#                ParseTree.h
+#)
 
 
 add_executable(onemoredb
@@ -32,12 +35,17 @@ add_executable(onemoredb
         #        ParseTree.h
         #        RelOp.cc
         #        RelOp.h
-                test.cc
+#                test.cc
         #        test.h
         #        test1.cc
         #        test1.h
-                gtest.cc
+#                gtest.cc
 
+
+        bpt.cc
+        bpt.h
+#        bpt1.cc
+#        bpt1.h
 
         Comparison.cc
         Comparison.h
@@ -49,7 +57,7 @@ add_executable(onemoredb
         Function.cc
         Function.h
         json.hpp
-#        main.cc
+        main.cc
         Meta.cc
         Meta.h
 
@@ -62,11 +70,12 @@ add_executable(onemoredb
         Schema.h
         Statistics.cc
         Statistics.h
-        testkit.h
+#        testkit.h
         TwoWayList.cc
         TwoWayList.h
-        a42.cc
+#        a42.cc
         Operator.cc
-        a4-2utils.h
-        a3utils.h
-        )
+#        a4-2utils.h
+#        a3utils.h
+        predefined.h)
+
