@@ -49,7 +49,7 @@ add_executable(onemoredb
         Function.cc
         Function.h
         json.hpp
-#        main.cc
+        main.cc
         Meta.cc
         Meta.h
 

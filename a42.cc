@@ -207,8 +207,8 @@ int main() {
 
     cout << "order size: " << orderList.size() <<endl;
     cout << "best order: " << bestOrderIndex <<endl;
-    if(orderList.size()==6)
-        bestOrderIndex=5;
+//    if(orderList.size()==6)
+//        bestOrderIndex=5;
 
     vector<string> bestOrder = orderList[bestOrderIndex];
 
@@ -218,6 +218,14 @@ int main() {
     for (int i = 1; i < orderSize; ++i) {
         Operator *right = new SelectFileOperator(boolean, schemaMap[bestOrder[i]],
                                                  aliasMap[bestOrder[i]]);
+
+        cout <<"chao chao join " <<endl;
+        cout <<"left " <<endl;
+        left->getSchema()->Print();
+        cout <<"right " <<endl;
+        right->getSchema()->Print();
+        cout <<"chao chao " <<endl;
+
         root = new JoinOperator(left, right, boolean);
         left = root;
     }

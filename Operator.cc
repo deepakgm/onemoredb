@@ -82,6 +82,7 @@ JoinOperator::JoinOperator(Operator *leftChild, Operator *rightChild, AndList *j
     outputSchema = new Schema("join", resNumAttrs, resAtts);
 
     cnf.GrowFromParseTree(joinList, leftChild->getSchema(), rightChild->getSchema(), literal);
+    *joinList = *joinList->rightAnd;
 };
 
 void JoinOperator::print() {
@@ -93,8 +94,9 @@ void JoinOperator::print() {
     this->outputSchema->Print();
 
     cout << endl << "Join CNF:" << endl;
+//    this->cnf.PrintJoin(right->getSchema(),left->getSchema(),&literal);
     this->cnf.PrintJoin(right->getSchema(),left->getSchema(),&literal);
-//    this->cnf.Print(this->getSchema(), &literal);
+    //    this->cnf.Print(this->getSchema(), &literal);
 };
 
 DuplicateRemovalOperator::DuplicateRemovalOperator(Operator *child) {
