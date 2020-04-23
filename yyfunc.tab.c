@@ -662,7 +662,7 @@ yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep)
 }
 
 /*------------------------------------------------------------------.
-| yy_stack_print -- PrintLiteral the state stack from its BOTTOM up to its |
+| yy_stack_print -- Print the state stack from its BOTTOM up to its |
 | TOP (included).                                                   |
 `------------------------------------------------------------------*/
 

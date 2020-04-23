@@ -10,6 +10,7 @@
 
 
 class Schema;
+class Record;
 
 // This stores an individual comparison that is part of a CNF
 class Comparison {
@@ -36,6 +37,7 @@ public:
 	// print to the screen
 	void Print ();
     void Print (Schema* schema,Record* literal);
+    void Print (Schema* leftSchema,Schema* rightSchema,Record* literal);
 };
 
 // This structure encapsulates a sort order for records
@@ -92,6 +94,7 @@ public:
 	// print the comparison structure to the screen
 	void Print ();
     void Print (Schema* schema,Record* literal);
+    void PrintJoin (Schema* leftSchema,Schema* rightSchema,Record* literal);
 
         // this takes a parse tree for a CNF and converts it into a 2-D
         // matrix storing the same CNF expression.  This function is applicable
@@ -99,7 +102,10 @@ public:
         void GrowFromParseTree (struct AndList *parseTree, Schema *leftSchema, 
 		Schema *rightSchema, Record &literal);
 
-        // version of the same function, except that it is used in the case of
+        void GrowFromParseTreeJoin (struct AndList *parseTree, Schema *leftSchema,
+                            Schema *rightSchema, Record &literal);
+
+    // version of the same function, except that it is used in the case of
         // a relational selection over a single relation so only one schema is used
         void GrowFromParseTree (struct AndList *parseTree, Schema *mySchema, 
 		Record &literal);

@@ -20,11 +20,54 @@ Comparison::Comparison(const Comparison &copy_me) {
     op = copy_me.op;
 }
 
+void Comparison::Print(Schema* leftSchema,Schema* rightSchema, Record *literal) {
+
+    cout << "(Att-" << whichAtt1 << ") ";
+    cout << "" << leftSchema->GetAtts()[whichAtt1].name << " from ";
+
+    if (operand1 == Left)
+        cout << "left record ";
+    else if (operand1 == Right)
+        cout << "right record ";
+    else {
+        literal->PrintLiteral(leftSchema, whichAtt1);
+        cout << "literal record ";
+    }
+
+    if (op == LessThan)
+        cout << "< ";
+    else if (op == GreaterThan)
+        cout << "> ";
+    else
+        cout << "= ";
+
+    if (operand2 == Left || operand2 == Right) {
+        cout << "(Att-" << whichAtt2 << ") ";
+        if (attType == Int)
+            cout << "(Int)";
+        else if (attType == Double)
+            cout << "(Double)";
+        else
+            cout << "(String)";
+        cout << "" << rightSchema->GetAtts()[whichAtt2].name << " from ";
+        if (operand2 == Left) {
+            cout << "left record ";
+
+        } else {
+            cout << "right record ";
+        }
+    } else {
+        cout << "(literal) ";
+        literal->PrintLiteral(rightSchema, whichAtt1);
+        cout << " ";
+    }
+}
 
 void Comparison::Print(Schema *schema, Record *literal) {
 
     cout << "(Att-" << whichAtt1 << ") ";
-    cout << "" << schema->GetAtts()[whichAtt1].name << " from ";
+    cout << "" << schema->GetAtts()[whichAtt1].name;
+    cout << " from ";
 
     if (operand1 == Left)
         cout << "left record ";
@@ -50,7 +93,8 @@ void Comparison::Print(Schema *schema, Record *literal) {
             cout << "(Double)";
         else
             cout << "(String)";
-        cout << "" << schema->GetAtts()[whichAtt2].name << " from ";
+        cout << "" << schema->GetAtts()[whichAtt2].name;
+        cout << " from ";
         if (operand2 == Left) {
             cout << "left record ";
 
@@ -213,6 +257,42 @@ int CNF::GetSortOrders(OrderMaker &left, OrderMaker &right) {
     return left.numAtts;
 }
 
+
+void CNF::PrintJoin(Schema* leftSchema,Schema* rightSchema,Record* literal) {
+    orList[0]->Print(leftSchema,rightSchema,literal);
+//    string returnString = "";
+//    if (comparisonOp == NULL)
+//        return returnString;
+//    if (comparisonOp->left->code != NAME)
+//        return returnString;
+//    string temp = comparisonOp->left->value;
+//    string temp2 = temp.substr(0, temp.find('.'));
+//    string left = temp;//.substr(temp.find('.')+1);
+//
+//    string right = "";
+//    if (comparisonOp->right->code != NAME) {
+//        right = comparisonOp->right->value;
+//        if (comparisonOp->right->code == STRING) {
+//            string temp = "'";
+//            right += temp;
+//            temp += right;
+//            right = temp;
+//        }
+//    } else {
+//        temp = "";
+//        temp = comparisonOp->right->value;
+//        temp2 = temp.substr(0, temp.find('.'));
+//        right = temp;//.substr(temp.find('.')+1);
+//    }
+//    string operand = "";
+//    if (comparisonOp->code == LESS_THAN)
+//        operand = " < ";
+//    else if (comparisonOp->code == GREATER_THAN)
+//        operand = " > ";
+//    else if (comparisonOp->code == EQUALS)
+//        operand = " = ";
+//    returnString = left + operand + right;
+}
 
 void CNF::Print(Schema *schema, Record *literal) {
 
@@ -1079,4 +1159,212 @@ void CNF::GrowFromParseTree(struct AndList *parseTree, Schema *leftSchema,
     remove("hkljdfgkSDFSDF");
 }
 
+
+void CNF::GrowFromParseTreeJoin(struct AndList *parseTree, Schema *leftSchema,
+                            Schema *rightSchema, Record &literal) {
+
+    CNF &cnf = *this;
+
+    // as kind of a hack, the literal record is built up insiide of a text file,
+    // where it will be read in from subsequently
+    FILE *outRecFile = fopen("sdafdsfFFDSDA", "w");
+
+    // also as kind of a hack, the schema for the literal record is built up
+    // inside of a text file, where it will also be read from subsequently
+    FILE *outSchemaFile = fopen("hkljdfgkSDFSDF", "w");
+    fprintf(outSchemaFile, "BEGIN\ntempSchema\nwherever\n");
+
+    // this tells us the size of the literal record
+    int numFieldsInLiteral = 0;
+
+    // now we go through and build the comparison structure
+//    for (int whichAnd = 0; 1; whichAnd++, parseTree = parseTree->rightAnd) {
+//
+//        // see if we have run off of the end of all of the ANDs
+//        if (parseTree == NULL) {
+//            cnf.numAnds = whichAnd;
+//            break;
+//        }
+
+        // we have not, so copy over all of the ORs hanging off of this AND
+        struct OrList *myOr = parseTree->left;
+        for (int whichOr = 0; 1; whichOr++, myOr = myOr->rightOr) {
+
+            // see if we have run off of the end of the ORs
+            if (myOr == NULL) {
+                cnf.orLens[0] = whichOr;
+                break;
+            }
+
+            // we have not run off the list, so add the current OR in!
+
+            // these store the types of the two values that are found
+            Type typeLeft;
+            Type typeRight;
+
+
+            // first thing is to deal with the left operand
+            // so we check to see if it is an attribute name, and if so,
+            // we look it up in the schema
+            if (myOr->left->left->code == NAME) {
+
+                // see if we can find this attribute in the left schema
+                if (leftSchema->Find(myOr->left->left->value) != -1) {
+                    cnf.orList[0][whichOr].operand1 = Left;
+                    cnf.orList[0][whichOr].whichAtt1 =
+                            leftSchema->Find(myOr->left->left->value);
+                    typeLeft = leftSchema->FindType(myOr->left->left->value);
+
+                    // see if we can find it in the right schema
+                } else if (rightSchema->Find(myOr->left->left->value) != -1) {
+                    cnf.orList[0][whichOr].operand1 = Right;
+                    cnf.orList[0][whichOr].whichAtt1 =
+                            rightSchema->Find(myOr->left->left->value);
+                    typeLeft = rightSchema->FindType(myOr->left->left->value);
+
+                    // it is not there!  So there is an error in the query
+                } else {
+//					cout << "ERROR: Could not find attribute " <<
+//						myOr->left->left->value << "\n";
+//					exit (1);
+//                    whichAnd--;
+                    continue;
+                }
+
+                // the next thing is to see if we have a string; if so, add it to the
+                // literal record that stores all of the comparison values
+            } else if (myOr->left->left->code == STRING) {
+
+                cnf.orList[0][whichOr].operand1 = Literal;
+                cnf.orList[0][whichOr].whichAtt1 = numFieldsInLiteral;
+                AddLitToFile(numFieldsInLiteral, outRecFile, outSchemaFile, myOr->left->left->value, String);
+                typeLeft = String;
+
+                // see if it is an integer
+            } else if (myOr->left->left->code == INT) {
+
+                cnf.orList[0][whichOr].operand1 = Literal;
+                cnf.orList[0][whichOr].whichAtt1 = numFieldsInLiteral;
+                AddLitToFile(numFieldsInLiteral, outRecFile, outSchemaFile, myOr->left->left->value, Int);
+                typeLeft = Int;
+
+                // see if it is a double
+            } else if (myOr->left->left->code == DOUBLE) {
+
+                cnf.orList[0][whichOr].operand1 = Literal;
+                cnf.orList[0][whichOr].whichAtt1 = numFieldsInLiteral;
+                AddLitToFile(numFieldsInLiteral, outRecFile, outSchemaFile, myOr->left->left->value, Double);
+                typeLeft = Double;
+
+                // catch-all case
+            } else {
+                cerr << "You gave me some strange type for an operand that I do not recognize!!\n";
+                exit(1);
+            }
+
+            // now that we have dealt with the left operand, we need to deal with the
+            // right operand
+            if (myOr->left->right->code == NAME) {
+
+                // see if we can find this attribute in the left schema
+                if (leftSchema->Find(myOr->left->right->value) != -1) {
+                    cnf.orList[0][whichOr].operand2 = Left;
+                    cnf.orList[0][whichOr].whichAtt2 =
+                            leftSchema->Find(myOr->left->right->value);
+                    typeRight = leftSchema->FindType(myOr->left->right->value);
+
+                    // see if we can find it in the right schema
+                } else if (rightSchema->Find(myOr->left->right->value) != -1) {
+                    cnf.orList[0][whichOr].operand2 = Right;
+                    cnf.orList[0][whichOr].whichAtt2 =
+                            rightSchema->Find(myOr->left->right->value);
+                    typeRight = rightSchema->FindType(myOr->left->right->value);
+
+                    // it is not there!  So there is an error in the query
+                } else {
+//					cout << "ERROR: Could not find attribute " << myOr->left->right->value << "\n";
+//					exit (1);
+//                    whichAnd--;
+                    continue;
+                }
+
+                // the next thing is to see if we have a string; if so, add it to the
+                // literal record that stores all of the comparison values
+            } else if (myOr->left->right->code == STRING) {
+
+                cnf.orList[0][whichOr].operand2 = Literal;
+                cnf.orList[0][whichOr].whichAtt2 = numFieldsInLiteral;
+                AddLitToFile(numFieldsInLiteral, outRecFile, outSchemaFile, myOr->left->right->value, String);
+                typeRight = String;
+
+                // see if it is an integer
+            } else if (myOr->left->right->code == INT) {
+
+                cnf.orList[0][whichOr].operand2 = Literal;
+                cnf.orList[0][whichOr].whichAtt2 = numFieldsInLiteral;
+                AddLitToFile(numFieldsInLiteral, outRecFile, outSchemaFile, myOr->left->right->value, Int);
+                typeRight = Int;
+
+                // see if it is a double
+            } else if (myOr->left->right->code == DOUBLE) {
+
+                cnf.orList[0][whichOr].operand2 = Literal;
+                cnf.orList[0][whichOr].whichAtt2 = numFieldsInLiteral;
+                AddLitToFile(numFieldsInLiteral, outRecFile, outSchemaFile, myOr->left->right->value, Double);
+                typeRight = Double;
+
+                // catch-all case
+            } else {
+                cerr << "You gave me some strange type for an operand that I do not recognize!!\n";
+                exit(1);
+            }
+
+
+
+            // now we check to make sure that there was not a type mismatch
+            if (typeLeft != typeRight) {
+                cerr << "ERROR! Type mismatch in CNF.  " << myOr->left->left->value << " and "
+                     << myOr->left->right->value << " were found to not match.\n";
+                exit(1);
+            }
+
+            // set up the type info for this comparison
+            cnf.orList[0][whichOr].attType = typeLeft;
+
+            // and finally set up the comparison operator for this comparison
+            if (myOr->left->code == LESS_THAN) {
+                cnf.orList[0][whichOr].op = LessThan;
+            } else if (myOr->left->code == GREATER_THAN) {
+                cnf.orList[0][whichOr].op = GreaterThan;
+            } else if (myOr->left->code == EQUALS) {
+                cnf.orList[0][whichOr].op = Equals;
+            } else {
+                cerr << "BAD: found a comparison op I don't recognize.\n";
+                exit(1);
+            }
+
+        }
+//    }
+
+    // the very last thing is to set up the literal record; first close the
+    // file where its information has been stored
+    fclose(outRecFile);
+    fprintf(outSchemaFile, "END\n");
+    fclose(outSchemaFile);
+
+    // and open up the record file
+    outRecFile = fopen("sdafdsfFFDSDA", "r");
+
+    // read in the record's schema
+    Schema mySchema("hkljdfgkSDFSDF", "tempSchema");
+
+    // and get the record
+    literal.SuckNextRecord(&mySchema, outRecFile);
+
+    // close the record file
+    fclose(outRecFile);
+
+    remove("sdafdsfFFDSDA");
+    remove("hkljdfgkSDFSDF");
+}
 

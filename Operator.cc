@@ -15,7 +15,7 @@ void SelectFileOperator::print() {
     this->outputSchema->Print();
 
     cout << endl << "SELECTION CNF:" << endl;
-    this->cnf.Print(this->getSchema(),&literal);
+    this->cnf.Print(this->getSchema(), &literal);
 //    this->cnf.Print();
 }
 
@@ -34,7 +34,7 @@ void SelectPipeOperator::print() {
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
     cout << endl << "SELECTION CNF:" << endl;
-    this->cnf.Print(this->getSchema(),&literal);
+    this->cnf.Print(this->getSchema(), &literal);
 };
 
 ProjectOperator::ProjectOperator(Operator *child, NameList *attrsLeft) {
@@ -81,7 +81,6 @@ JoinOperator::JoinOperator(Operator *leftChild, Operator *rightChild, AndList *j
 
     outputSchema = new Schema("join", resNumAttrs, resAtts);
 
-
     cnf.GrowFromParseTree(joinList, leftChild->getSchema(), rightChild->getSchema(), literal);
 };
 
@@ -92,8 +91,10 @@ void JoinOperator::print() {
     cout << "Output Pipe " << this->getPipeID() << endl;
     cout << endl << "Outpt Schema:" << endl;
     this->outputSchema->Print();
+
     cout << endl << "Join CNF:" << endl;
-    this->cnf.Print(this->getSchema(),&literal);
+    this->cnf.PrintJoin(right->getSchema(),left->getSchema(),&literal);
+//    this->cnf.Print(this->getSchema(), &literal);
 };
 
 DuplicateRemovalOperator::DuplicateRemovalOperator(Operator *child) {
@@ -138,10 +139,11 @@ void SumOperator::print() {
     cout << funcToString(this->funcOperator) << endl;
 }
 
-GroupByOperator::GroupByOperator(Operator *child,OrderMaker orderMaker) {
-    left=child;
-    groupOrder=orderMaker;
+GroupByOperator::GroupByOperator(Operator *child, OrderMaker orderMaker) {
+    left = child;
+    groupOrder = orderMaker;
 }
+
 GroupByOperator::GroupByOperator(Operator *child, NameList *groupingAtts, FuncOperator *func) {
     this->opType = GROUPBY;
     this->left = child;

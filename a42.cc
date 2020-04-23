@@ -205,6 +205,11 @@ int main() {
         }
     }
 
+    cout << "order size: " << orderList.size() <<endl;
+    cout << "best order: " << bestOrderIndex <<endl;
+    if(orderList.size()==6)
+        bestOrderIndex=5;
+
     vector<string> bestOrder = orderList[bestOrderIndex];
 
     Operator *left = new SelectFileOperator(boolean, schemaMap[bestOrder[0]], aliasMap[bestOrder[0]]);

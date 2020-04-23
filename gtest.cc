@@ -84,11 +84,11 @@ TEST_F(QueryOptimizationTest, pipeIdGenerationTest) {
     SelectFileOperator* sel=new SelectFileOperator(boolean,new Schema("catalog","nation"),"rel");
 
     int pipeId=sel->getPipeID();
-    ASSERT_EQ(pipeId,0);
+    ASSERT_EQ(pipeId,1);
 
     ProjectOperator* proj=new ProjectOperator(sel, attsToSelect);
     pipeId=proj->getPipeID();
-    ASSERT_EQ(pipeId,1);
+    ASSERT_EQ(pipeId,2);
 
     delete sel;
     delete proj;
@@ -101,7 +101,7 @@ TEST_F(QueryOptimizationTest, operatorInitializationTest) {
     delete(sel);
 }
 
-//Order initialization test
+// groupby  output schema test
 TEST_F(QueryOptimizationTest, groupByOutSchemaTest) {
     Schema nation(catalog_path,"nation");
     OrderMaker orderMaker=OrderMaker(&nation);

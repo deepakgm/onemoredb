@@ -17,7 +17,7 @@ enum OpType {
     SELECT_FILE, SELECT_PIPE, PROJECT, JOIN, GROUPBY, DUPLICATE_REMOVAL, SUM
 };
 
-static int PIPE_ID = 0;
+static int PIPE_ID = 1;
 
 static int generatePipeId() {
     return PIPE_ID++;
@@ -78,6 +78,9 @@ class JoinOperator : public Operator {
 private:
     CNF cnf;
     Record literal;
+//    Schema* leftSchema;
+//    Schema* rightSchema;
+
 public:
     JoinOperator(Operator *leftChild, Operator *rightChild, AndList *joinList);
 

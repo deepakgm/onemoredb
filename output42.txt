@@ -1,8 +1,10 @@
 TC1
 Input :
+order size: 1
+best order: 0
 
 Operation: Select File
-Output pipe: 0
+Output pipe: 1
 
 Output Schema:
 n.n_nationkey : Int
@@ -16,8 +18,8 @@ SELECTION CNF:
 *******************************************************
 
 Operation: Project
-Input Pipe 0
-Output Pipe 1
+Input Pipe 1
+Output Pipe 2
 
 Output Schema:
 n.n_nationkey : Int
@@ -29,9 +31,11 @@ n.n_nationkey
 ***************************************************************************************************************************
 TC2
 Input :
+order size: 2
+best order: 0
 
 Operation: Select File
-Output pipe: 0
+Output pipe: 1
 
 Output Schema:
 r.r_regionkey : Int
@@ -43,7 +47,7 @@ SELECTION CNF:
 *******************************************************
 
 Operation: Select File
-Output pipe: 1
+Output pipe: 2
 
 Output Schema:
 n.n_nationkey : Int
@@ -57,9 +61,9 @@ SELECTION CNF:
 *******************************************************
 
 Operation: Join
-Input Pipe 0
 Input Pipe 1
-Output Pipe 2
+Input Pipe 2
+Output Pipe 3
 
 Outpt Schema:
 r.r_regionkey : Int
@@ -71,14 +75,12 @@ n.n_regionkey : Int
 n.n_comment : String
 
 Join CNF:
-( (Att-2) r.r_comment from right record = (Att-0) (Int)r.r_regionkey from left record )  AND
-( (Att-0) r.r_regionkey from right record > (literal) 5 ) 
-
+(Att-2) n.n_regionkey from right record = (Att-0) (Int)r.r_regionkey from left record 
 *******************************************************
 
 Operation: Project
-Input Pipe 2
-Output Pipe 3
+Input Pipe 3
+Output Pipe 4
 
 Output Schema:
 n.n_name : String
@@ -90,9 +92,11 @@ n.n_name
 ***************************************************************************************************************************
 TC3
 Input :
+order size: 2
+best order: 0
 
 Operation: Select File
-Output pipe: 0
+Output pipe: 1
 
 Output Schema:
 r.r_regionkey : Int
@@ -104,7 +108,7 @@ SELECTION CNF:
 *******************************************************
 
 Operation: Select File
-Output pipe: 1
+Output pipe: 2
 
 Output Schema:
 n.n_nationkey : Int
@@ -118,9 +122,9 @@ SELECTION CNF:
 *******************************************************
 
 Operation: Join
-Input Pipe 0
 Input Pipe 1
-Output Pipe 2
+Input Pipe 2
+Output Pipe 3
 
 Outpt Schema:
 r.r_regionkey : Int
@@ -132,14 +136,12 @@ n.n_regionkey : Int
 n.n_comment : String
 
 Join CNF:
-( (Att-2) r.r_comment from right record = (Att-0) (Int)r.r_regionkey from left record )  AND
-( (Att-1) r.r_name from right record = (literal) UNITED STATES ) 
-
+(Att-2) n.n_regionkey from right record = (Att-0) (Int)r.r_regionkey from left record 
 *******************************************************
 
 Operation: Sum
-Input Pipe 2
-Output Pipe 3
+Input Pipe 3
+Output Pipe 4
 
 Output Schema:
 SUM : Int
@@ -151,9 +153,11 @@ n.n_nationkey
 ***************************************************************************************************************************
 TC4
 Input :
+order size: 2
+best order: 0
 
 Operation: Select File
-Output pipe: 0
+Output pipe: 1
 
 Output Schema:
 r.r_regionkey : Int
@@ -165,7 +169,7 @@ SELECTION CNF:
 *******************************************************
 
 Operation: Select File
-Output pipe: 1
+Output pipe: 2
 
 Output Schema:
 n.n_nationkey : Int
@@ -179,9 +183,9 @@ SELECTION CNF:
 *******************************************************
 
 Operation: Join
-Input Pipe 0
 Input Pipe 1
-Output Pipe 2
+Input Pipe 2
+Output Pipe 3
 
 Outpt Schema:
 r.r_regionkey : Int
@@ -193,14 +197,12 @@ n.n_regionkey : Int
 n.n_comment : String
 
 Join CNF:
-( (Att-2) r.r_comment from right record = (Att-0) (Int)r.r_regionkey from left record )  AND
-( (Att-1) r.r_name from right record = (literal) UNITED STATES ) 
-
+(Att-2) n.n_regionkey from right record = (Att-0) (Int)r.r_regionkey from left record 
 *******************************************************
 
 Operation: GroupBy
-Input Pipe 2
-Output Pipe 3
+Input Pipe 3
+Output Pipe 4
 
 Output Schema:
 SUM : Int
@@ -216,8 +218,8 @@ n.n_regionkey
 *******************************************************
 
 Operation: Project
-Input Pipe 3
-Output Pipe 4
+Input Pipe 4
+Output Pipe 5
 
 Output Schema:
 SUM : Int
@@ -229,60 +231,11 @@ SUM
 ***************************************************************************************************************************
 TC5
 Input :
-
-Operation: Select File
-Output pipe: 0
-
-Output Schema:
-c.c_custkey : Int
-c.c_name : String
-c.c_address : String
-c.c_nationkey : Int
-c.c_phone : String
-c.c_acctbal : Double
-c.c_mktsegment : String
-c.c_comment : String
-
-SELECTION CNF:
-
-*******************************************************
+order size: 6
+best order: 0
 
 Operation: Select File
 Output pipe: 1
-
-Output Schema:
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
-
-SELECTION CNF:
-
-*******************************************************
-
-Operation: Join
-Input Pipe 0
-Input Pipe 1
-Output Pipe 2
-
-Outpt Schema:
-c.c_custkey : Int
-c.c_name : String
-c.c_address : String
-c.c_nationkey : Int
-c.c_phone : String
-c.c_acctbal : Double
-c.c_mktsegment : String
-c.c_comment : String
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
-
-Join CNF:
-
-*******************************************************
-
-Operation: Select File
-Output pipe: 3
 
 Output Schema:
 n.n_nationkey : Int
@@ -295,38 +248,8 @@ SELECTION CNF:
 
 *******************************************************
 
-Operation: Join
-Input Pipe 2
-Input Pipe 3
-Output Pipe 4
-
-Outpt Schema:
-c.c_custkey : Int
-c.c_name : String
-c.c_address : String
-c.c_nationkey : Int
-c.c_phone : String
-c.c_acctbal : Double
-c.c_mktsegment : String
-c.c_comment : String
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
-
-Join CNF:
-( (Att-2) c.c_address from right record = (Att-8) (Int)r.r_regionkey from left record )  AND
-( (Att-0) c.c_custkey from right record = (Att-3) (Int)c.c_nationkey from left record )  AND
-( (Att-0) c.c_custkey from right record > (literal) 10 ) 
-
-*******************************************************
-
-Operation: DuplicateRemoval
-Input Pipe 4
-Output Pipe 5
+Operation: Select File
+Output pipe: 2
 
 Output Schema:
 c.c_custkey : Int
@@ -337,19 +260,98 @@ c.c_phone : String
 c.c_acctbal : Double
 c.c_mktsegment : String
 c.c_comment : String
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
+
+SELECTION CNF:
+
+*******************************************************
+
+Operation: Join
+Input Pipe 1
+Input Pipe 2
+Output Pipe 3
+
+Outpt Schema:
 n.n_nationkey : Int
 n.n_name : String
 n.n_regionkey : Int
 n.n_comment : String
+c.c_custkey : Int
+c.c_name : String
+c.c_address : String
+c.c_nationkey : Int
+c.c_phone : String
+c.c_acctbal : Double
+c.c_mktsegment : String
+c.c_comment : String
+
+Join CNF:
+(Att-0) c.c_custkey from left record = (Att-3) (Int)n.n_comment from right record 
+*******************************************************
+
+Operation: Select File
+Output pipe: 4
+
+Output Schema:
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+
+SELECTION CNF:
+
+*******************************************************
+
+Operation: Join
+Input Pipe 3
+Input Pipe 4
+Output Pipe 5
+
+Outpt Schema:
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+c.c_custkey : Int
+c.c_name : String
+c.c_address : String
+c.c_nationkey : Int
+c.c_phone : String
+c.c_acctbal : Double
+c.c_mktsegment : String
+c.c_comment : String
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+
+Join CNF:
+(Att-2) r.r_comment from left record = (Att-0) (Int)n.n_nationkey from right record 
+*******************************************************
+
+Operation: DuplicateRemoval
+Input Pipe 5
+Output Pipe 6
+
+Output Schema:
+n.n_nationkey : Int
+n.n_name : String
+n.n_regionkey : Int
+n.n_comment : String
+c.c_custkey : Int
+c.c_name : String
+c.c_address : String
+c.c_nationkey : Int
+c.c_phone : String
+c.c_acctbal : Double
+c.c_mktsegment : String
+c.c_comment : String
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
 
 *******************************************************
 
 Operation: GroupBy
-Input Pipe 5
-Output Pipe 6
+Input Pipe 6
+Output Pipe 7
 
 Output Schema:
 SUM : Int
@@ -357,7 +359,7 @@ r.r_regionkey : Int
 
 OrderMaker:
 NumAtts =     1
-  0:     8 Int
+  0:    12 Int
 
 Function:
 n.n_nationkey+r.r_regionkey
@@ -365,8 +367,8 @@ n.n_nationkey+r.r_regionkey
 *******************************************************
 
 Operation: Project
-Input Pipe 6
-Output Pipe 7
+Input Pipe 7
+Output Pipe 8
 
 Output Schema:
 SUM : Int
