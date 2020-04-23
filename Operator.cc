@@ -82,7 +82,7 @@ JoinOperator::JoinOperator(Operator *leftChild, Operator *rightChild, AndList *j
     outputSchema = new Schema("join", resNumAttrs, resAtts);
 
     cnf.GrowFromParseTree(joinList, leftChild->getSchema(), rightChild->getSchema(), literal);
-    *joinList = *joinList->rightAnd;
+//    *joinList = *joinList->rightAnd;
 };
 
 void JoinOperator::print() {

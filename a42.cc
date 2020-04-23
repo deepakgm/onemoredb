@@ -128,6 +128,76 @@ void createSchemaMap() {
 
 }
 
+void PrintParseTree(struct AndList *andPointer) {
+
+    cout << "(";
+
+    while (andPointer) {
+
+        struct OrList *orPointer = andPointer->left;
+
+        while (orPointer) {
+
+            struct ComparisonOp *comPointer = orPointer->left;
+
+            if (comPointer != NULL) {
+
+                struct Operand *pOperand = comPointer->left;
+
+                if (pOperand != NULL) {
+
+                    cout << pOperand->value << "";
+
+                }
+
+                switch (comPointer->code) {
+
+                    case LESS_THAN:
+                        cout << " < ";
+                        break;
+                    case GREATER_THAN:
+                        cout << " > ";
+                        break;
+                    case EQUALS:
+                        cout << " = ";
+                        break;
+                    default:
+                        cout << " unknown code " << comPointer->code;
+
+                }
+
+                pOperand = comPointer->right;
+
+                if (pOperand != NULL) {
+
+                    cout << pOperand->value << "";
+                }
+
+            }
+
+            if (orPointer->rightOr) {
+
+                cout << " OR ";
+
+            }
+
+            orPointer = orPointer->rightOr;
+
+        }
+
+        if (andPointer->rightAnd) {
+
+            cout << ") AND (";
+        }
+
+        andPointer = andPointer->rightAnd;
+
+    }
+
+    cout << ")" << endl;
+
+}
+
 int main() {
     if (getcwd(statistics_path, sizeof(statistics_path)) != NULL) {
         strcpy(catalog_path, statistics_path);
@@ -156,13 +226,16 @@ int main() {
     TableList *curTable = tables;
 
     while (curTable) {
+        cout << curTable->tableName << endl;
+
         if (schemas.count(curTable->tableName) == 0) {
             cerr << "Error: Table hasn't been created!" << endl;
             return 0;
         }
         statistics.CopyRel(curTable->tableName, curTable->aliasAs);
         copySchema(schemaMap, curTable->tableName, curTable->aliasAs);
-        tableList.push_back(curTable->aliasAs);
+//        tableList.push_back(curTable->aliasAs);
+        tableList.insert(tableList.begin(), curTable->aliasAs);
         aliasMap[curTable->aliasAs] = curTable->tableName;
         curTable = curTable->next;
     }
@@ -198,17 +271,15 @@ int main() {
                 statistics.Apply(boolean, relNames, j);
             }
 
-            if (result <= minEstimation) {
+            if (result < minEstimation) {
                 minEstimation = result;
                 bestOrderIndex = i;
             }
         }
     }
 
-    cout << "order size: " << orderList.size() <<endl;
-    cout << "best order: " << bestOrderIndex <<endl;
-//    if(orderList.size()==6)
-//        bestOrderIndex=5;
+//    cout << "order size: " << orderList.size() << endl;
+//    cout << "best order: " << bestOrderIndex << endl;
 
     vector<string> bestOrder = orderList[bestOrderIndex];
 
@@ -218,13 +289,17 @@ int main() {
     for (int i = 1; i < orderSize; ++i) {
         Operator *right = new SelectFileOperator(boolean, schemaMap[bestOrder[i]],
                                                  aliasMap[bestOrder[i]]);
-        cout <<"chao chao join " <<endl;
-        cout <<"left " <<endl;
-        left->getSchema()->Print();
-        cout <<"right " <<endl;
-        right->getSchema()->Print();
-        cout <<"chao chao " <<endl;
+//        cout << "chao chao join " << endl;
+//        cout << "parsetree" << endl;
+//        PrintParseTree(boolean);
+//
+//        cout << "left " << endl;
+//        left->getSchema()->Print();
+//        cout << "right " << endl;
+//        right->getSchema()->Print();
+//        cout << "chao chao " << endl;
         root = new JoinOperator(left, right, boolean);
+        boolean = boolean->rightAnd;
         left = root;
     }
 

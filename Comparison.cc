@@ -284,16 +284,16 @@ void CNF::PrintJoin(Schema* leftSchema,Schema* rightSchema,Record* literal) {
 //    cout << "right" <<endl;
 //    rightSchema->Print();
 
-    //    if (numAnds<=2){
-//        Schema* temp;
-//        temp=leftSchema;
-//        leftSchema=rightSchema;
-//        rightSchema=temp;
-//    }
+//        if (numAnds>2){
+//            cout <<"specia effect" <<endl;
+//            orList[2]->Print(leftSchema,rightSchema,literal);
+//        } else{
+            orList[0]->Print(leftSchema,rightSchema,literal);
+//        }
 //    cout << numAnds <<endl;
 //    cout << orLens[0] <<endl;
 //    numAnds
-    orList[0]->Print(leftSchema,rightSchema,literal);
+
 //    string returnString = "";
 //    if (comparisonOp == NULL)
 //        return returnString;

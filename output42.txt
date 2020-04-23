@@ -1,7 +1,6 @@
 TC1
 Input :
-order size: 1
-best order: 0
+nation
 
 Operation: Select File
 Output pipe: 1
@@ -31,19 +30,8 @@ n.n_nationkey
 ***************************************************************************************************************************
 TC2
 Input :
-order size: 2
-best order: 1
-chao chao join 
-left 
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
-right 
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
-chao chao 
+region
+nation
 
 Operation: Select File
 Output pipe: 1
@@ -103,19 +91,8 @@ n.n_name
 ***************************************************************************************************************************
 TC3
 Input :
-order size: 2
-best order: 1
-chao chao join 
-left 
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
-right 
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
-chao chao 
+region
+nation
 
 Operation: Select File
 Output pipe: 1
@@ -175,19 +152,8 @@ n.n_nationkey
 ***************************************************************************************************************************
 TC4
 Input :
-order size: 2
-best order: 1
-chao chao join 
-left 
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
-right 
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
-chao chao 
+region
+nation
 
 Operation: Select File
 Output pipe: 1
@@ -264,43 +230,9 @@ SUM
 ***************************************************************************************************************************
 TC5
 Input :
-order size: 6
-best order: 5
-chao chao join 
-left 
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
-right 
-c.c_custkey : Int
-c.c_name : String
-c.c_address : String
-c.c_nationkey : Int
-c.c_phone : String
-c.c_acctbal : Double
-c.c_mktsegment : String
-c.c_comment : String
-chao chao 
-chao chao join 
-left 
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
-c.c_custkey : Int
-c.c_name : String
-c.c_address : String
-c.c_nationkey : Int
-c.c_phone : String
-c.c_acctbal : Double
-c.c_mktsegment : String
-c.c_comment : String
-right 
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
-chao chao 
+customer
+region
+nation
 
 Operation: Select File
 Output pipe: 1
@@ -320,14 +252,9 @@ Operation: Select File
 Output pipe: 2
 
 Output Schema:
-c.c_custkey : Int
-c.c_name : String
-c.c_address : String
-c.c_nationkey : Int
-c.c_phone : String
-c.c_acctbal : Double
-c.c_mktsegment : String
-c.c_comment : String
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
 
 SELECTION CNF:
 
@@ -343,6 +270,18 @@ n.n_nationkey : Int
 n.n_name : String
 n.n_regionkey : Int
 n.n_comment : String
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
+
+Join CNF:
+(Att-2) n.n_regionkey from left record = (Att-0) (Int)r.r_regionkey from right record 
+*******************************************************
+
+Operation: Select File
+Output pipe: 4
+
+Output Schema:
 c.c_custkey : Int
 c.c_name : String
 c.c_address : String
@@ -351,18 +290,6 @@ c.c_phone : String
 c.c_acctbal : Double
 c.c_mktsegment : String
 c.c_comment : String
-
-Join CNF:
-(Att-0) n.n_nationkey from left record = (Att-3) (Int)c.c_nationkey from right record 
-*******************************************************
-
-Operation: Select File
-Output pipe: 4
-
-Output Schema:
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
 
 SELECTION CNF:
 
@@ -378,6 +305,9 @@ n.n_nationkey : Int
 n.n_name : String
 n.n_regionkey : Int
 n.n_comment : String
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
 c.c_custkey : Int
 c.c_name : String
 c.c_address : String
@@ -386,12 +316,9 @@ c.c_phone : String
 c.c_acctbal : Double
 c.c_mktsegment : String
 c.c_comment : String
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
 
 Join CNF:
-(Att-0) n.n_nationkey from left record = (Att-7) (Int)c.c_nationkey from left record 
+(Att-0) n.n_nationkey from left record = (Att-3) (Int)c.c_nationkey from right record 
 *******************************************************
 
 Operation: DuplicateRemoval
@@ -403,6 +330,9 @@ n.n_nationkey : Int
 n.n_name : String
 n.n_regionkey : Int
 n.n_comment : String
+r.r_regionkey : Int
+r.r_name : String
+r.r_comment : String
 c.c_custkey : Int
 c.c_name : String
 c.c_address : String
@@ -411,9 +341,6 @@ c.c_phone : String
 c.c_acctbal : Double
 c.c_mktsegment : String
 c.c_comment : String
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
 
 *******************************************************
 
@@ -427,7 +354,7 @@ r.r_regionkey : Int
 
 OrderMaker:
 NumAtts =     1
-  0:    12 Int
+  0:     4 Int
 
 Function:
 n.n_nationkey+r.r_regionkey
@@ -443,150 +370,6 @@ SUM : Int
 
 Attributes to Keep:
 SUM 
-
-*******************************************************
-***************************************************************************************************************************
-TEST
-Input :
-order size: 6
-best order: 5
-chao chao join 
-left 
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
-right 
-c.c_custkey : Int
-c.c_name : String
-c.c_address : String
-c.c_nationkey : Int
-c.c_phone : String
-c.c_acctbal : Double
-c.c_mktsegment : String
-c.c_comment : String
-chao chao 
-chao chao join 
-left 
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
-c.c_custkey : Int
-c.c_name : String
-c.c_address : String
-c.c_nationkey : Int
-c.c_phone : String
-c.c_acctbal : Double
-c.c_mktsegment : String
-c.c_comment : String
-right 
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
-chao chao 
-
-Operation: Select File
-Output pipe: 1
-
-Output Schema:
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
-
-SELECTION CNF:
-( (Att-0) n.n_nationkey from left record > (literal) 10 ) 
-
-*******************************************************
-
-Operation: Select File
-Output pipe: 2
-
-Output Schema:
-c.c_custkey : Int
-c.c_name : String
-c.c_address : String
-c.c_nationkey : Int
-c.c_phone : String
-c.c_acctbal : Double
-c.c_mktsegment : String
-c.c_comment : String
-
-SELECTION CNF:
-
-*******************************************************
-
-Operation: Join
-Input Pipe 1
-Input Pipe 2
-Output Pipe 3
-
-Output Schema:
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
-c.c_custkey : Int
-c.c_name : String
-c.c_address : String
-c.c_nationkey : Int
-c.c_phone : String
-c.c_acctbal : Double
-c.c_mktsegment : String
-c.c_comment : String
-
-Join CNF:
-(Att-0) n.n_nationkey from left record = (Att-3) (Int)c.c_nationkey from right record 
-*******************************************************
-
-Operation: Select File
-Output pipe: 4
-
-Output Schema:
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
-
-SELECTION CNF:
-
-*******************************************************
-
-Operation: Join
-Input Pipe 3
-Input Pipe 4
-Output Pipe 5
-
-Output Schema:
-n.n_nationkey : Int
-n.n_name : String
-n.n_regionkey : Int
-n.n_comment : String
-c.c_custkey : Int
-c.c_name : String
-c.c_address : String
-c.c_nationkey : Int
-c.c_phone : String
-c.c_acctbal : Double
-c.c_mktsegment : String
-c.c_comment : String
-r.r_regionkey : Int
-r.r_name : String
-r.r_comment : String
-
-Join CNF:
-(Att-0) n.n_nationkey from left record = (Att-7) (Int)c.c_nationkey from left record 
-*******************************************************
-
-Operation: Project
-Input Pipe 5
-Output Pipe 6
-
-Output Schema:
-n.n_nationkey : Int
-
-Attributes to Keep:
-n.n_nationkey 
 
 *******************************************************
 ***************************************************************************************************************************
