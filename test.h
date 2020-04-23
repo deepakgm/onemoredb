@@ -101,7 +101,7 @@ public:
 		}
 		cnf_pred.GrowFromParseTree (final, schema (), literal); // constructs CNF predicate
 		// cnf_pred.GrowFromParseTree (final, l_schema (), r_schema (), literal); // constructs CNF predicate over two relations l_schema is the left reln's schema r the right's
-		//cnf_pred.Print ();
+		//cnf_pred.PrintLiteral ();
 	}
 
 

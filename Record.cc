@@ -473,29 +473,31 @@ void Record :: Print (Schema *mySchema) {
 
 
 
-void Record :: Print (Schema *mySchema,int attrNo) {
-
-
+void Record :: PrintLiteral (Schema *mySchema, int attrIndex) {
 //    cout << " "
-//    int n = mySchema->GetNumAtts();
+    int n = mySchema->GetNumAtts();
+    if (n <= attrIndex){
+        cerr << "can not print attr: invalid attr index "<<n<<" "<<attrIndex;
+        return;
+    }
     Attribute *atts = mySchema->GetAtts();
 
 
-        int pointer = ((int *) bits)[attrNo + 1];
+        int pointer = ((int *) bits)[ 1];
 
 
         // first is integer
-        if (atts[attrNo].myType == Int) {
+        if (atts[attrIndex].myType == Int) {
             int *myInt = (int *) &(bits[pointer]);
             cout << *myInt;
 
             // then is a double
-        } else if (atts[attrNo].myType == Double) {
+        } else if (atts[attrIndex].myType == Double) {
             double *myDouble = (double *) &(bits[pointer]);
             cout << *myDouble;
 
             // then is a character string
-        } else if (atts[attrNo].myType == String) {
+        } else if (atts[attrIndex].myType == String) {
             char *myString = (char *) &(bits[pointer]);
             cout << myString;
         }

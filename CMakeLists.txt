@@ -67,6 +67,4 @@ add_executable(onemoredb
         TwoWayList.h
         a42.cc
         Operator.cc
-        a4-2utils.h
-        a3utils.h
         )

@@ -13,9 +13,10 @@ void SelectFileOperator::print() {
     cout << "Output pipe: " << this->getPipeID() << endl;
     cout << endl << "Output Schema:" << endl;
     this->outputSchema->Print();
+
     cout << endl << "SELECTION CNF:" << endl;
-//    this->cnf.Print();
     this->cnf.Print(this->getSchema(),&literal);
+//    this->cnf.Print();
 }
 
 SelectPipeOperator::SelectPipeOperator(Operator *child, AndList *selectList) {

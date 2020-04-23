@@ -69,7 +69,7 @@ public:
 	// prints the contents of the record; this requires
 	// that the schema also be given so that the record can be interpreted
 	void Print (Schema *mySchema);
-     void Print (Schema *mySchema,int attrNo);
+     void PrintLiteral (Schema *mySchema, int attrIndex);
     //GetLength
     long GetLength();
 };
