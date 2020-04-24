@@ -110,7 +110,7 @@ void printRecursively(Operator *currNode) {
             ((JoinOperator *) currNode)->print();
             break;
         default:
-            cerr << "ERROR: Unspecified node!" << endl;
+            cerr << "ERROR: code not found!" << endl;
             exit(-1);
     }
     cout << endl << "*******************************************************" << endl;
@@ -125,76 +125,6 @@ void createSchemaMap() {
     schemas["supplier"] = new Schema("catalog", "supplier");
     schemas["lineitem"] = new Schema("catalog", "lineitem");
     schemas["orders"] = new Schema("catalog", "orders");
-
-}
-
-void PrintParseTree(struct AndList *andPointer) {
-
-    cout << "(";
-
-    while (andPointer) {
-
-        struct OrList *orPointer = andPointer->left;
-
-        while (orPointer) {
-
-            struct ComparisonOp *comPointer = orPointer->left;
-
-            if (comPointer != NULL) {
-
-                struct Operand *pOperand = comPointer->left;
-
-                if (pOperand != NULL) {
-
-                    cout << pOperand->value << "";
-
-                }
-
-                switch (comPointer->code) {
-
-                    case LESS_THAN:
-                        cout << " < ";
-                        break;
-                    case GREATER_THAN:
-                        cout << " > ";
-                        break;
-                    case EQUALS:
-                        cout << " = ";
-                        break;
-                    default:
-                        cout << " unknown code " << comPointer->code;
-
-                }
-
-                pOperand = comPointer->right;
-
-                if (pOperand != NULL) {
-
-                    cout << pOperand->value << "";
-                }
-
-            }
-
-            if (orPointer->rightOr) {
-
-                cout << " OR ";
-
-            }
-
-            orPointer = orPointer->rightOr;
-
-        }
-
-        if (andPointer->rightAnd) {
-
-            cout << ") AND (";
-        }
-
-        andPointer = andPointer->rightAnd;
-
-    }
-
-    cout << ")" << endl;
 
 }
 
@@ -226,7 +156,7 @@ int main() {
     TableList *curTable = tables;
 
     while (curTable) {
-        cout << curTable->tableName << endl;
+//        cout << curTable->tableName << endl;
 
         if (schemas.count(curTable->tableName) == 0) {
             cerr << "Error: Table hasn't been created!" << endl;
@@ -287,17 +217,8 @@ int main() {
 
     Operator *root = left;
     for (int i = 1; i < orderSize; ++i) {
-        Operator *right = new SelectFileOperator(boolean, schemaMap[bestOrder[i]],
-                                                 aliasMap[bestOrder[i]]);
-//        cout << "chao chao join " << endl;
-//        cout << "parsetree" << endl;
-//        PrintParseTree(boolean);
-//
-//        cout << "left " << endl;
-//        left->getSchema()->Print();
-//        cout << "right " << endl;
-//        right->getSchema()->Print();
-//        cout << "chao chao " << endl;
+        Operator *right = new SelectFileOperator(boolean, schemaMap[bestOrder[i]], aliasMap[bestOrder[i]]);
+
         root = new JoinOperator(left, right, boolean);
         boolean = boolean->rightAnd;
         left = root;

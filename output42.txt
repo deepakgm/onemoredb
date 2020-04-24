@@ -1,6 +1,5 @@
 TC1
 Input :
-nation
 
 Operation: Select File
 Output pipe: 1
@@ -30,8 +29,6 @@ n.n_nationkey
 ***************************************************************************************************************************
 TC2
 Input :
-region
-nation
 
 Operation: Select File
 Output pipe: 1
@@ -91,8 +88,6 @@ n.n_name
 ***************************************************************************************************************************
 TC3
 Input :
-region
-nation
 
 Operation: Select File
 Output pipe: 1
@@ -152,8 +147,6 @@ n.n_nationkey
 ***************************************************************************************************************************
 TC4
 Input :
-region
-nation
 
 Operation: Select File
 Output pipe: 1
@@ -230,9 +223,6 @@ SUM
 ***************************************************************************************************************************
 TC5
 Input :
-customer
-region
-nation
 
 Operation: Select File
 Output pipe: 1
