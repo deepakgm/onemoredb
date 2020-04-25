@@ -52,6 +52,7 @@ add_executable(onemoredb
         main.cc
         Meta.cc
         Meta.h
+        a5.cc
 
         Pipe.cc
         Pipe.h

@@ -58,7 +58,18 @@ extern int yydebug;
     SUM = 268,
     AS = 269,
     AND = 270,
-    OR = 271
+    OR = 271,
+    CREATE = 272,
+    TABLE = 273,
+    ON = 274,
+    SORTED = 275,
+    HEAP = 276,
+    INSERT = 277,
+    DROP = 278,
+    INTO = 279,
+    SET = 280,
+    OUTPUT = 281,
+    EXIT = 282
   };
 #endif
 /* Tokens.  */
@@ -76,26 +87,38 @@ extern int yydebug;
 #define AS 269
 #define AND 270
 #define OR 271
+#define CREATE 272
+#define TABLE 273
+#define ON 274
+#define SORTED 275
+#define HEAP 276
+#define INSERT 277
+#define DROP 278
+#define INTO 279
+#define SET 280
+#define OUTPUT 281
+#define EXIT 282
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 
 union YYSTYPE
 {
-#line 26 "Parser.y" /* yacc.c:1909  */
+#line 38 "Parser.y" /* yacc.c:1909  */
 
  	struct FuncOperand *myOperand;
-	struct FuncOperator *myOperator; 
+	struct FuncOperator *myOperator;
 	struct TableList *myTables;
 	struct ComparisonOp *myComparison;
 	struct Operand *myBoolOperand;
 	struct OrList *myOrList;
 	struct AndList *myAndList;
 	struct NameList *myNames;
+	struct AttrList *myAttrList;
 	char *actualChars;
 	char whichOne;
 
-#line 99 "y.tab.h" /* yacc.c:1909  */
+#line 122 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

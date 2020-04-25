@@ -14,7 +14,7 @@
 #include "yyfunc.tab.h"
 
 //int yyfunclineno = 1;
-void yyfuncerror(char*statistics);
+void yyfuncerror(char*s);
 
 static YY_BUFFER_STATE yyfunc_buf_state;
 void init_lexical_parser_func (char *src) { yyfunc_buf_state = yyfunc_scan_string (src); }
@@ -53,16 +53,16 @@ void close_lexical_parser_func () { yyfunc_delete_buffer (yyfunc_buf_state); }
 "*"    	        	return('*');
 
 -?[0-9]+ 	       {yyfunclval.actualChars = strdup(yyfunctext);
-  			return(Int); 
+  			return(Int);
 		        }
 
--?[0-9]+\.[0-9]*       {yyfunclval.actualChars = strdup(yyfunctext); 
+-?[0-9]+\.[0-9]*       {yyfunclval.actualChars = strdup(yyfunctext);
   			return(Float);
 			}
 
 [A-Za-z][A-Za-z0-9_-]* {yyfunclval.actualChars = strdup(yyfunctext);
   			return(Name);
-			}     
+			}
 
 \n                	yyfunclineno++;
 
@@ -72,8 +72,8 @@ void close_lexical_parser_func () { yyfunc_delete_buffer (yyfunc_buf_state); }
 
 %%
 
-void yyfuncerror(char *statistics) {
-  printf("%d: %statistics at %statistics\n", yyfunclineno, statistics, yyfunctext);
+void yyfuncerror(char *s) {
+  printf("%d: %s at %s\n", yyfunclineno, s, yyfunctext);
 }
 
 int yyfuncwrap(void){

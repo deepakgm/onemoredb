@@ -20,18 +20,31 @@
 	int distinctAtts; // 1 if there is a DISTINCT in a non-aggregate query 
 	int distinctFunc;  // 1 if there is a DISTINCT in an aggregate query
 
+	int queryType; // 1 for SELECT, 2 for CREATE, 3 for DROP,
+				   // 4 for INSERT, 5 for SET, 6 for EXIT
+//	int outputType; // 0 for NONE, 1 for STDOUT, 2 for file output
+
+	char *outputVar;
+
+	char *tableName;
+	char *fileToInsert;
+
+	struct AttrList *attsToCreate;
+	struct NameList *attsToSort;
+
 %}
 
 // this stores all of the types returned by production rules
 %union {
  	struct FuncOperand *myOperand;
-	struct FuncOperator *myOperator; 
+	struct FuncOperator *myOperator;
 	struct TableList *myTables;
 	struct ComparisonOp *myComparison;
 	struct Operand *myBoolOperand;
 	struct OrList *myOrList;
 	struct AndList *myAndList;
 	struct NameList *myNames;
+	struct AttrList *myAttrList;
 	char *actualChars;
 	char whichOne;
 }
@@ -41,7 +54,7 @@
 %token <actualChars> Int
 %token <actualChars> String
 %token SELECT
-%token GROUP 
+%token GROUP
 %token DISTINCT
 %token BY
 %token FROM
@@ -51,16 +64,29 @@
 %token AND
 %token OR
 
+%token CREATE
+%token TABLE
+%token ON
+%token SORTED
+%token HEAP
+%token INSERT
+%token DROP
+%token INTO
+%token SET
+%token OUTPUT
+%token EXIT
+
 %type <myOrList> OrList
 %type <myAndList> AndList
 %type <myOperand> SimpleExp
 %type <myOperator> CompoundExp
-%type <whichOne> Op 
+%type <whichOne> Op
 %type <myComparison> BoolComp
 %type <myComparison> Condition
 %type <myTables> Tables
 %type <myBoolOperand> Literal
 %type <myNames> Atts
+%type <myAttrList> NewAtts
 
 %start SQL
 
@@ -68,7 +94,7 @@
 //******************************************************************************
 // SECTION 3
 //******************************************************************************
-/* This is the PRODUCTION RULES section which defines how to "understand" the 
+/* This is the PRODUCTION RULES section which defines how to "understand" the
  * input language and what action to take for each "statment"
  */
 
@@ -77,15 +103,89 @@
 SQL: SELECT WhatIWant FROM Tables WHERE AndList
 {
 	tables = $4;
-	boolean = $6;	
+	boolean = $6;
 	groupingAtts = NULL;
+	queryType = 1;
 }
 
 | SELECT WhatIWant FROM Tables WHERE AndList GROUP BY Atts
 {
 	tables = $4;
-	boolean = $6;	
+	boolean = $6;
 	groupingAtts = $9;
+	queryType = 1;
+}
+
+| CREATE TABLE Name '(' NewAtts ')' AS HEAP
+{
+	tableName = $3;
+	attsToCreate = $5;
+	attsToSort = NULL;
+	queryType = 2;
+}
+
+| CREATE TABLE Name '(' NewAtts ')' AS SORTED ON Atts
+{
+	tableName = $3;
+	attsToCreate = $5;
+	attsToSort = $10;
+	queryType = 2;
+}
+
+| INSERT String INTO Name
+{
+	fileToInsert = $2;
+	tableName = $4;
+	queryType = 4;
+}
+
+| DROP TABLE Name
+{
+	tableName = $3;
+	queryType = 3;
+}
+
+| SET OUTPUT Name
+{
+	queryType = 5;
+	outputVar = $3;
+}
+
+| SET OUTPUT String
+{
+	queryType = 5;
+	outputVar = $3;
+}
+
+| EXIT
+{
+	queryType = 6;
+};
+
+NewAtts: Name Name
+{
+	$$ = (struct AttrList *) malloc (sizeof (struct AttrList));
+	$$->name = $1;
+	if (strcmp ($2, "INTEGER") == 0)
+		$$->type = 0;
+	else if (strcmp ($2, "DOUBLE") == 0)
+		$$->type = 1;
+	else if (strcmp ($2, "STRING") == 0)
+		$$->type = 2;
+	$$->next = NULL;
+}
+
+| Name Name ',' NewAtts
+{
+	$$ = (struct AttrList *) malloc (sizeof (struct AttrList));
+	$$->name = $1;
+	if(strcmp($2, "INTEGER") == 0)
+		$$->type = 0;
+	else if(strcmp($2, "DOUBLE") == 0)
+		$$->type = 1;
+	else if(strcmp($2, "STRING") == 0)
+		$$->type = 2;
+	$$->next = $4;
 };
 
 WhatIWant: Function ',' Atts 

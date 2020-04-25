@@ -14,7 +14,7 @@
 #include "y.tab.h"
 
 int lineno = 1;
-void yyerror(char*statistics);
+void yyerror(char*s);
 
 %}
 
@@ -55,13 +55,35 @@ void yyerror(char*statistics);
 
 "AS"			return(AS);
 
-"("			return('(');
+"DROP"          return(DROP);
 
-"<"                     return('<');
+"CREATE"        return(CREATE);
 
-">"                     return('>');
+"TABLE"         return(TABLE);
 
-"="                     return('=');
+"ON"            return(ON);
+
+"HEAP"			return(HEAP);
+
+"SORTED"		return(SORTED);
+
+"INSERT"        return(INSERT);
+
+"INTO"          return(INTO);
+
+"SET"           return(SET);
+
+"OUTPUT"        return(OUTPUT);
+
+"EXIT"          return(EXIT);
+
+"("			    return('(');
+
+"<"             return('<');
+
+">"             return('>');
+
+"="             return('=');
 
 ")"    	        	return(')');
 
@@ -76,20 +98,20 @@ void yyerror(char*statistics);
 ","    	        	return(',');
 
 -?[0-9]+ 	       {yylval.actualChars = strdup(yytext);
-  			return(Int); 
+  			return(Int);
 		        }
 
--?[0-9]+\.[0-9]*       {yylval.actualChars = strdup(yytext); 
+-?[0-9]+\.[0-9]*       {yylval.actualChars = strdup(yytext);
   			return(Float);
 			}
 
 [A-Za-z][A-Za-z0-9_-]* {yylval.actualChars = strdup(yytext);
   			return(Name);
-			}     
+			}
 
 [A-Za-z][A-Za-z0-9_-]*\.[A-Za-z][A-Za-z0-9_-]* {yylval.actualChars = strdup(yytext);
   			return(Name);
-			}     
+			}
 
 \'[^'\n]*\'            {/* take care of ' in a string */
                         if (yytext[yyleng - 2] == '\\') {
@@ -109,8 +131,8 @@ void yyerror(char*statistics);
 
 %%
 
-void yyerror(char *statistics) {
-  printf("%d: %statistics at %statistics\n", lineno, statistics, yytext);
+void yyerror(char *s) {
+  printf("%d: %s at %s\n", lineno, s, yytext);
 }
 
 int yywrap(void){
