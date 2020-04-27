@@ -12,7 +12,6 @@
 using namespace std;
 
 
-
 /*
 string GetString (Schema *mySchema,Record* rec) {
 
@@ -229,6 +228,10 @@ public:
 
 int main() {
 
+    Schema nation("/home/deepak/Desktop/dbi/onemoredb/catalog", "nation");
+
+
+
     /*BinFile* binFile=new BinFile();
     binFile->Open(0,"/home/deepak/Desktop/dbi/onemoredb/temp/binfile1");
     binFile->Close();
@@ -276,15 +279,10 @@ int main() {
 
 
 
-
-
-
-
     DBFile *dbFile = new DBFile();
 
     SortInfo *sortInfo = new SortInfo();
 
-    Schema nation("/home/deepak/Desktop/dbi/onemoredb/catalog", "nation");
     OrderMaker *omg = new OrderMaker(&nation);
     sortInfo->myOrder = omg;
 

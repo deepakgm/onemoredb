@@ -73,6 +73,11 @@ namespace bpt {
     public:
         bplus_tree(const char *path, bool force_empty = false);
 
+        leaf_node_t currLeaf;
+        off_t leafOffset=0;
+        void move_first();
+        int get_next(value_t* val);
+
         /* abstract operations */
         int search(const key_t& key, value_t *value) const;
         int search_range(key_t *left, const key_t &right,

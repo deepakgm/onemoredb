@@ -93,16 +93,22 @@ class BinFile {
 private:
     int myFilDes;
     off_t curLength; //this was private in Chris's version
+    off_t curReadOffset;
+    const int RECORD_MAX_SIZE=200;
 
 public:
 
     BinFile (){
         curLength=0;
+        curReadOffset=0;
     }
     ~BinFile (){
 
     }
 
+    void ResetReadOffset(){
+        curReadOffset=0;
+    }
     string GetString (Schema *mySchema,Record* rec) {
 
         int n = mySchema->GetNumAtts();
@@ -131,7 +137,7 @@ public:
         return out;
     }
 
-    void GetReocrd (Schema *mySchema,Record* rec,char* fbits,off_t length) {
+    int GetReocrd (Schema *mySchema,Record* rec,char* fbits,off_t length) {
 
 //    length=length+1;
 
@@ -163,7 +169,7 @@ public:
                 else if (nextChar == EOF) {
                     delete [] space;
                     delete [] recSpace;
-                    return;
+                    return  -1;
                 }
 
                 space[len] = nextChar;
@@ -220,6 +226,8 @@ public:
 
         delete [] space;
         delete [] recSpace;
+
+        return j;
     }
 
     off_t GetLength (){
@@ -283,6 +291,28 @@ public:
 //        cout <<"**"<<bits<<"**"<<endl;
 
         GetReocrd(schema,rec,bits,len);
+
+        delete[] bits;
+    }
+
+    int ReadNext (Schema* schema,Record* rec){
+        char *bits = new (std::nothrow) char[RECORD_MAX_SIZE];
+
+        lseek (myFilDes, curReadOffset, SEEK_SET);
+        int res=read (myFilDes, bits, RECORD_MAX_SIZE);
+        if(res<=0)
+            return -1;
+
+//        cout <<"**"<<bits<<"**"<<endl;
+        res=GetReocrd(schema,rec,bits,RECORD_MAX_SIZE);
+        if(res>0){
+            curReadOffset+=res+1;
+            res=1;
+        }
+
+        cout <<"cur off: "<<curReadOffset<<endl;
+        delete[] bits;
+        return res;
     }
 
     int Close (){

@@ -4,6 +4,8 @@
 
 #include <list>
 #include <algorithm>
+#include <iostream>
+
 using std::swap;
 using std::binary_search;
 using std::lower_bound;
@@ -205,6 +207,82 @@ namespace bpt {
         }
 
         return 0;
+    }
+
+
+
+    void bplus_tree::move_first() {
+//        char key[32] = {0};
+//        sprintf(key, "%d", 0);
+//        off_t parent = search_index(key);
+//
+//        off_t offset = search_leaf(parent, key);
+////        leaf_node_t leaf;
+//        map(&currLeaf, offset);
+        internal_node_t node;
+        map(&node, meta.root_offset);
+        map(&currLeaf,meta.leaf_offset);
+    }
+
+
+    int bplus_tree::get_next(value_t *val) {
+//        internal_node_t root;
+//         map(&root,meta.root_offset);
+//         record_t record;
+//        map(&record,root.children[1].child);
+//
+//        std::cout<< meta.leaf_offset<<endl;
+        std::cout <<"leafoffset "<<leafOffset<<std::endl;
+//        cout<<currLeaf.n<< "curleaf : "<<endl;
+//        if(leafOffset<=currLeaf.n){
+            val=&currLeaf.children[leafOffset].value;
+//            std::cout<< "val: "<<val<<endl;
+//            leafOffset++;
+//            return 0;
+//        }else{
+////            std::cout<<"hii";
+//            leafOffset=0;
+//            if(map(&currLeaf,currLeaf.next)==-1)
+//                return -1;
+//            val=&currLeaf.children[leafOffset].value;
+//            leafOffset++;
+
+//        while (leafOffset <= currLeaf.n) {
+//            cout <<currLeaf.children[leafOffset].key<<endl;
+//            leafOffset++;
+//        }
+
+
+//        if (leafOffset <= currLeaf.n && leafOffset==0) {
+//            b = begin(currLeaf);
+//            record_t *record = find(currLeaf, currLeaf.children[leafOffset].key);
+//            *val = record->value;
+//            leafOffset++;
+//            return 0;
+//        }else {
+//            leafOffset = 0;
+//            if (map(&currLeaf, currLeaf.next) == -1)
+//                return -1;
+//            record_t *record = find(currLeaf, currLeaf.children[leafOffset].key);
+//            *val = record->value;
+//            leafOffset++;
+//        }
+//
+//        char key[32] = { 0 };
+//        sprintf(key, "%d", 0);
+//        record_t *record = find(currLeaf, key);
+//        if (record != currLeaf.children + currLeaf.n) {
+//            // always return the lower bound
+//            *val = record->value;
+//            return keycmp(record->key, key);
+//        } else {
+//            return -1;
+//        }
+//
+//        currLeaf.next //ofset
+//
+////            return 0;
+//
     }
 
     int bplus_tree::insert(const key_t& key, value_t value)

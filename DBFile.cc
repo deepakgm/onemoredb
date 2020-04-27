@@ -634,13 +634,11 @@ public:
 
 
 BTree::BTree(const char *fpath) {
-//    bdb = new bpt::bplus_tree(fpath, size, true);
     bdb = new bpt::bplus_tree(fpath, true);
     binFile=new BinFile();
     binFile->Open(0,(char *)(string(fpath)+".bin").c_str());
     //todo change
-    Schema nation("/home/deepak/Desktop/dbi/onemoredb/catalog","nation");
-    this->mySchema=&nation;
+    this->mySchema=new Schema("/home/deepak/Desktop/dbi/onemoredb/catalog","nation");;
 }
 
 
@@ -668,19 +666,8 @@ void BTree::Load(Schema &schema, const char *loadpath) {
     } else {
         Record tempRecord = Record();
         while (tempRecord.SuckNextRecord(&schema, tableFile)) {
-//            int pointer = ((int *) tempRecord.bits)[1];
-//            int *myInt = (int *) &(tempRecord.bits[pointer]);
-////            tempRecord.Print()
-////        const char* key=to_string(hash++).c_str();
-//        char key[32] = { 0 };
-//        sprintf(key, "%d", hash++);
-////        sprintf(key, "%d", *myInt);
-//            cout <<"inserting key "<<key <<endl;
-//            bdb->insert(key,tempRecord.bits);
-//            cout <<"success key" <<endl;
             Add(tempRecord);
             tempRecord = Record();
-            //            inPipe.Insert(&tempRecord);
             ++numofRecords;
         }
         fclose(tableFile);
@@ -694,54 +681,44 @@ void BTree::Add(Record &rec) {
     char key[32] = {0};
     int *myInt = (int *) &(rec.bits[pointer]);
     sprintf(key, "%d", *myInt);
-//    sprintf(key, "%d", hash++);
 
     bpt::value_t location;
     cout << "inserting " << key << endl;
-    Schema nation("/home/deepak/Desktop/dbi/onemoredb/catalog","nation");
-    binFile->Write(&nation, &rec, &location);
+    binFile->Write(mySchema, &rec, &location);
     cout <<" updating curlen: "<<location.len<<endl;
     bdb->insert(key, location);
 }
 
 
 void BTree::MoveFirst() {
-    curKey = 0;
-//    bdb->move_first();
+    binFile->ResetReadOffset();
 }
 
 int BTree::GetKey(bpt::key_t key,Record &fetchme) {
     bpt::value_t val;
-
-
-    Schema nation("/home/deepak/Desktop/dbi/onemoredb/catalog","nation");
-
-    bdb->search(key,&val);
-
-//    cout <<"it "<<val.len <<endl;
-
-    binFile->Read(&nation,&fetchme,val.len,val.offset);
+    int res=bdb->search(key,&val);
+    if (res==-1)
+        return res;
+    binFile->Read(mySchema,&fetchme,val.len,val.offset);
+    return 1;
 }
 
 
 int BTree::GetNext(Record &fetchme) {
-        char key2[32] = {0};
-    sprintf(key2, "%d",5);
-    GetKey(key2,fetchme);
-//    bpt::value_t val;
-//    char key2[32] = {0};
-//    sprintf(key2, "%d", curKey++);
-//    if (bdb->search(key2, &val) == -1) {
-//        return 0;
-//    }
-////    fetchme.CopyBits(val, rsize * 8);
-//    return 1;
+    return binFile->ReadNext(mySchema,&fetchme);
 }
 
-
 int BTree::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
-    if(cnf.orList[0][0].whichAtt1==1){
-        //todo
+    //todo confirm it is the first attr
+    if(cnf.orList[0][0].whichAtt1==0){
+        cout <<"light speed" <<endl;
+        int pointer = ((int *) literal.bits)[1];
+        char key[32] = {0};
+        int *myInt = (int *) &(literal.bits[pointer]);
+        sprintf(key, "%d", *myInt);
+        cout << "fetching......."<<key<<endl;
+//        delete myInt;
+        return GetKey(key,fetchme);
     }
     if (mode == writing)
         readingMode();
