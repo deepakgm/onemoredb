@@ -214,7 +214,7 @@ int main()
                 }
                 outputVar = "STDOUT";
                 cout<<"OutputVar: "<<outputVar<<endl;
-                myfunc.WriteOutFunc(root,1,outputVar);
+                myfunc.WriteOutFunc(root,0,outputVar);
             }
             else if (queryType == 2)
             {

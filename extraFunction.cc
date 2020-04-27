@@ -172,10 +172,10 @@ void MyFucntion ::WriteOutFunc(Operator *root, int outputSet, char *outputFile)
         traverse(root, 1);
         cout << "Back to writeOut" << endl;
         Record rec;
-        // while (root->outPipe.Remove(&rec))
-        // {
-        //     rec.Print(root->getSchema());
-        // }
+        while (root->outPipe.Remove(&rec))
+        {
+            rec.Print(root->getSchema());
+        }
     }
     else
     {
@@ -257,10 +257,10 @@ void MyFucntion ::traverse(Operator *root, int outputSet)
     if (outputSet == 2)
         cout << endl
              << "*******************************************************" << endl;
-    Record rec;
-    while (root->outPipe.Remove(&rec))
-    {
-        rec.Print(root->getSchema());
-    }
+    // Record rec;
+    // while (root->outPipe.Remove(&rec))
+    // {
+    //     rec.Print(root->getSchema());
+    // }
     return;
 }
