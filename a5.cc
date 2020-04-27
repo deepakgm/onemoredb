@@ -139,7 +139,7 @@ int main()
                 }
 
                 s.Write(output);
-
+                // cout<<"1"<<endl;
                 vector<vector<string>> joinOrder = myfunc.shuffleOrder(seenTable);
                 int indexofBestChoice = 0;
                 double minRes = DBL_MAX;
@@ -178,12 +178,9 @@ int main()
                         }
                     }
                 }
-
+                cout<<"MinResult: "<<minRes<<endl;
                 vector<string> chosenJoinOrder = joinOrder[indexofBestChoice];
 
-                /*
-     * Generate opTree
-     */
                 Operator *left = new SelectFileOperator(boolean, aliasSchemas[chosenJoinOrder[0]], aliasName[chosenJoinOrder[0]]);
                 Operator *root = left;
                 for (int i = 1; i < numofRels; ++i)
@@ -215,6 +212,8 @@ int main()
                 {
                     root = new ProjectOperator(left, attsToSelect);
                 }
+                outputVar = "STDOUT";
+                cout<<"OutputVar: "<<outputVar<<endl;
                 myfunc.WriteOutFunc(root,1,outputVar);
             }
             else if (queryType == 2)

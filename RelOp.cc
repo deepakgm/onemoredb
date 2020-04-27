@@ -14,6 +14,7 @@ void *SelectFile::workerThread(void *arg) {
             opArgs->outPipe->Insert(&temp);
         }
     }
+    cout<<endl<<"SelectFile outPipe"<<endl;
     opArgs->outPipe->ShutDown();
     pthread_exit(NULL);
 }

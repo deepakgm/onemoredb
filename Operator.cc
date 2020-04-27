@@ -20,10 +20,12 @@ void SelectFileOperator::print() {
 //    this->cnf.Print();
 }
 
-
 void SelectFileOperator :: run() {
+    cout<<"DBfile location: "<<dbfilePath;
     dbfile.Open(dbfilePath.c_str());
     sf.Run(dbfile, outPipe, cnf, literal);
+    sf.WaitUntilDone();
+    cout<<"After SelectFileRun"<<endl;
 }
 
 SelectPipeOperator::SelectPipeOperator(Operator *child, AndList *selectList) {
@@ -72,6 +74,8 @@ void ProjectOperator::print() {
 
 void ProjectOperator :: run() {
     p.Run(left->outPipe, outPipe, keepMe, this->left->getSchema()->GetNumAtts(), this->outputSchema->GetNumAtts());
+    p.WaitUntilDone();
+    cout<<endl<<"Outpipe: "<<endl;
 }
 
 JoinOperator::JoinOperator(Operator *leftChild, Operator *rightChild, AndList *joinList) {

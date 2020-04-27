@@ -170,11 +170,12 @@ void MyFucntion ::WriteOutFunc(Operator *root, int outputSet, char *outputFile)
     else if (outputSet == 0)
     {
         traverse(root, 1);
+        cout << "Back to writeOut" << endl;
         Record rec;
-        while (root->outPipe.Remove(&rec))
-        {
-            rec.Print(root->getSchema());
-        }
+        // while (root->outPipe.Remove(&rec))
+        // {
+        //     rec.Print(root->getSchema());
+        // }
     }
     else
     {
@@ -189,15 +190,20 @@ void MyFucntion ::WriteOutFunc(Operator *root, int outputSet, char *outputFile)
 
 void MyFucntion ::traverse(Operator *root, int outputSet)
 {
+    cout << "root type: " << root->getType() << endl;
     if (!root)
         return;
     switch (root->getType())
     {
     case SELECT_FILE:
+        cout << "Select file" << endl;
         if (outputSet == 2)
             ((SelectFileOperator *)root)->print();
         else
+        {
             ((SelectFileOperator *)root)->run();
+            cout << "done" << endl;
+        }
         break;
     case SELECT_PIPE:
         traverse(((SelectPipeOperator *)root)->left, outputSet);
@@ -207,6 +213,7 @@ void MyFucntion ::traverse(Operator *root, int outputSet)
             ((SelectPipeOperator *)root)->run();
         break;
     case PROJECT:
+        cout << "Project" << endl;
         traverse(((ProjectOperator *)root)->left, outputSet);
         if (outputSet == 2)
             ((ProjectOperator *)root)->print();
@@ -246,7 +253,14 @@ void MyFucntion ::traverse(Operator *root, int outputSet)
         cerr << "ERROR: Unspecified node!" << endl;
         exit(-1);
     }
+    // cout << "out of loop" << endl;
     if (outputSet == 2)
         cout << endl
              << "*******************************************************" << endl;
+    Record rec;
+    while (root->outPipe.Remove(&rec))
+    {
+        rec.Print(root->getSchema());
+    }
+    return;
 }

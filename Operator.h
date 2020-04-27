@@ -63,7 +63,7 @@ private:
 public:
     SelectFileOperator(AndList *selectList, Schema *schema, string relName);
     void run();
-    void print() override;
+    void print();
 };
 
 class SelectPipeOperator : public Operator
