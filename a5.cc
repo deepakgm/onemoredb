@@ -13,6 +13,7 @@
 #include "Operator.h"
 #include "extraFunction.h"
 #include <unordered_map>
+#include <float.h>
 
 extern "C"
 {
@@ -49,6 +50,8 @@ extern struct NameList *attsToSort;
 extern fType type;
 
 unordered_map<int, Pipe *> pipeMap;
+typedef map<string, Schema> SchemaMap;
+typedef map<string, string> AliaseMap;
 
 const std::string WHITESPACE = " \n\r\t\f\v";
 
@@ -86,199 +89,306 @@ bool exists(const char *relName)
 }
 unordered_map<string, Schema *> schemas;
 MyFucntion myfunc;
+char *input = "meta/Statistics.txt";
+char *output = "Statistics.txt";
+Statistics s;
+
 int main()
 {
     cout << "hello" << endl;
     string option;
     cout << endl;
-        cout << "1. SELECT QUERY" << endl;
-        cout << "2. Create a new database (will delete current database)" << endl;
-        cout << "3. Drop a table" << endl;
-        cout << "4. Insert file to a table" << endl;
-        cout << "5. Exit" << endl<< endl;
-        cout << "Your choice: ";
+    cout << "1. SELECT QUERY" << endl;
+    cout << "2. Create a new database (will delete current database)" << endl;
+    cout << "3. Drop a table" << endl;
+    cout << "4. Insert file to a table" << endl;
+    cout << "5. Exit" << endl
+         << endl;
+    cout << "Your choice: ";
 
     while (std::cin >> queryType)
     {
         yyparse();
-        if(queryType !=0){
-        if (queryType == 1)
+        if (queryType != 0)
         {
-         
-        }
-        else if (queryType == 2)
-        {
-            cout << "CREATE" << endl;
-            cout << tableName << endl;
-            if (attsToSort)
+            if (queryType == 1)
             {
-                myfunc.PrintNameList(attsToSort);
+
+                s.Read(input);
+
+                vector<string> seenTable;
+                map<string, string> aliasName;
+                map<string, Schema *> aliasSchemas;
+
+                TableList *cur = tables;
+                while (cur)
+                {
+                    if (schemas.count(cur->tableName) == 0)
+                    {
+                        cerr << "Error: Table hasn't been created!" << endl;
+                        return -1;
+                    }
+                    s.CopyRel(cur->tableName, cur->aliasAs);
+                    myfunc.copySchema(aliasSchemas, cur->tableName, cur->aliasAs);
+                    seenTable.push_back(cur->aliasAs);
+                    aliasName[cur->aliasAs] = cur->tableName;
+                    cur = cur->next;
+                }
+
+                s.Write(output);
+
+                vector<vector<string>> joinOrder = myfunc.shuffleOrder(seenTable);
+                int indexofBestChoice = 0;
+                double minRes = DBL_MAX;
+                size_t numofRels = joinOrder[0].size();
+                if (numofRels == 1)
+                {
+                    char **relNames = new char *[1];
+                    relNames[0] = new char[joinOrder[0][0].size() + 1];
+                    strcpy(relNames[0], joinOrder[0][0].c_str());
+                    minRes = s.Estimate(boolean, relNames, 1);
+                }
+                else
+                {
+                    for (int i = 0; i < joinOrder.size(); ++i)
+                    {
+                        s.Read(output);
+
+                        double result = 0;
+                        char **relNames = new char *[numofRels];
+                        for (int j = 0; j < numofRels; ++j)
+                        {
+                            relNames[j] = new char[joinOrder[i][j].size() + 1];
+                            strcpy(relNames[j], joinOrder[i][j].c_str());
+                        }
+
+                        for (int j = 2; j <= numofRels; ++j)
+                        {
+                            result += s.Estimate(boolean, relNames, j);
+                            s.Apply(boolean, relNames, j);
+                        }
+
+                        if (result < minRes)
+                        {
+                            minRes = result;
+                            indexofBestChoice = i;
+                        }
+                    }
+                }
+
+                vector<string> chosenJoinOrder = joinOrder[indexofBestChoice];
+
+                /*
+     * Generate opTree
+     */
+                Operator *left = new SelectFileOperator(boolean, aliasSchemas[chosenJoinOrder[0]], aliasName[chosenJoinOrder[0]]);
+                Operator *root = left;
+                for (int i = 1; i < numofRels; ++i)
+                {
+                    Operator *right = new SelectFileOperator(boolean, aliasSchemas[chosenJoinOrder[i]], aliasName[chosenJoinOrder[i]]);
+                    root = new JoinOperator(left, right, boolean);
+                    left = root;
+                }
+                if (distinctAtts == 1 || distinctFunc == 1)
+                {
+                    root = new DuplicateRemovalOperator(left);
+                    left = root;
+                }
+                if (groupingAtts)
+                {
+                    root = new GroupByOperator(left, groupingAtts, finalFunction);
+                    left = root;
+                    NameList *sum = new NameList();
+                    sum->name = "SUM";
+                    sum->next = attsToSelect;
+                    root = new ProjectOperator(left, sum);
+                }
+                else if (finalFunction)
+                {
+                    root = new SumOperator(left, finalFunction);
+                    left = root;
+                }
+                else if (attsToSelect)
+                {
+                    root = new ProjectOperator(left, attsToSelect);
+                }
+                myfunc.WriteOutFunc(root,1,outputVar);
             }
-            // mPrintNameList(attsToSort);
-            char fileName[100];
-            char tpchName[100];
-
-            sprintf(fileName, "bin/%s.bin", tableName);
-            sprintf(tpchName, "test/%s.tbl", tableName);
-            // cout<<tpchName;
-            DBFile file;
-            vector<Attribute> attsCreate;
-
-            myfunc.CopyAttrList(attsToCreate, attsCreate);
-
-            ofstream ofs(catalog, ifstream ::app);
-
-            ofs << endl;
-            ofs << "BEGIN" << endl;
-            ofs << tableName << endl;
-            ofs << tpchName << endl;
-
-            Statistics s;
-            char* input = "meta/Statistics.txt";
-            char* output = "Statistics.txt";
-            s.Read(input);
-            //			s.Write (stats);
-            s.AddRel(tableName, 0);
-
-            for (auto iter = attsCreate.begin(); iter != attsCreate.end(); iter++)
+            else if (queryType == 2)
             {
-                s.AddAtt(tableName, iter->name, 0);
-                ofs << iter->name << " ";
-                cout << iter->myType << endl;
-                switch (iter->myType)
+                cout << "CREATE" << endl;
+                cout << tableName << endl;
+                if (attsToSort)
                 {
-                case Int:
-                {
-                    ofs << "Int" << endl;
+                    myfunc.PrintNameList(attsToSort);
                 }
-                break;
-                case Double:
-                {
+                // mPrintNameList(attsToSort);
+                char fileName[100];
+                char tpchName[100];
 
-                    ofs << "Double" << endl;
-                }
-                break;
-                case String:
-                {
+                sprintf(fileName, "bin/%s.bin", tableName);
+                sprintf(tpchName, "test/%s.tbl", tableName);
+                // cout<<tpchName;
+                DBFile file;
+                vector<Attribute> attsCreate;
 
-                    ofs << "String" << endl;
-                }
-                // should never come here!
-                default:
+                myfunc.CopyAttrList(attsToCreate, attsCreate);
+
+                ofstream ofs(catalog, ifstream ::app);
+
+                ofs << endl;
+                ofs << "BEGIN" << endl;
+                ofs << tableName << endl;
+                ofs << tpchName << endl;
+
+                Statistics s;
+                s.Read(input);
+                //			s.Write (stats);
+                s.AddRel(tableName, 0);
+
+                for (auto iter = attsCreate.begin(); iter != attsCreate.end(); iter++)
                 {
+                    s.AddAtt(tableName, iter->name, 0);
+                    ofs << iter->name << " ";
+                    cout << iter->myType << endl;
+                    switch (iter->myType)
+                    {
+                    case Int:
+                    {
+                        ofs << "Int" << endl;
+                    }
+                    break;
+                    case Double:
+                    {
+
+                        ofs << "Double" << endl;
+                    }
+                    break;
+                    case String:
+                    {
+
+                        ofs << "String" << endl;
+                    }
+                    // should never come here!
+                    default:
+                    {
+                    }
+                    }
                 }
+
+                ofs << "END" << endl;
+                s.Write(output);
+                if (!attsToSort)
+                {
+                    // cout<<"hi";
+                    if (file.Create(fileName, heap, NULL))
+                    {
+                        cout << "Created bin file";
+                    }
+                }
+                else
+                {
+                    Schema sch(catalog, tableName);
+                    OrderMaker order;
+                    order.growFromParseTree(attsToSort, &sch);
+                    SortInfo info;
+                    info.myOrder = &order;
+                    info.runLength = 100;
+                    file.Create(fileName, sorted, &info);
                 }
             }
+            else if (queryType == 3)
+            {
+                char fileName[100];
+                // char metaName[100];
+                char *tempFile = "tempfile.txt";
 
-            ofs << "END" << endl;
-            s.Write(output);
-            if (!attsToSort)
-            {
-                // cout<<"hi";
-                if(file.Create(fileName, heap, NULL)){
-                    cout<<"Created bin file";
+                sprintf(fileName, "bin/%s.bin", tableName);
+                // sprintf (metaName, "%s.md", fileName);
+
+                remove(fileName);
+                // remove (metaName);
+
+                ifstream ifs(catalog);
+                ofstream ofs(tempFile);
+
+                while (!ifs.eof())
+                {
+
+                    char line[100];
+
+                    ifs.getline(line, 100);
+
+                    if (strcmp(line, "BEGIN") == 0)
+                    {
+
+                        ifs.getline(line, 100);
+
+                        if (strcmp(line, tableName))
+                        {
+
+                            ofs << endl;
+                            ofs << "BEGIN" << endl;
+                            ofs << line << endl;
+
+                            ifs.getline(line, 100);
+
+                            while (strcmp(line, "END"))
+                            {
+
+                                ofs << line << endl;
+                                ifs.getline(line, 100);
+                            }
+
+                            ofs << "END" << endl;
+                            if (trim(line).empty())
+                                continue;
+                        }
+                    }
                 }
+
+                ifs.close();
+                ofs.close();
+
+                remove(catalog);
+                rename(tempFile, catalog);
+                remove(tempFile);
+                cout << "done drop";
             }
-            else
+            else if (queryType == 4)
             {
+                char fileName[100];
+                char tpchName[100];
+                sprintf(fileName, "bin/%s.bin", tableName);
+                sprintf(tpchName, "tcph/%s.txt", fileToInsert);
+                // cout<<tpchName;
+                DBFile file;
                 Schema sch(catalog, tableName);
-                OrderMaker order;
-                order.growFromParseTree(attsToSort, &sch);
-                SortInfo info;
-                info.myOrder = &order;
-                info.runLength = 100;
-                file.Create(fileName, sorted, &info);
+                sch.Print();
+                if (file.Open(fileName))
+                {
+                    // cout<<"Inside here";
+                    file.Load(sch, tpchName);
+                    file.Close();
+                }
+                cout << "done insert";
             }
+            else if (queryType == 5)
+            {
+
+                cout << "SET" << endl;
+
+                cout << outputVar << endl;
+            }
+            else if (queryType == 6)
+            {
+
+                cout << "EXIT" << endl;
+            }
+            queryType = 0;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
-        else if (queryType == 3)
-        {
-            char fileName[100];
-			// char metaName[100];
-			char *tempFile = "tempfile.txt";
-
-			sprintf (fileName, "bin/%s.bin", tableName);
-			// sprintf (metaName, "%s.md", fileName);
-
-			remove (fileName);
-			// remove (metaName);
-
-			ifstream ifs (catalog);
-			ofstream ofs (tempFile);
-
-			while (!ifs.eof ()) {
-
-				char line[100];
-
-				ifs.getline (line, 100);
-
-				if (strcmp (line, "BEGIN") == 0) {
-
-					ifs.getline (line, 100);
-
-					if (strcmp (line, tableName)) {
-
-						ofs << endl;
-						ofs << "BEGIN" << endl;
-						ofs << line << endl;
-
-						ifs.getline (line, 100);
-
-						while (strcmp (line, "END")) {
-
-							ofs << line << endl;
-							ifs.getline (line, 100);
-
-						}
-
-						ofs << "END" << endl;
-                        if (trim(line).empty()) continue;
-					}
-
-				}
-
-			}
-
-			ifs.close ();
-			ofs.close ();
-
-			remove (catalog);
-			rename (tempFile, catalog);
-			remove (tempFile);
-            cout<<"done drop";
-        }
-        else if (queryType == 4)
-        {
-            char fileName[100];
-			char tpchName[100];
-			sprintf (fileName, "bin/%s.bin", tableName);
-			sprintf (tpchName, "tcph/%s.txt", fileToInsert);
-            // cout<<tpchName;
-			DBFile file;
-			Schema sch (catalog, tableName);
-			sch.Print ();
-			if (file.Open (fileName)) {
-                // cout<<"Inside here";
-				file.Load (sch, tpchName);
-				file.Close ();
-			}
-            cout<<"done insert";
-        }
-        else if (queryType == 5)
-        {
-
-            cout << "SET" << endl;
-
-            cout << outputVar << endl;
-        }
-        else if (queryType == 6)
-        {
-
-            cout << "EXIT" << endl;
-        }
-        queryType=0;
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }
     }
     return 0;
 }

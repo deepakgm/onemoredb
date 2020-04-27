@@ -22,7 +22,7 @@
 
 	int queryType; // 1 for SELECT, 2 for CREATE, 3 for DROP,
 				   // 4 for INSERT, 5 for SET, 6 for EXIT
-//	int outputType; // 0 for NONE, 1 for STDOUT, 2 for file output
+	int outputType; // 0 for NONE, 1 for STDOUT, 2 for file output
 
 	char *outputVar;
 
