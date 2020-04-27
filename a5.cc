@@ -87,7 +87,7 @@ bool exists(const char *relName)
     fin.close();
     return false;
 }
-unordered_map<string, Schema *> schemas;
+map<string, Schema *> loadSchema;
 MyFucntion myfunc;
 char *input = "meta/Statistics.txt";
 char *output = "Statistics.txt";
@@ -109,21 +109,24 @@ int main()
     while (std::cin >> queryType)
     {
         yyparse();
+        // cout<<tables;
         if (queryType != 0)
         {
             if (queryType == 1)
             {
-
+                // cout<<tables;
+                loadSchema = myfunc.FireUpExistingDatabase();
                 s.Read(input);
 
                 vector<string> seenTable;
                 map<string, string> aliasName;
                 map<string, Schema *> aliasSchemas;
-
+                //load DB //FireUpExistingDatabase
+                
                 TableList *cur = tables;
                 while (cur)
                 {
-                    if (schemas.count(cur->tableName) == 0)
+                    if (loadSchema.count(cur->tableName) == 0)
                     {
                         cerr << "Error: Table hasn't been created!" << endl;
                         return -1;
