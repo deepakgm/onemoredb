@@ -7,6 +7,8 @@
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
+#include <cstring>
+
 
 class Record;
 class Comparison;

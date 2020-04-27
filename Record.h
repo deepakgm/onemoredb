@@ -2,18 +2,19 @@
 #define RECORD_H
 
 #include <stdio.h>
+#include <cstring>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
 #include "Defs.h"
 #include "ParseTree.h"
-#include "Record.h"
 #include "Schema.h"
 #include "File.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
 
+using namespace std;
 
 
 // Basic record data structure. Data is actually stored in "bits" field. The layout of bits is as follows:
@@ -69,6 +70,9 @@ public:
 	// prints the contents of the record; this requires
 	// that the schema also be given so that the record can be interpreted
 	void Print (Schema *mySchema);
+
+
+//	std::string GetString (Schema *mySchema);
 
     //GetLength
     long GetLength();

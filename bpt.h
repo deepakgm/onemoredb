@@ -71,13 +71,8 @@ namespace bpt {
 /* the encapulated B+ tree */
     class bplus_tree {
     public:
-        bplus_tree(const char *path,int size, bool force_empty = false);
+        bplus_tree(const char *path, bool force_empty = false);
 
-        int rsize;
-        leaf_node_t currLeaf;
-        off_t leafOffset=0;
-        void move_first();
-        int get_next(value_t* val);
         /* abstract operations */
         int search(const key_t& key, value_t *value) const;
         int search_range(key_t *left, const key_t &right,
@@ -205,7 +200,6 @@ namespace bpt {
         /* read block from disk */
         int map(void *block, off_t offset, size_t size) const
         {
-//            size=20;
             open_file();
             fseek(fp, offset, SEEK_SET);
             size_t rd = fread(block, size, 1, fp);
@@ -223,7 +217,6 @@ namespace bpt {
         /* write block to disk */
         int unmap(void *block, off_t offset, size_t size) const
         {
-//            size=20;
             open_file();
             fseek(fp, offset, SEEK_SET);
             size_t wd = fwrite(block, size, 1, fp);

@@ -4,8 +4,6 @@
 
 #include <list>
 #include <algorithm>
-#include <iostream>
-
 using std::swap;
 using std::binary_search;
 using std::lower_bound;
@@ -15,7 +13,6 @@ namespace bpt {
 
 /* custom compare operator for STL algorithms */
     OPERATOR_KEYCMP(index_t)
-
     OPERATOR_KEYCMP(record_t)
 
 /* helper iterating function */
@@ -23,7 +20,6 @@ namespace bpt {
     inline typename T::child_t begin(T &node) {
         return node.children;
     }
-
     template<class T>
     inline typename T::child_t end(T &node) {
         return node.children + node.n;
@@ -40,17 +36,16 @@ namespace bpt {
         }
         return begin(node);
     }
-
     inline record_t *find(leaf_node_t &node, const key_t &key) {
         return lower_bound(begin(node), end(node), key);
     }
 
-    bplus_tree::bplus_tree(const char *p, int size, bool force_empty)
-            : fp(NULL), fp_level(0) {
+    bplus_tree::bplus_tree(const char *p, bool force_empty)
+            : fp(NULL), fp_level(0)
+    {
         bzero(path, sizeof(path));
         strcpy(path, p);
-        cout << "assigning size: " << size << endl;
-        rsize = size;
+
         if (!force_empty)
             // read tree from file
             if (map(&meta, OFFSET_META) != 0)
@@ -65,7 +60,8 @@ namespace bpt {
         }
     }
 
-    int bplus_tree::search(const key_t &key, value_t *value) const {
+    int bplus_tree::search(const key_t& key, value_t *value) const
+    {
         leaf_node_t leaf;
         map(&leaf, search_leaf(key));
 
@@ -82,7 +78,8 @@ namespace bpt {
     }
 
     int bplus_tree::search_range(key_t *left, const key_t &right,
-                                 value_t *values, size_t max, bool *next) const {
+                                 value_t *values, size_t max, bool *next) const
+    {
         if (left == NULL || keycmp(*left, right) > 0)
             return -1;
 
@@ -133,7 +130,8 @@ namespace bpt {
         return i;
     }
 
-    int bplus_tree::remove(const key_t &key) {
+    int bplus_tree::remove(const key_t& key)
+    {
         internal_node_t parent;
         leaf_node_t leaf;
 
@@ -151,7 +149,6 @@ namespace bpt {
             return -1;
 
         size_t min_n = meta.leaf_node_num == 1 ? 0 : meta.order / 2;
-//        cout<<leaf.n<<" 1 "<<endl;
         assert(leaf.n >= min_n && leaf.n <= meta.order);
 
         // delete the key
@@ -210,90 +207,8 @@ namespace bpt {
         return 0;
     }
 
-    void bplus_tree::move_first() {
-        char key[32] = {0};
-        sprintf(key, "%d", 0);
-        off_t parent = search_index(key);
-
-        off_t offset = search_leaf(parent, key);
-//        leaf_node_t leaf;
-        map(&currLeaf, offset);
-//        map(&currLeaf,meta.leaf_offset);
-    }
-
-
-    record_t *b;
-    bool flag=false;
-
-    int bplus_tree::get_next(value_t *val) {
-//        internal_node_t root;
-//         map(&root,meta.root_offset);
-//         record_t record;
-//        map(&record,root.children[1].child);
-//
-//        std::cout<< meta.leaf_offset<<endl;
-//        cout<<"leafoffset "<<leafOffset<<endl;
-//        cout<<currLeaf.n<< "curleaf : "<<endl;
-//        if(leafOffset<=currLeaf.n){
-//            val=&currLeaf.children[leafOffset].value;
-//            std::cout<< "val: "<<val<<endl;
-//            leafOffset++;
-//            return 0;
-//        }else{
-////            std::cout<<"hii";
-//            leafOffset=0;
-//            if(map(&currLeaf,currLeaf.next)==-1)
-//                return -1;
-//            val=&currLeaf.children[leafOffset].value;
-//            leafOffset++;
-
-//        while (leafOffset <= currLeaf.n) {
-//            cout <<currLeaf.children[leafOffset].key<<endl;
-//            leafOffset++;
-//        }
-
-
-        if(flag== false){
-            b=begin(currLeaf);
-            flag=true;
-        }
-        *val=b->value;
-        b++;
-//
-//        if (leafOffset <= currLeaf.n && leafOffset==0) {
-//            b = begin(currLeaf);
-//            record_t *record = find(currLeaf, currLeaf.children[leafOffset].key);
-//            *val = record->value;
-//            leafOffset++;
-//            return 0;
-//        }else {
-//            leafOffset = 0;
-//            if (map(&currLeaf, currLeaf.next) == -1)
-//                return -1;
-//            record_t *record = find(currLeaf, currLeaf.children[leafOffset].key);
-//            *val = record->value;
-//            leafOffset++;
-//        }
-//
-//        char key[32] = { 0 };
-//        sprintf(key, "%d", 0);
-//        record_t *record = find(currLeaf, key);
-//        if (record != currLeaf.children + currLeaf.n) {
-//            // always return the lower bound
-//            *val = record->value;
-//            return keycmp(record->key, key);
-//        } else {
-//            return -1;
-//        }
-//
-//        currLeaf.next //ofset
-//
-////            return 0;
-//
-    }
-
-
-    int bplus_tree::insert(const key_t &key, value_t value) {
+    int bplus_tree::insert(const key_t& key, value_t value)
+    {
         off_t parent = search_index(key);
         off_t offset = search_leaf(parent, key);
         leaf_node_t leaf;
@@ -343,7 +258,8 @@ namespace bpt {
         return 0;
     }
 
-    int bplus_tree::update(const key_t &key, value_t value) {
+    int bplus_tree::update(const key_t& key, value_t value)
+    {
         off_t offset = search_leaf(key);
         leaf_node_t leaf;
         map(&leaf, offset);
@@ -362,7 +278,9 @@ namespace bpt {
             return -1;
     }
 
-    void bplus_tree::remove_from_index(off_t offset, internal_node_t &node, const key_t &key) {
+    void bplus_tree::remove_from_index(off_t offset, internal_node_t &node,
+                                       const key_t &key)
+    {
         size_t min_n = meta.root_offset == offset ? 1 : meta.order / 2;
         assert(node.n >= min_n && node.n <= meta.order);
 
@@ -377,7 +295,8 @@ namespace bpt {
 
         // remove to only one key
         if (node.n == 1 && meta.root_offset == offset &&
-            meta.internal_node_num != 1) {
+            meta.internal_node_num != 1)
+        {
             unalloc(&node, meta.root_offset);
             meta.height--;
             meta.root_offset = node.children[0].child;
@@ -438,7 +357,8 @@ namespace bpt {
     }
 
     bool bplus_tree::borrow_key(bool from_right, internal_node_t &borrower,
-                                off_t offset) {
+                                off_t offset)
+    {
         typedef typename internal_node_t::child_t child_t;
 
         off_t lender_off = from_right ? borrower.next : borrower.prev;
@@ -458,7 +378,7 @@ namespace bpt {
 
                 map(&parent, borrower.parent);
                 child_t where = lower_bound(begin(parent), end(parent) - 1,
-                                            (end(borrower) - 1)->key);
+                                            (end(borrower) -1)->key);
                 where->key = where_to_lend->key;
                 unmap(&parent, borrower.parent);
             } else {
@@ -488,7 +408,8 @@ namespace bpt {
         return false;
     }
 
-    bool bplus_tree::borrow_key(bool from_right, leaf_node_t &borrower) {
+    bool bplus_tree::borrow_key(bool from_right, leaf_node_t &borrower)
+    {
         off_t lender_off = from_right ? borrower.next : borrower.prev;
         leaf_node_t lender;
         map(&lender, lender_off);
@@ -526,7 +447,8 @@ namespace bpt {
     }
 
     void bplus_tree::change_parent_child(off_t parent, const key_t &o,
-                                         const key_t &n) {
+                                         const key_t &n)
+    {
         internal_node_t node;
         map(&node, parent);
 
@@ -540,13 +462,15 @@ namespace bpt {
         }
     }
 
-    void bplus_tree::merge_leafs(leaf_node_t *left, leaf_node_t *right) {
+    void bplus_tree::merge_leafs(leaf_node_t *left, leaf_node_t *right)
+    {
         std::copy(begin(*right), end(*right), end(*left));
         left->n += right->n;
     }
 
     void bplus_tree::merge_keys(index_t *where,
-                                internal_node_t &node, internal_node_t &next, bool change_where_key) {
+                                internal_node_t &node, internal_node_t &next, bool change_where_key)
+    {
         //(end(node) - 1)->key = where->key;
         if (change_where_key) {
             where->key = (end(next) - 1)->key;
@@ -557,7 +481,8 @@ namespace bpt {
     }
 
     void bplus_tree::insert_record_no_split(leaf_node_t *leaf,
-                                            const key_t &key, const value_t &value) {
+                                            const key_t &key, const value_t &value)
+    {
         record_t *where = upper_bound(begin(*leaf), end(*leaf), key);
         std::copy_backward(where, end(*leaf), end(*leaf) + 1);
 
@@ -567,7 +492,8 @@ namespace bpt {
     }
 
     void bplus_tree::insert_key_to_index(off_t offset, const key_t &key,
-                                         off_t old, off_t after) {
+                                         off_t old, off_t after)
+    {
         if (offset == 0) {
             // create new root node
             internal_node_t root;
@@ -640,7 +566,8 @@ namespace bpt {
     }
 
     void bplus_tree::insert_key_to_index_no_split(internal_node_t &node,
-                                                  const key_t &key, off_t value) {
+                                                  const key_t &key, off_t value)
+    {
         index_t *where = upper_bound(begin(node), end(node) - 1, key);
 
         // move later index forward
@@ -655,7 +582,8 @@ namespace bpt {
     }
 
     void bplus_tree::reset_index_children_parent(index_t *begin, index_t *end,
-                                                 off_t parent) {
+                                                 off_t parent)
+    {
         // this function can change both internal_node_t and leaf_node_t's parent
         // field, but we should ensure that:
         // 1. sizeof(internal_node_t) <= sizeof(leaf_node_t)
@@ -669,7 +597,8 @@ namespace bpt {
         }
     }
 
-    off_t bplus_tree::search_index(const key_t &key) const {
+    off_t bplus_tree::search_index(const key_t &key) const
+    {
         off_t org = meta.root_offset;
         int height = meta.height;
         while (height > 1) {
@@ -684,7 +613,8 @@ namespace bpt {
         return org;
     }
 
-    off_t bplus_tree::search_leaf(off_t index, const key_t &key) const {
+    off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
+    {
         internal_node_t node;
         map(&node, index);
 
@@ -693,7 +623,8 @@ namespace bpt {
     }
 
     template<class T>
-    void bplus_tree::node_create(off_t offset, T *node, T *next) {
+    void bplus_tree::node_create(off_t offset, T *node, T *next)
+    {
         // new sibling node
         next->parent = node->parent;
         next->next = node->next;
@@ -710,7 +641,8 @@ namespace bpt {
     }
 
     template<class T>
-    void bplus_tree::node_remove(T *prev, T *node) {
+    void bplus_tree::node_remove(T *prev, T *node)
+    {
         unalloc(node, prev->next);
         prev->next = node->next;
         if (node->next != 0) {
@@ -722,13 +654,13 @@ namespace bpt {
         unmap(&meta, OFFSET_META);
     }
 
-    void bplus_tree::init_from_empty() {
+    void bplus_tree::init_from_empty()
+    {
         // init default meta
         bzero(&meta, sizeof(meta_t));
         meta.order = BP_ORDER;
-//    meta.value_size = sizeof(value_t);
-        meta.value_size = rsize; //todo change
-//    meta.value_size = 160; //todo change
+//        meta.value_size = sizeof(value_t);
+        meta.value_size = 50;
         meta.key_size = sizeof(key_t);
         meta.height = 1;
         meta.slot = OFFSET_BLOCK;

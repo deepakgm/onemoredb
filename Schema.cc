@@ -1,5 +1,5 @@
 #include "Schema.h"
-#include <string.h>
+#include <cstring>
 #include <stdio.h>
 #include <iostream>
 #include <stdlib.h>

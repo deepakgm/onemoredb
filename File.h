@@ -2,12 +2,13 @@
 #define FILE_H
 
 #include "TwoWayList.h"
-#include "Record.h"
+//#include "Record.h"
 #include "Schema.h"
 #include "Comparison.h"
 #include "ComparisonEngine.h"
+#include <cstring>
 
-class Record;
+//class Record;
 
 using namespace std;
 

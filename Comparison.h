@@ -7,6 +7,7 @@
 #include "Comparison.h"
 #include "ComparisonEngine.h"
 #include <stdlib.h>
+#include <cstring>
 
 // This stores an individual comparison that is part of a CNF
 class Comparison {

@@ -2,17 +2,20 @@
 #define PREDEFINED_H
 
 #include <string.h>
-#include "Record.h"
 
 namespace bpt {
 
 /* predefined B+ info */
-//#define BP_ORDER 20
-#define BP_ORDER 50000
+#define BP_ORDER 200
 
 /* key/value type */
-//    typedef int value_t;
-    typedef char* value_t;
+
+    struct myvalue{
+        off_t  offset;
+        off_t len;
+    };
+
+    typedef myvalue value_t;
 
     struct key_t {
         char k[32];
