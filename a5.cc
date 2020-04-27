@@ -96,18 +96,21 @@ Statistics s;
 int main()
 {
     cout << "hello" << endl;
-    string option;
-    cout << endl;
-    cout << "1. SELECT QUERY" << endl;
-    cout << "2. Create a new database (will delete current database)" << endl;
-    cout << "3. Drop a table" << endl;
-    cout << "4. Insert file to a table" << endl;
-    cout << "5. Exit" << endl
-         << endl;
-    cout << "Your choice: ";
+//    string option;
+//    cout << endl;
+//    cout << "1. SELECT QUERY" << endl;
+//    cout << "2. Create a new database (will delete current database)" << endl;
+//    cout << "3. Drop a table" << endl;
+//    cout << "4. Insert file to a table" << endl;
+//    cout << "5. Exit" << endl
+//         << endl;
+//    cout << "Your choice: ";
 
-    while (std::cin >> queryType)
+    while (true)
     {
+        //todo clear the variables
+        cout <<endl<< "***************************************************************************************"<<endl;
+        cout << "Enter the query: "<<endl;
         yyparse();
         // cout<<tables;
         if (queryType != 0)
@@ -216,8 +219,7 @@ int main()
                 cout<<"OutputVar: "<<outputVar<<endl;
                 myfunc.WriteOutFunc(root,0,outputVar);
             }
-            else if (queryType == 2)
-            {
+            else if (queryType == 2){
                 cout << "CREATE" << endl;
                 cout << tableName << endl;
                 if (attsToSort)
@@ -290,16 +292,23 @@ int main()
                 }
                 else
                 {
-                    Schema sch(catalog, tableName);
-                    OrderMaker order;
-                    order.growFromParseTree(attsToSort, &sch);
-                    SortInfo info;
-                    info.myOrder = &order;
-                    info.runLength = 100;
-                    file.Create(fileName, sorted, &info);
+                    //todo change this part
+//                    Schema sch(catalog, tableName);
+//                    OrderMaker order;
+//                    order.growFromParseTree(attsToSort, &sch);
+//                    SortInfo info;
+//                    info.myOrder = &order;
+//                    info.runLength = 100;
+//                    file.Create(fileName, sorted, &info);
+
+                    Schema* newSchema= new Schema(catalog, tableName);
+
+                    loadSchema[tableName] =new Schema(catalog, tableName);
+
+                    file.Create(fileName, tree, (void*)newSchema);
                 }
-            }
-            else if (queryType == 3)
+                cout <<"create completed.." <<endl;
+            }else if (queryType == 3)
             {
                 char fileName[100];
                 // char metaName[100];
@@ -362,7 +371,7 @@ int main()
                 char fileName[100];
                 char tpchName[100];
                 sprintf(fileName, "bin/%s.bin", tableName);
-                sprintf(tpchName, "tcph/%s.txt", fileToInsert);
+                sprintf(tpchName, "%s", fileToInsert);
                 // cout<<tpchName;
                 DBFile file;
                 Schema sch(catalog, tableName);
@@ -388,12 +397,19 @@ int main()
                 cout << "EXIT" << endl;
             }
             queryType = 0;
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            //todo commented folllowing lines
+//            std::cin.clear();
+//            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
+
     }
     return 0;
 }
 
 //CREATE TABLE nation (att1 INTEGER, att2 DOUBLE, att3 STRING) AS HEAP
 //INSERT 'trial' INTO nation
+
+
+//CREATE TABLE table2 (n_nationkey INTEGER, n_name STRING, n_regionkey INTEGER, n_comment STRING) AS SORTED ON n_nationkey
+//INSERT '/home/deepak/Desktop/dbi/onemoredb/tcph/table2.txt' INTO table2
+// SELECT n.n_nationkey FROM table2 AS n WHERE (n.n_nationkey = 1)

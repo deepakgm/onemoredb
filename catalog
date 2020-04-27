@@ -99,11 +99,3 @@ l_shipinstruct String
 l_shipmode String
 l_comment String
 END
-
-BEGIN
-mytable
-test/mytable.tbl
-att1 Int
-att2 Double
-att3 String
-END

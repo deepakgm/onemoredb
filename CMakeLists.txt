@@ -54,6 +54,8 @@ add_executable(onemoredb
         Meta.h
         a5.cc
 
+        RelOp.h
+        RelOp.cc
         Pipe.cc
         Pipe.h
         Record.cc

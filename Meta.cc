@@ -95,8 +95,8 @@ void WriteMetaInfo(string path, fType type, void *startup) {
         } else {
             obj["type"] = "heap";
         }
-        clog << "writing meta to file: " << obj << endl;
-        fprintf(out, "%s", obj.dump().c_str());
+//        clog << "writing meta to file: " << obj << endl;
+//        fprintf(out, "%s", obj.dump().c_str());
         fclose(out);
     }
 };
