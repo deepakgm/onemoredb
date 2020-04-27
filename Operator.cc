@@ -75,7 +75,7 @@ void ProjectOperator::print() {
 void ProjectOperator :: run() {
     p.Run(left->outPipe, outPipe, keepMe, this->left->getSchema()->GetNumAtts(), this->outputSchema->GetNumAtts());
     p.WaitUntilDone();
-    cout<<endl<<"Outpipe: "<<endl;
+    // cout<<endl<<"Outpipe: "<<endl;
 }
 
 JoinOperator::JoinOperator(Operator *leftChild, Operator *rightChild, AndList *joinList) {
