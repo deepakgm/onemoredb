@@ -1,4 +1,4 @@
 {
-  "path" : "db/nation.bin",
+  "path" : "bin/nation.bin",
   "type" : "heap"
 }

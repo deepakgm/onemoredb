@@ -196,4 +196,3 @@ void GroupByOperator::print() {
     cout << funcToString(this->funcOperator) << endl;
 };
 
-
