@@ -1,4 +1,3 @@
-
 BEGIN
 region
 region.tbl
@@ -100,14 +99,6 @@ l_shipmode String
 l_comment String
 END
 
-<<<<<<< HEAD
-BEGIN
-test1
-test/test1.tbl
-att1 Int
-att2 Double
-att3 String
-=======
 
 BEGIN
 abc
@@ -137,5 +128,4 @@ BEGIN
 abc
 abc.tbl
 att1 Int
->>>>>>> parent of 77f867b... Not for Gtest
 END

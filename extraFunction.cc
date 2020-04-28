@@ -77,12 +77,15 @@ void MyFucntion ::CopyTablesNamesAndAliases(TableList *tableList, Statistics &s,
     }
 }
 
-int MyFucntion :: UpdateStatistics(char* tableName, char* file){
-    string line;
-    ifstream inFile;
-    inFile.open(file);
-    int count=0;
-    while (inFile >> line)
+void MyFucntion ::UpdateTableInfo(char *tableName)
+{
+    string schString = "", line = "";
+    ifstream fin(DBInfo.c_str());
+    char *tempfile = ".info.tmp";
+    // ofstream fout(tempfile);
+    std::ofstream fout(tempfile);
+    bool found = false;
+    while (getline(fin, line))
     {
         // cout<<tableName<<endl;
         if (trim(line).empty())
@@ -106,36 +109,29 @@ int MyFucntion :: UpdateStatistics(char* tableName, char* file){
     fout.close();
     remove(DBInfo.c_str());
     rename(tempfile, DBInfo.c_str());
-<<<<<<< HEAD
-    cout << "done updateTableInfo" << endl;
-            count++;
-    }
-=======
     cout<<"done updateTableInfo"<<endl;
->>>>>>> parent of 77f867b... Not for Gtest
 }
 
-int MyFucntion :: UpdateTable(char* tableName){
+int MyFucntion ::UpdateTable(char *tableName)
+{
     string line;
     ifstream inFile;
     inFile.open(DBInfo.c_str());
-    int count=0;
+    int count = 0;
     while (inFile >> line)
     {
-<<<<<<< HEAD
-        if(strcmp((char*)line.c_str(), tableName) == 0 ){
-=======
         if (strcmp((char *)line.c_str(), tableName) == 0)
         {
->>>>>>> parent of 77f867b... Not for Gtest
             count++;
         }
     }
-    if(count == 0){
-        ofstream myfile(DBInfo.c_str(),  ios::out | ios::app);
-        myfile << endl<<tableName;
+    if (count == 0)
+    {
+        ofstream myfile(DBInfo.c_str(), ios::out | ios::app);
+        myfile << endl
+               << tableName;
     }
-    cout<<"Count: "<<count<<endl;
+    cout << "Count: " << count << endl;
     return count;
 }
 
@@ -159,11 +155,7 @@ map<string, Schema *> MyFucntion ::FireUpExistingDatabase()
         // std::copy(line.begin(), line.end(), file);
         // sprintf(file, "%s", line);
         // cout << "File input: " << line.c_str() << endl;
-<<<<<<< HEAD
-        loadSchema[(char*)line.c_str()] = new Schema("catalog", (char*)line.c_str());
-=======
         loadSchema[(char *)line.c_str()] = new Schema("catalog", (char *)line.c_str());
->>>>>>> parent of 77f867b... Not for Gtest
         // cout<<line<<endl;
         // memset(file, 0, sizeof(file));
     }
