@@ -324,32 +324,32 @@ public:
     }
 };
 
-// class BTree : public GenericDBFile {
-// private:
-//     int hash=0;
-//     int curlen;
-//     bpt::bplus_tree* bdb;
-//     void readingMode();
-//     void writingMode();
-// //    void constructQueryOrder(CNF &cnf, Record &literal);
-// //    int binarySearch(Record& fetchme, Record& literal);
+class BTree : public GenericDBFile {
+private:
+    int hash=0;
+    int curlen;
+    bpt::bplus_tree* bdb;
+    void readingMode();
+    void writingMode();
+//    void constructQueryOrder(CNF &cnf, Record &literal);
+//    int binarySearch(Record& fetchme, Record& literal);
 
-// public:
-//     BinFile* binFile;
-//     int curKey=0;
-//     Schema* mySchema;
-//     const char* fpath;
+public:
+    BinFile* binFile;
+    int curKey=0;
+    Schema* mySchema;
+    const char* fpath;
 
-//     int rsize=20;
-//     BTree(const char* fpath,Schema* schema);
-//     void Create();
-//     void Load(Schema &myschema, const char *loadpath);
-//     void Add(Record &addme);
-//     int GetNext(Record &fetchme);
-//     int GetKey(bpt::key_t key,Record &fetchme);
-//     int GetNext(Record &fetchme, CNF &cnf, Record &literal);
-//     void MoveFirst();
-// };
+    int rsize=20;
+    BTree(const char* fpath,Schema* schema);
+    void Create();
+    void Load(Schema &myschema, const char *loadpath);
+    void Add(Record &addme);
+    int GetNext(Record &fetchme);
+    int GetKey(bpt::key_t key,Record &fetchme);
+    int GetNext(Record &fetchme, CNF &cnf, Record &literal);
+    void MoveFirst();
+};
 
 
 class DBFile {

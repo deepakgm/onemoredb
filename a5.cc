@@ -53,15 +53,33 @@ unordered_map<int, Pipe *> pipeMap;
 typedef map<string, Schema> SchemaMap;
 typedef map<string, string> AliaseMap;
 
+const std::string WHITESPACE = " \n\r\t\f\v";
+
+std::string ltrim(const std::string &s)
+{
+    size_t start = s.find_first_not_of(WHITESPACE);
+    return (start == std::string::npos) ? "" : s.substr(start);
+}
+
+std::string rtrim(const std::string &s)
+{
+    size_t end = s.find_last_not_of(WHITESPACE);
+    return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+}
+
 using namespace std;
-MyFucntion myfunc;
+
+std::string trim(const std::string &s)
+{
+    return rtrim(ltrim(s));
+}
 
 bool exists(const char *relName)
 {
     ifstream fin(catalog);
     string line;
     while (getline(fin, line))
-        if (myfunc.trim(line) == relName)
+        if (trim(line) == relName)
         {
             fin.close();
             return true;
@@ -70,7 +88,7 @@ bool exists(const char *relName)
     return false;
 }
 map<string, Schema *> loadSchema;
-// MyFucntion myfunc;
+MyFucntion myfunc;
 char *input = "meta/Statistics.txt";
 char *output = "Statistics.txt";
 Statistics s;
@@ -309,47 +327,60 @@ int main()
             }
             else if (queryType == 3)
             {
-                char fileName[100];;
+                char fileName[100];
+                // char metaName[100];
+                char *tempFile = "tempfile.txt";
+
                 sprintf(fileName, "test/%s.bin", tableName);
-                if(!remove(fileName)){
-                    cout<<"File does not exist";
-                }
+                // sprintf (metaName, "%s.md", fileName);
 
-                string schString = "", line = "";
-                ifstream fin(catalog);
-                char* tempfile = ".cata.tmp";
-                ofstream fout(tempfile);
-                bool found = false;
-                while (getline(fin, line))
+                remove(fileName);
+                // remove (metaName);
+
+                ifstream ifs(catalog);
+                ofstream ofs(tempFile);
+
+                while (!ifs.eof())
                 {
-                    // cout<<tableName<<endl;
-                    if (myfunc.trim(line).empty())
-                        continue;
-                    line = myfunc.trim(line);
-                    if (strcmp(line.c_str(), tableName) == 0)
+
+                    char line[100];
+
+                    ifs.getline(line, 100);
+
+                    if (strcmp(line, "BEGIN") == 0)
                     {
-                        found = true;
-                    }
-                    schString += myfunc.trim(line) + '\n';
-                    string END = "END";
-                    if (strcmp(line.c_str(), END.c_str()) == 0)
-                    {
-                        // cout<<schString<<endl;
-                        // cout << "Found: " << found << endl;
-                        if (!found)
-                            fout << schString << endl;
-                        found = false;
-                        schString.clear();
+
+                        ifs.getline(line, 100);
+
+                        if (strcmp(line, tableName))
+                        {
+
+                            ofs << endl;
+                            ofs << "BEGIN" << endl;
+                            ofs << line << endl;
+
+                            ifs.getline(line, 100);
+
+                            while (strcmp(line, "END"))
+                            {
+
+                                ofs << line << endl;
+                                ifs.getline(line, 100);
+                            }
+
+                            ofs << "END" << endl;
+                            if (trim(line).empty())
+                                continue;
+                        }
                     }
                 }
-                // cout<<schString<<endl;
-                fout.close();
-                fin.close();
-                remove(catalog);
-                rename(tempfile, catalog);
 
-                //update tableinfo
-                myfunc.UpdateTableInfo(tableName);
+                ifs.close();
+                ofs.close();
+
+                remove(catalog);
+                rename(tempFile, catalog);
+                remove(tempFile);
                 cout << "done drop";
             }
             else if (queryType == 4)
@@ -397,5 +428,4 @@ int main()
 
 //CREATE TABLE table2 (n_nationkey INTEGER, n_name STRING, n_regionkey INTEGER, n_comment STRING) AS SORTED ON n_nationkey
 //INSERT '/home/deepak/Desktop/dbi/onemoredb/tcph/table2.txt' INTO table2
-// SELECT n.att1 FROM test1 AS n WHERE (n.att1 > 0)
-//DROP TABLE test1
+// SELECT n.att1 FROM test1 AS n WHERE (n.att1 = 0)

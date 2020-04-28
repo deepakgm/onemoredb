@@ -9,32 +9,32 @@ void *SelectFile::workerThread(void *arg) {
     OpArgs *opArgs = (OpArgs *) arg;
     Record temp;
 
-    // if(opArgs->inFile->myInternalVar->myType==tree){
-    //     cout << "binary tree: checking for fast search compatibility.. "<<endl;
-    //     opArgs->selOp->Print();
-    //     if(opArgs->selOp->orList[0][0].whichAtt1==0 && opArgs->selOp->orList[0][0].whichAtt2==0){
-    //         cout << "binary tree: fast search "<<endl;
-    //         int pointer = ((int *) opArgs->literal->bits)[1];
-    //         char key[32] = {0};
-    //         int *myInt = (int *) &( opArgs->literal->bits[pointer]);
-    //         sprintf(key, "%d", *myInt);
-    //         ((BTree*)opArgs->inFile)->GetKey(key,temp);
-    //         opArgs->outPipe->Insert(&temp);
-    //     }else{
-    //         cout << "binary tree: normal search "<<endl;
-    //         while (opArgs->inFile->GetNext(temp)) {
-    //             if (opArgs->compEng->Compare(&temp, opArgs->literal, opArgs->selOp)) {
-    //                 opArgs->outPipe->Insert(&temp);
-    //             }
-    //         }
-    //     }
-    // } else{
+    if(opArgs->inFile->myInternalVar->myType==tree){
+        cout << "binary tree: checking for fast search compatibility.. "<<endl;
+        opArgs->selOp->Print();
+        if(opArgs->selOp->orList[0][0].whichAtt1==0 && opArgs->selOp->orList[0][0].whichAtt2==0){
+            cout << "binary tree: fast search "<<endl;
+            int pointer = ((int *) opArgs->literal->bits)[1];
+            char key[32] = {0};
+            int *myInt = (int *) &( opArgs->literal->bits[pointer]);
+            sprintf(key, "%d", *myInt);
+            ((BTree*)opArgs->inFile)->GetKey(key,temp);
+            opArgs->outPipe->Insert(&temp);
+        }else{
+            cout << "binary tree: normal search "<<endl;
+            while (opArgs->inFile->GetNext(temp)) {
+                if (opArgs->compEng->Compare(&temp, opArgs->literal, opArgs->selOp)) {
+                    opArgs->outPipe->Insert(&temp);
+                }
+            }
+        }
+    } else{
         while (opArgs->inFile->GetNext(temp)) {
             if (opArgs->compEng->Compare(&temp, opArgs->literal, opArgs->selOp)) {
                 opArgs->outPipe->Insert(&temp);
             }
         }
-    // }
+    }
     cout<<endl<<"SelectFile outPipe"<<endl;
     opArgs->outPipe->ShutDown();
     pthread_exit(NULL);

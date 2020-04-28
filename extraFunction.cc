@@ -77,16 +77,14 @@ void MyFucntion ::CopyTablesNamesAndAliases(TableList *tableList, Statistics &s,
     }
 }
 
-void MyFucntion ::UpdateTableInfo(char *tableName)
-{
-    string schString = "", line = "";
-    ifstream fin(DBInfo.c_str());
-    char *tempfile = ".info.tmp";
-    // ofstream fout(tempfile);
-    std::ofstream fout(tempfile);
-    bool found = false;
-    while (getline(fin, line))
+int MyFucntion :: UpdateStatistics(char* tableName, char* file){
+    string line;
+    ifstream inFile;
+    inFile.open(file);
+    int count=0;
+    while (inFile >> line)
     {
+<<<<<<< HEAD
         // cout<<tableName<<endl;
         if (trim(line).empty())
             continue;
@@ -111,29 +109,34 @@ void MyFucntion ::UpdateTableInfo(char *tableName)
     remove(DBInfo.c_str());
     rename(tempfile, DBInfo.c_str());
     cout << "done updateTableInfo" << endl;
+=======
+            count++;
+    }
+>>>>>>> parent of d55c0df... Gtest and Drop
 }
 
-int MyFucntion ::UpdateTable(char *tableName)
-{
+int MyFucntion :: UpdateTable(char* tableName){
     string line;
     ifstream inFile;
     inFile.open(DBInfo.c_str());
-    int count = 0;
+    int count=0;
     while (inFile >> line)
     {
+<<<<<<< HEAD
         line = trim(line);
         if (strcmp((char *)line.c_str(), tableName) == 0)
         {
+=======
+        if(strcmp((char*)line.c_str(), tableName) == 0 ){
+>>>>>>> parent of d55c0df... Gtest and Drop
             count++;
         }
     }
-    if (count == 0)
-    {
-        ofstream myfile(DBInfo.c_str(), ios::out | ios::app);
-        myfile << endl
-               << tableName;
+    if(count == 0){
+        ofstream myfile(DBInfo.c_str(),  ios::out | ios::app);
+        myfile << endl<<tableName;
     }
-    cout << "Count: " << count << endl;
+    cout<<"Count: "<<count<<endl;
     return count;
 }
 
@@ -157,9 +160,14 @@ map<string, Schema *> MyFucntion ::FireUpExistingDatabase()
         // std::copy(line.begin(), line.end(), file);
         // sprintf(file, "%s", line);
         // cout << "File input: " << line.c_str() << endl;
+<<<<<<< HEAD
         line = trim(line);
         loadSchema[(char *)line.c_str()] = new Schema("catalog", (char *)line.c_str());
         cout << line << endl;
+=======
+        loadSchema[(char*)line.c_str()] = new Schema("catalog", (char*)line.c_str());
+        // cout<<line<<endl;
+>>>>>>> parent of d55c0df... Gtest and Drop
         // memset(file, 0, sizeof(file));
     }
     cout<<"out of while loop"<<endl;
