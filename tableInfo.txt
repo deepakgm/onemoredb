@@ -6,8 +6,13 @@ customer
 supplier
 lineitem
 <<<<<<< HEAD
+<<<<<<< HEAD
 orders
 =======
 orders
 test1
 >>>>>>> parent of d55c0df... Gtest and Drop
+=======
+orders
+abc
+>>>>>>> parent of 77f867b... Not for Gtest

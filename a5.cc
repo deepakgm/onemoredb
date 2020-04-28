@@ -121,9 +121,9 @@ int main()
                 // cout<<tables;
                 cout << "hi" << endl;
                 loadSchema = myfunc.FireUpExistingDatabase();
+                // cout<<loadSchema[tableName]<<endl;
                 s.Read(input);
-                cout<<"hiii"<<endl;
-                // cout<<strcmp(loadSchema.count["nation"] == loadSchema.count(cur->tableName))<<endl;
+
                 vector<string> seenTable;
                 map<string, string> aliasName;
                 map<string, Schema *> aliasSchemas;

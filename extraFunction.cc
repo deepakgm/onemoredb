@@ -93,10 +93,9 @@ int MyFucntion :: UpdateStatistics(char* tableName, char* file){
         {
             found = true;
         }
-        if (!found)
-        {
+        if (!found){
             schString = trim(line) + '\n';
-            cout << schString;
+            cout<<schString;
             fout << schString;
         }
         found = false;
@@ -107,9 +106,13 @@ int MyFucntion :: UpdateStatistics(char* tableName, char* file){
     fout.close();
     remove(DBInfo.c_str());
     rename(tempfile, DBInfo.c_str());
+<<<<<<< HEAD
     cout << "done updateTableInfo" << endl;
             count++;
     }
+=======
+    cout<<"done updateTableInfo"<<endl;
+>>>>>>> parent of 77f867b... Not for Gtest
 }
 
 int MyFucntion :: UpdateTable(char* tableName){
@@ -119,7 +122,12 @@ int MyFucntion :: UpdateTable(char* tableName){
     int count=0;
     while (inFile >> line)
     {
+<<<<<<< HEAD
         if(strcmp((char*)line.c_str(), tableName) == 0 ){
+=======
+        if (strcmp((char *)line.c_str(), tableName) == 0)
+        {
+>>>>>>> parent of 77f867b... Not for Gtest
             count++;
         }
     }
@@ -144,21 +152,25 @@ map<string, Schema *> MyFucntion ::FireUpExistingDatabase()
         exit(1); // terminate with error
     }
 
-    while (getline(inFile, line))
+    while (inFile >> line)
     {
         // cout<<"line length: "<<line.length()<<endl;
         // char file[line.length()];
         // std::copy(line.begin(), line.end(), file);
         // sprintf(file, "%s", line);
         // cout << "File input: " << line.c_str() << endl;
+<<<<<<< HEAD
         loadSchema[(char*)line.c_str()] = new Schema("catalog", (char*)line.c_str());
+=======
+        loadSchema[(char *)line.c_str()] = new Schema("catalog", (char *)line.c_str());
+>>>>>>> parent of 77f867b... Not for Gtest
         // cout<<line<<endl;
         // memset(file, 0, sizeof(file));
     }
-    cout<<"out of while loop"<<endl;
+
     inFile.close();
 
-    cout << loadSchema["nation"];
+    // cout << loadSchema["region"];
     // loadSchema["region"] = new Schema("catalog", "region");
     // loadSchema["part"] = new Schema("catalog", "part");
     // loadSchema["partsupp"] = new Schema("catalog", "partsupp");
