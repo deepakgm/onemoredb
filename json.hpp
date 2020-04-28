@@ -742,6 +742,7 @@ namespace json {
             char value;
             consume_ws(str, offset);
             value = str[offset];
+            // cout<<"Error value: "<<value<<endl;
             switch (value) {
                 case '[' :
                     return std::move(parse_array(str, offset));

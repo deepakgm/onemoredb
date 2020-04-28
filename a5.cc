@@ -119,14 +119,15 @@ int main()
             if (queryType == 1)
             {
                 // cout<<tables;
+                cout << "hi" << endl;
                 loadSchema = myfunc.FireUpExistingDatabase();
+                // cout<<loadSchema[tableName]<<endl;
                 s.Read(input);
 
                 vector<string> seenTable;
                 map<string, string> aliasName;
                 map<string, Schema *> aliasSchemas;
                 //load DB //FireUpExistingDatabase
-
                 TableList *cur = tables;
                 while (cur)
                 {
@@ -135,6 +136,7 @@ int main()
                         cerr << "Error: Table hasn't been created!" << endl;
                         return -1;
                     }
+                    cout << "Number of tables: " << loadSchema.count(cur->tableName);
                     s.CopyRel(cur->tableName, cur->aliasAs);
                     myfunc.copySchema(aliasSchemas, cur->tableName, cur->aliasAs);
                     seenTable.push_back(cur->aliasAs);
@@ -182,7 +184,10 @@ int main()
                         }
                     }
                 }
-                cout << "MinResult: " << minRes << endl;
+                cout << endl
+                     << "MinResult: " << minRes << endl;
+                cout << endl
+                     << "indexofBestChoice: " << indexofBestChoice << endl;
                 vector<string> chosenJoinOrder = joinOrder[indexofBestChoice];
 
                 Operator *left = new SelectFileOperator(boolean, aliasSchemas[chosenJoinOrder[0]], aliasName[chosenJoinOrder[0]]);
@@ -232,7 +237,7 @@ int main()
                 char fileName[100];
                 char tpchName[100];
 
-                sprintf(fileName, "bin/%s.bin", tableName);
+                sprintf(fileName, "test/%s.bin", tableName);
                 sprintf(tpchName, "test/%s.tbl", tableName);
                 // cout<<tpchName;
 
@@ -299,23 +304,25 @@ int main()
                     else
                     {
                         //todo change this part
-                        //                    Schema sch(catalog, tableName);
-                        //                    OrderMaker order;
-                        //                    order.growFromParseTree(attsToSort, &sch);
-                        //                    SortInfo info;
-                        //                    info.myOrder = &order;
-                        //                    info.runLength = 100;
-                        //                    file.Create(fileName, sorted, &info);
+                        Schema sch(catalog, tableName);
+                        OrderMaker order;
+                        order.growFromParseTree(attsToSort, &sch);
+                        SortInfo info;
+                        info.myOrder = &order;
+                        info.runLength = 100;
+                        file.Create(fileName, sorted, &info);
 
-                        Schema *newSchema = new Schema(catalog, tableName);
+                        // Schema *newSchema = new Schema(catalog, tableName);
 
-                        loadSchema[tableName] = new Schema(catalog, tableName);
+                        // loadSchema[tableName] = new Schema(catalog, tableName);
 
-                        file.Create(fileName, tree, (void *)newSchema);
+                        // file.Create(fileName, tree, (void *)newSchema);
                     }
                     cout << "create completed.." << endl;
-                }else{
-                    cout<<"Table schema already exists"<<endl;
+                }
+                else
+                {
+                    cout << "Table schema already exists" << endl;
                 }
             }
             else if (queryType == 3)
@@ -324,7 +331,7 @@ int main()
                 // char metaName[100];
                 char *tempFile = "tempfile.txt";
 
-                sprintf(fileName, "bin/%s.bin", tableName);
+                sprintf(fileName, "test/%s.bin", tableName);
                 // sprintf (metaName, "%s.md", fileName);
 
                 remove(fileName);
@@ -380,9 +387,9 @@ int main()
             {
                 char fileName[100];
                 char tpchName[100];
-                sprintf(fileName, "bin/%s.bin", tableName);
+                sprintf(fileName, "test/%s.bin", tableName);
                 sprintf(tpchName, "tcph/%s.txt", fileToInsert);
-                // cout<<tpchName;
+                cout << tpchName;
                 DBFile file;
                 Schema sch(catalog, tableName);
                 sch.Print();
@@ -392,6 +399,7 @@ int main()
                     file.Load(sch, tpchName);
                     file.Close();
                 }
+                // myfunc.UpdateStatistics(tableName, tpchName);
                 cout << "done insert";
             }
             else if (queryType == 5)
@@ -416,8 +424,8 @@ int main()
 }
 
 //CREATE TABLE test1 (att1 INTEGER, att2 DOUBLE, att3 STRING) AS HEAP
-//INSERT 'trial' INTO nation
+//INSERT 'trial' INTO test1
 
 //CREATE TABLE table2 (n_nationkey INTEGER, n_name STRING, n_regionkey INTEGER, n_comment STRING) AS SORTED ON n_nationkey
 //INSERT '/home/deepak/Desktop/dbi/onemoredb/tcph/table2.txt' INTO table2
-// SELECT n.n_nationkey FROM table2 AS n WHERE (n.n_nationkey = 1)
+// SELECT n.att1 FROM test1 AS n WHERE (n.att1 = 0)

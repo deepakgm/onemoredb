@@ -77,6 +77,17 @@ void MyFucntion ::CopyTablesNamesAndAliases(TableList *tableList, Statistics &s,
     }
 }
 
+int MyFucntion :: UpdateStatistics(char* tableName, char* file){
+    string line;
+    ifstream inFile;
+    inFile.open(file);
+    int count=0;
+    while (inFile >> line)
+    {
+            count++;
+    }
+}
+
 int MyFucntion :: UpdateTable(char* tableName){
     string line;
     ifstream inFile;
@@ -90,7 +101,7 @@ int MyFucntion :: UpdateTable(char* tableName){
     }
     if(count == 0){
         ofstream myfile(DBInfo.c_str(),  ios::out | ios::app);
-        myfile << tableName << endl;
+        myfile << endl<<tableName;
     }
     cout<<"Count: "<<count<<endl;
     return count;
@@ -117,6 +128,7 @@ map<string, Schema *> MyFucntion ::FireUpExistingDatabase()
         // sprintf(file, "%s", line);
         // cout << "File input: " << line.c_str() << endl;
         loadSchema[(char*)line.c_str()] = new Schema("catalog", (char*)line.c_str());
+        // cout<<line<<endl;
         // memset(file, 0, sizeof(file));
     }
 

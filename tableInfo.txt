@@ -5,6 +5,5 @@ nation
 customer
 supplier
 lineitem
-ordersnation
-nation
+orders
 test1

@@ -37,6 +37,7 @@ vector<vector<string>> shuffleOrder(vector<string> &seenTable);
 void WriteOutFunc(Operator *op, int outputSet, char* outputFile);
 void traverse(Operator *root ,int outputSet);
 int UpdateTable(char* c);
+int UpdateStatistics(char* table,char* t);
 
 };
 #endif
