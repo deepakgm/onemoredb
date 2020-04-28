@@ -99,3 +99,11 @@ l_shipinstruct String
 l_shipmode String
 l_comment String
 END
+
+BEGIN
+test1
+test/test1.tbl
+att1 Int
+att2 Double
+att3 String
+END

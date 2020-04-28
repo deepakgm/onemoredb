@@ -6,6 +6,7 @@ using namespace std;
 #include <cstring>
 #include "Schema.h"
 #include <vector>
+#include <iterator>
 
 void MyFucntion ::PrintNameList(NameList *nameList)
 {
@@ -76,39 +77,60 @@ void MyFucntion ::CopyTablesNamesAndAliases(TableList *tableList, Statistics &s,
     }
 }
 
+int MyFucntion :: UpdateTable(char* tableName){
+    string line;
+    ifstream inFile;
+    inFile.open(DBInfo.c_str());
+    int count=0;
+    while (inFile >> line)
+    {
+        if(strcmp((char*)line.c_str(), tableName) == 0 ){
+            count++;
+        }
+    }
+    if(count == 0){
+        ofstream myfile(DBInfo.c_str(),  ios::out | ios::app);
+        myfile << tableName << endl;
+    }
+    cout<<"Count: "<<count<<endl;
+    return count;
+}
+
 map<string, Schema *> MyFucntion ::FireUpExistingDatabase()
 {
-    // ifstream file(DBInfo);
-    // file >> numofTables;
-    // for (int i = 0; i < numofTables; ++i)
-    // {
-    //     string name = "";
-    //     file >> name;
-    //     int type = 0;
-    //     file >> type;
-    //     tablesInDB[name] = type;
-    //     loadSchema[name] = new Schema(catalog, name);
-    // }
-    // file.close();
-    // if (tablesInDB.count(tablename) == 0)
-    // {
-    //     cerr << "Error: Table hasn't been created yet!" << endl;
-    //     return;
-    // }
-    // DBFile dbfile;
-    // string filepath = "db/" + tablename + ".bin";
-    // dbfile.Open(filepath.c_str());
-    // string loadPath = tpch_dir + loadFileName;
-    // dbfile.Load(*loadSchema[tablename], loadPath.c_str());
-    // dbfile.Close();
-    loadSchema["region"] = new Schema("catalog", "region");
-    loadSchema["part"] = new Schema("catalog", "part");
-    loadSchema["partsupp"] = new Schema("catalog", "partsupp");
-    loadSchema["nation"] = new Schema("catalog", "nation");
-    loadSchema["customer"] = new Schema("catalog", "customer");
-    loadSchema["supplier"] = new Schema("catalog", "supplier");
-    loadSchema["lineitem"] = new Schema("catalog", "lineitem");
-    loadSchema["orders"] = new Schema("catalog", "orders");
+    string line;
+
+    ifstream inFile;
+
+    inFile.open(DBInfo.c_str());
+    if (!inFile)
+    {
+        cout << "Unable to open file";
+        exit(1); // terminate with error
+    }
+
+    while (inFile >> line)
+    {
+        // cout<<"line length: "<<line.length()<<endl;
+        // char file[line.length()];
+        // std::copy(line.begin(), line.end(), file);
+        // sprintf(file, "%s", line);
+        // cout << "File input: " << line.c_str() << endl;
+        loadSchema[(char*)line.c_str()] = new Schema("catalog", (char*)line.c_str());
+        // memset(file, 0, sizeof(file));
+    }
+
+    inFile.close();
+
+    // cout << loadSchema["region"];
+    // loadSchema["region"] = new Schema("catalog", "region");
+    // loadSchema["part"] = new Schema("catalog", "part");
+    // loadSchema["partsupp"] = new Schema("catalog", "partsupp");
+    // loadSchema["nation"] = new Schema("catalog", "nation");
+    // loadSchema["customer"] = new Schema("catalog", "customer");
+    // loadSchema["supplier"] = new Schema("catalog", "supplier");
+    // loadSchema["lineitem"] = new Schema("catalog", "lineitem");
+    // loadSchema["orders"] = new Schema("catalog", "orders");
     return loadSchema;
 }
 

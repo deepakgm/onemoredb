@@ -23,7 +23,7 @@ typedef map<string, string> AliaseMap;
 map<string, Schema *> loadSchema;
 int outputSet=0; //0->stdout,1->file,2->none;
 WriteOut wo;
-// const string DBInfo = "tableInfo.txt";
+const string DBInfo = "tableInfo.txt";
 const string db_dir = "temp/";
 
 void PrintNameList (NameList *nameList);
@@ -36,6 +36,7 @@ void shuffleOrderHelper(vector<string> &seenTable, int index, vector<vector<stri
 vector<vector<string>> shuffleOrder(vector<string> &seenTable);
 void WriteOutFunc(Operator *op, int outputSet, char* outputFile);
 void traverse(Operator *root ,int outputSet);
+int UpdateTable(char* c);
 
 };
 #endif
