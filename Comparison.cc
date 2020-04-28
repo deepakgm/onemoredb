@@ -22,16 +22,37 @@ Comparison::Comparison(const Comparison &copy_me) {
 
 void Comparison::Print(Schema* leftSchema,Schema* rightSchema, Record *literal) {
 
-    cout << "(Att-" << whichAtt1 << ") ";
-    cout << "" << leftSchema->GetAtts()[whichAtt1].name << " from ";
+//    cout << "(Att-" << whichAtt1 << ") ";
+//    cout << "" << leftSchema->GetAtts()[whichAtt1].name << " from ";
+//
+//    if (operand1 == Left)
+//        cout << "left record ";
+//    else if (operand1 == Right)
+//        cout << "right record ";
+//    else {
+//        literal->PrintLiteral(leftSchema, whichAtt1);
+//        cout << "literal record ";
+//    }
 
-    if (operand1 == Left)
-        cout << "left record ";
-    else if (operand1 == Right)
-        cout << "right record ";
-    else {
-        literal->PrintLiteral(leftSchema, whichAtt1);
-        cout << "literal record ";
+    if (operand1 == Left || operand1 == Right) {
+        cout << "(Att-" << whichAtt1 << ") ";
+        if (attType == Int)
+            cout << "(Int)";
+        else if (attType == Double)
+            cout << "(Double)";
+        else
+            cout << "(String)";
+        if (operand1 == Left) {
+            cout << "" << leftSchema->GetAtts()[whichAtt1].name << " from ";
+            cout << "left record ";
+        } else {
+            cout << "" << rightSchema->GetAtts()[whichAtt1].name << " from ";
+            cout << "right record ";
+        }
+    } else {
+        cout << "(literal) ";
+        literal->PrintLiteral(rightSchema, whichAtt1);
+        cout << " ";
     }
 
     if (op == LessThan)
@@ -58,7 +79,7 @@ void Comparison::Print(Schema* leftSchema,Schema* rightSchema, Record *literal) 
         }
     } else {
         cout << "(literal) ";
-        literal->PrintLiteral(rightSchema, whichAtt1);
+        literal->PrintLiteral(rightSchema, whichAtt2);
         cout << " ";
     }
 }
