@@ -5,6 +5,8 @@
 #include "Statistics.h"
 #include "Operator.h"
 #include "Schema.h"
+#include "extraFunction.h"
+#include <fstream>
 
 using namespace std;
 
@@ -43,84 +45,51 @@ int main(int argc, char **argv) {
 }
 
 
-class QueryOptimizationTest : public ::testing::Test {
-/*public:
-    Statistics s;
-protected:
-    virtual void SetUp() {
-        clog << "initializing test" << endl;
-    }
+class DatabaseImp : public ::testing::Test {
+public:
+MyFucntion myFucntion;
+//     Statistics s;
+// protected:
+//     virtual void SetUp() {
+//         clog << "initializing test" << endl;
+//     }
 
-    virtual void TearDown() {
-        clog << "clearing memory.." << endl;
-    }*/
+//     virtual void TearDown() {
+//         clog << "clearing memory.." << endl;
+//     }*/
 };
 
 
-//Test funcToString method
-TEST_F(QueryOptimizationTest, funcToStringTest) {
-    FuncOperator* root=new(FuncOperator);
-    FuncOperator* left=new(FuncOperator);
-    FuncOperator* right=new(FuncOperator);
-
-    left->code=42;
-    root->code=43;
-    right->code=44;
-    root->leftOperand=NULL;
-
-    root->leftOperator=left;
-    root->right=right;
-    string result=funcToString(root);
-
-    ASSERT_EQ(result,"*+/");
-
-    delete root;
-    delete left;
-    delete right;
+//Test UpdateTable method
+TEST_F(DatabaseImp, UpdateTable) {
+    int x = myFucntion.UpdateTable("abc");
+    ifstream fin(myFucntion.DBInfo.c_str());
+    string line;
+    int count=0;
+    while (getline(fin, line))
+    {
+        // cout<<tableName<<endl;
+        if (myFucntion.trim(line).empty())
+            continue;
+        line = myFucntion.trim(line);
+        // cout<<line<<endl;
+        if (strcmp(line.c_str(), "abc") == 0)
+        {
+            ASSERT_NE(x,0);
+            count++;
+        }
+    }
+    if(count==0)
+        ASSERT_EQ(x,0);
 }
 
-//Pipe ID generation test
-TEST_F(QueryOptimizationTest, pipeIdGenerationTest) {
-    SelectFileOperator* sel=new SelectFileOperator(boolean,new Schema("catalog","nation"),"rel");
-
-    int pipeId=sel->getPipeID();
-    ASSERT_EQ(pipeId,1);
-
-    ProjectOperator* proj=new ProjectOperator(sel, attsToSelect);
-    pipeId=proj->getPipeID();
-    ASSERT_EQ(pipeId,2);
-
-    delete sel;
-    delete proj;
-}
-
-//Operator initialization test
-TEST_F(QueryOptimizationTest, operatorInitializationTest) {
-    SelectFileOperator* sel=new SelectFileOperator(boolean,new Schema("catalog","nation"),"rel");
-    ASSERT_EQ(sel->getType(),SELECT_FILE);
-    delete(sel);
-}
-
-// groupby  output schema test
-TEST_F(QueryOptimizationTest, groupByOutSchemaTest) {
-    Schema nation(catalog_path,"nation");
-    OrderMaker orderMaker=OrderMaker(&nation);
-
-
-    SelectFileOperator* sel=new SelectFileOperator(boolean,&nation,"rel");
-
-    int numOfAttr=sel->getSchema()->GetNumAtts();
-
-    ASSERT_EQ(numOfAttr,4);
-
-    GroupByOperator* groupByOperator=new  GroupByOperator(sel,orderMaker);
-    groupByOperator->createOutputSchema();
-    numOfAttr=groupByOperator->getSchema()->GetNumAtts();
-    ASSERT_EQ(numOfAttr,5);
-
-    string attrName=groupByOperator->getSchema()->GetAtts()[0].name;
-    ASSERT_EQ(attrName,"SUM");
-
-    delete groupByOperator;
-    delete sel;
+//LoadSchema test - yyparse()
+TEST_F(DatabaseImp, FireUpExistingDatabase) {
+    ofstream ofs(myFucntion.catalog, ifstream ::app);
+    ofs <<endl<< "BEGIN" << endl <<"abc"<<endl<<"abc.tbl"<<endl<<"att1 Int"<<endl<<"END"<<endl;
+    ofs.close();
+    map<string, Schema *> loadSch= myFucntion.FireUpExistingDatabase();
+    string tableName = "abc";
+    // cout<<loadSch.count(tableName);
+    ASSERT_NE(loadSch.count(tableName),0);
 }

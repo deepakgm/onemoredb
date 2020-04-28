@@ -1,4 +1,3 @@
-
 BEGIN
 region
 region.tbl
@@ -100,10 +99,33 @@ l_shipmode String
 l_comment String
 END
 
+
 BEGIN
-test1
-test/test1.tbl
+abc
+abc.tbl
 att1 Int
-att2 Double
-att3 String
+END
+
+BEGIN
+abc
+abc.tbl
+att1 Int
+END
+
+BEGIN
+abc
+abc.tbl
+att1 Int
+END
+
+BEGIN
+abc
+abc.tbl
+att1 Int
+END
+
+BEGIN
+abc
+abc.tbl
+att1 Int
 END
