@@ -99,7 +99,6 @@ l_shipmode String
 l_comment String
 END
 
-
 BEGIN
 abc
 abc.tbl
@@ -128,4 +127,13 @@ BEGIN
 abc
 abc.tbl
 att1 Int
+END
+
+
+BEGIN
+test1
+test/test1.tbl
+att1 Int
+att2 Double
+att3 String
 END

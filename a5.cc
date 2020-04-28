@@ -88,7 +88,7 @@ int main()
     //         << endl;
     //    cout << "Your choice: ";
 
-    // while (true)
+    while (true)
     {
         //todo clear the variables
         cout << endl
@@ -384,9 +384,14 @@ int main()
                 cout << "EXIT" << endl;
             }
             queryType = 0;
+            // string x;
+            // // sleep(20000);
+            // getline(cin,x);
+            // cout<<"x: "<<x<<endl;
             //todo commented folllowing lines
-            //            std::cin.clear();
-            //            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            // std::cin.clear();
+            // std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cin.clear();
         }
     }
     return 0;
@@ -397,5 +402,5 @@ int main()
 
 //CREATE TABLE table2 (n_nationkey INTEGER, n_name STRING, n_regionkey INTEGER, n_comment STRING) AS SORTED ON n_nationkey
 //INSERT '/home/deepak/Desktop/dbi/onemoredb/tcph/table2.txt' INTO table2
-// SELECT n.att1 FROM test1 AS n WHERE (n.att1 > 0)
+// SELECT n.att1 FROM test1 AS n WHERE (n.att1 = 0)
 //DROP TABLE test1

@@ -48,7 +48,7 @@ int DBFile::Create(const char *f_path, fType type, void *startup) {
         myInternalVar = new Heap();
     } else if (type == sorted) {
         myInternalVar = new Sorted();
-    } 
+    }
     // else{
     //     myInternalVar= new BTree(f_path,(Schema*)startup);
     // }
@@ -177,32 +177,32 @@ void DBFile::Load(Schema &f_schema, const char *loadpath) {
 }
 
 void Heap::Load(Schema &f_schema, const char *loadpath) {
-    writingMode();
-    FILE *tableFile = fopen(loadpath, "r");
-    if (tableFile == NULL) {
-        cerr << "invalid table file" << endl;
-        exit(-1);
-    }
+writingMode();
+FILE *tableFile = fopen(loadpath, "r");
+if (tableFile == NULL) {
+cerr << "invalid table file" << endl;
+exit(-1);
+}
 
-    Record tempRecord;
-    long recordCount = 0;
-    long pageCount = file.GetLength() - 1;
+Record tempRecord;
+long recordCount = 0;
+long pageCount = file.GetLength() - 1;
 
-    int isNotFull = 0;
-    while (tempRecord.SuckNextRecord(&f_schema, tableFile) == 1) {
-        recordCount++;
-        isNotFull = writingPage.Append(&tempRecord);
-        if (!isNotFull) {
-            file.AddPage(&writingPage, ++pageCount);
-            curPageIndex++;
-            writingPage.EmptyItOut();
-            writingPage.Append(&tempRecord);
-        }
-    }
-    if (!isNotFull)
-        file.AddPage(&writingPage, 0);
-    fclose(tableFile);
-    cout << "loaded " << recordCount << " records into " << pageCount << " pages." << endl;
+int isNotFull = 0;
+while (tempRecord.SuckNextRecord(&f_schema, tableFile) == 1) {
+recordCount++;
+isNotFull = writingPage.Append(&tempRecord);
+if (!isNotFull) {
+file.AddPage(&writingPage, ++pageCount);
+curPageIndex++;
+writingPage.EmptyItOut();
+writingPage.Append(&tempRecord);
+}
+}
+if (isNotFull)
+file.AddPage(&writingPage, pageCount);
+fclose(tableFile);
+cout << "loaded " << recordCount << " records into " << pageCount << " pages." << endl;
 }
 
 void Sorted::Load(Schema &schema, const char *loadpath) {
