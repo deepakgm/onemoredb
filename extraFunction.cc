@@ -84,7 +84,6 @@ int MyFucntion :: UpdateStatistics(char* tableName, char* file){
     int count=0;
     while (inFile >> line)
     {
-<<<<<<< HEAD
         // cout<<tableName<<endl;
         if (trim(line).empty())
             continue;
@@ -109,10 +108,8 @@ int MyFucntion :: UpdateStatistics(char* tableName, char* file){
     remove(DBInfo.c_str());
     rename(tempfile, DBInfo.c_str());
     cout << "done updateTableInfo" << endl;
-=======
             count++;
     }
->>>>>>> parent of d55c0df... Gtest and Drop
 }
 
 int MyFucntion :: UpdateTable(char* tableName){
@@ -122,13 +119,7 @@ int MyFucntion :: UpdateTable(char* tableName){
     int count=0;
     while (inFile >> line)
     {
-<<<<<<< HEAD
-        line = trim(line);
-        if (strcmp((char *)line.c_str(), tableName) == 0)
-        {
-=======
         if(strcmp((char*)line.c_str(), tableName) == 0 ){
->>>>>>> parent of d55c0df... Gtest and Drop
             count++;
         }
     }
@@ -160,14 +151,8 @@ map<string, Schema *> MyFucntion ::FireUpExistingDatabase()
         // std::copy(line.begin(), line.end(), file);
         // sprintf(file, "%s", line);
         // cout << "File input: " << line.c_str() << endl;
-<<<<<<< HEAD
-        line = trim(line);
-        loadSchema[(char *)line.c_str()] = new Schema("catalog", (char *)line.c_str());
-        cout << line << endl;
-=======
         loadSchema[(char*)line.c_str()] = new Schema("catalog", (char*)line.c_str());
         // cout<<line<<endl;
->>>>>>> parent of d55c0df... Gtest and Drop
         // memset(file, 0, sizeof(file));
     }
     cout<<"out of while loop"<<endl;

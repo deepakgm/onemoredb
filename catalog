@@ -99,8 +99,6 @@ l_shipinstruct String
 l_shipmode String
 l_comment String
 END
-<<<<<<< HEAD
-=======
 
 BEGIN
 test1
@@ -109,4 +107,3 @@ att1 Int
 att2 Double
 att3 String
 END
->>>>>>> parent of d55c0df... Gtest and Drop
