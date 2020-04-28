@@ -6,4 +6,3 @@ customer
 supplier
 lineitem
 orders
-abc

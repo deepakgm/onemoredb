@@ -96,9 +96,10 @@ void MyFucntion ::UpdateTableInfo(char *tableName)
         {
             found = true;
         }
-        if (!found){
+        if (!found)
+        {
             schString = trim(line) + '\n';
-            cout<<schString;
+            cout << schString;
             fout << schString;
         }
         found = false;
@@ -109,7 +110,7 @@ void MyFucntion ::UpdateTableInfo(char *tableName)
     fout.close();
     remove(DBInfo.c_str());
     rename(tempfile, DBInfo.c_str());
-    cout<<"done updateTableInfo"<<endl;
+    cout << "done updateTableInfo" << endl;
 }
 
 int MyFucntion ::UpdateTable(char *tableName)
@@ -120,6 +121,7 @@ int MyFucntion ::UpdateTable(char *tableName)
     int count = 0;
     while (inFile >> line)
     {
+        line = trim(line);
         if (strcmp((char *)line.c_str(), tableName) == 0)
         {
             count++;
@@ -148,21 +150,22 @@ map<string, Schema *> MyFucntion ::FireUpExistingDatabase()
         exit(1); // terminate with error
     }
 
-    while (inFile >> line)
+    while (getline(inFile, line))
     {
         // cout<<"line length: "<<line.length()<<endl;
         // char file[line.length()];
         // std::copy(line.begin(), line.end(), file);
         // sprintf(file, "%s", line);
         // cout << "File input: " << line.c_str() << endl;
+        line = trim(line);
         loadSchema[(char *)line.c_str()] = new Schema("catalog", (char *)line.c_str());
-        // cout<<line<<endl;
+        cout << line << endl;
         // memset(file, 0, sizeof(file));
     }
-
+    cout<<"out of while loop"<<endl;
     inFile.close();
 
-    // cout << loadSchema["region"];
+    cout << loadSchema["nation"];
     // loadSchema["region"] = new Schema("catalog", "region");
     // loadSchema["part"] = new Schema("catalog", "part");
     // loadSchema["partsupp"] = new Schema("catalog", "partsupp");
