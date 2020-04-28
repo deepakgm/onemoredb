@@ -88,7 +88,7 @@ int main()
     //         << endl;
     //    cout << "Your choice: ";
 
-    while (true)
+    // while (true)
     {
         //todo clear the variables
         cout << endl
@@ -178,6 +178,7 @@ int main()
                 {
                     Operator *right = new SelectFileOperator(boolean, aliasSchemas[chosenJoinOrder[i]], aliasName[chosenJoinOrder[i]]);
                     root = new JoinOperator(left, right, boolean);
+                    boolean = boolean->rightAnd;
                     left = root;
                 }
                 if (distinctAtts == 1 || distinctFunc == 1)
@@ -205,7 +206,7 @@ int main()
                 }
                 outputVar = "STDOUT";
                 cout << "OutputVar: " << outputVar << endl;
-                myfunc.WriteOutFunc(root, 0, outputVar);
+                myfunc.WriteOutFunc(root, 2, outputVar);
             }
             else if (queryType == 2)
             {

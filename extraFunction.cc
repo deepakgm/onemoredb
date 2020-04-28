@@ -227,11 +227,11 @@ void MyFucntion ::WriteOutFunc(Operator *root, int outputSet, char *outputFile)
              << "Selected Query Plan:" << endl;
         cout << endl
              << "*******************************************************" << endl;
-        traverse(root, 0);
+        traverse(root, 2);
     }
     else if (outputSet == 0)
     {
-        traverse(root, 1);
+        traverse(root, 0);
         cout << "Back to writeOut" << endl;
         Record rec;
         while (root->outPipe.Remove(&rec))
@@ -259,8 +259,12 @@ void MyFucntion ::traverse(Operator *root, int outputSet)
     {
     case SELECT_FILE:
         cout << "Select file" << endl;
-        if (outputSet == 2)
+        cout<<"OutputSet: "<<outputSet<<endl;
+        if (outputSet == 2){
+            cout<<"Q1"<<endl;
             ((SelectFileOperator *)root)->print();
+            cout<<"Q2"<<endl;
+        }
         else
         {
             ((SelectFileOperator *)root)->run();
