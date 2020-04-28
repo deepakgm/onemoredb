@@ -572,120 +572,249 @@ void GroupBy::Run(Pipe &inPipe, Pipe &outPipe, OrderMaker &groupAtts, Function &
     pthread_create(&thread, NULL, workerThread, opArgs);
 }
 
-void *GroupBy::workerThread(void *arg) {
-    OpArgs* opArgs = (OpArgs*)arg;
-
-    Record *temp = new Record;
-    Record *spare = new Record;
+void *GroupBy::workerThread(void *args){
+    OpArgs* gb = (OpArgs*)args;
+    // GroupBy* gb = (GroupBy*)arg;
+    ComparisonEngine cmpEng;
+    Record outRec, tmpRec, lastRec;
+    int intSum = 0;
+    int intVal = 0;
+    double doubleSum = 0.0;
+    double doubleVal = 0.0;
+    Type valType = String;
     
-    Record arrayTemp[2];
-    Record *start = NULL, *end = NULL;
-
-    Type type;
-    Pipe *pipe = new Pipe(100);
-    BigQ bigq(*opArgs->inPipe, *pipe, *opArgs->orderMaker, 10);
-
-    int along = (opArgs->orderMaker->numAtts)+1;
-
-    int whichG = 0, totalSumInt = 0, tIntRec, paramA[along];
-    double totalSumDoub=0, tDoubRec;
-
-    paramA[0] = 0;
-
-    for(int i = 1; i < along; i++)
-        paramA[i] = opArgs->orderMaker->whichAtts[i-1];
-
-    while(pipe->Remove(&arrayTemp[whichG%2]) == 1)
-    {
-        start = end;
-        end = &arrayTemp[whichG%2];
-        if(start != NULL && end != NULL)
-        {
-            if(opArgs->compEng->Compare(start, end, opArgs->orderMaker) != 0)
-            {
-                opArgs->function->Apply(*start, tIntRec, tDoubRec);
-                if(opArgs->function->returnsInt == 1)
-                {
-                    type = Int;
-                    totalSumInt = totalSumInt + tIntRec;
-                }
-                else
-                {
-                    type = Double;
-                    totalSumDoub = totalSumDoub + tDoubRec;
-                }
-                int startint = ((int *)start->bits)[1]/sizeof(int) - 1;
-
-                Attribute parameters;
-                stringstream output;
-                if(type==Int){
-                    parameters.name="int";
-                    parameters.myType=Int;
-                    output << totalSumInt << "|";
-                }
-                else{
-                    parameters.name="double";
-                    parameters.myType=Double;
-                    output << totalSumDoub << "|";
-                }
-                Schema out_sch ("sum", 1, &parameters);
-                spare->ComposeRecord(&out_sch,output.str().c_str());
-                temp->MergeRecords(spare, start, 1, startint, paramA, along, 1);
-                opArgs->outPipe->Insert(temp);
-                totalSumInt = 0;
-                totalSumDoub = 0;
+    Pipe outSort(100);
+    BigQ bq = BigQ(*(gb->inPipe), outSort, *(gb->orderMaker), gb->n_pages);
+    
+    if (!outSort.Remove(&tmpRec)) {
+        gb->outPipe->ShutDown();
+        pthread_exit(NULL);
+    }
+    
+    valType = gb->function->Apply(tmpRec, intVal, doubleVal);
+    if (valType == Int) {
+        intSum = intSum + intVal;
+    }
+    else if (valType == Double) {
+        doubleSum = doubleSum + doubleVal;
+    }
+    lastRec.Consume(&tmpRec);
+    
+    while (outSort.Remove(&tmpRec)) {
+        if (cmpEng.Compare(&lastRec, &tmpRec, gb->orderMaker)) {
+            Attribute* attrs = new Attribute[gb->orderMaker->numAtts + 1];
+            attrs[0].name = "SUM";
+            stringstream output;
+            if (valType == Int) {
+                attrs[0].myType = Int;
+                output << intSum << "|";
             }
-            else
-            {
-                opArgs->function->Apply(*start, tIntRec, tDoubRec);
-                if(opArgs->function->returnsInt == 1)
-                {
-                    type = Int;
-                    totalSumInt = totalSumInt + tIntRec;
+            else if (valType == Double) {
+                attrs[0].myType = Double;
+                output << doubleSum << "|";
+            }
+            
+            for (int i = 0; i < gb->orderMaker->numAtts; ++i) {
+                Type curAttType = gb->orderMaker->whichTypes[i];
+                if (curAttType == Int) {
+                    attrs[i + 1].name = "int";
+                    attrs[i + 1].myType = Int;
+                    int val = *((int*)(lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1]));
+                    output << val << "|";
                 }
-                else
-                {
-                    type = Double;
-                    totalSumDoub = totalSumDoub + tDoubRec;
+                else if (curAttType == Double) {
+                    attrs[i + 1].name = "double";
+                    attrs[i + 1].myType = Double;
+                    double val = *((double*)(lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1]));
+                    output << val << "|";
+                }
+                else {
+                    attrs[i + 1].name = "string";
+                    attrs[i + 1].myType = String;
+                    string val = lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1];
+                    output << val << "|";
                 }
             }
+            
+            Schema outSch("out_shema", gb->orderMaker->numAtts + 1, attrs);
+            outRec.ComposeRecord(&outSch, output.str().c_str());
+            gb->outPipe->Insert(&outRec);
+            
+            intSum = 0;
+            intVal = 0;
+            doubleSum = 0.0;
+            doubleVal = 0.0;
         }
-        whichG++;
+        
+        valType = gb->function->Apply(tmpRec, intVal, doubleVal);
+        if (valType == Int) {
+            intSum = intSum + intVal;
+        }
+        else if (valType == Double) {
+            doubleSum = doubleSum + doubleVal;
+        }
+        lastRec.Consume(&tmpRec);
     }
-
-    opArgs->function->Apply(*end, tIntRec, tDoubRec);
-    if(opArgs->function->returnsInt == 1)
-    {
-        type = Int;
-        totalSumInt = totalSumInt + tIntRec;
-    }
-    else
-    {
-        type = Double;
-        totalSumDoub = totalSumDoub + tDoubRec;
-    }
-    int startint = ((int *)start->bits)[1]/sizeof(int) - 1;
-
-    Attribute parameters;
+    
+    Attribute* attrs = new Attribute[gb->orderMaker->numAtts + 1];
+    attrs[0].name = "SUM";
     stringstream output;
-    if(type==Int){
-        parameters.name="int";
-        parameters.myType=Int;
-        output << totalSumInt << "|";
+    if (valType == Int) {
+        attrs[0].myType = Int;
+        output << intSum << "|";
     }
-    else{
-        parameters.name="double";
-        parameters.myType=Double;
-        output << totalSumDoub << "|";
+    else if (valType == Double) {
+        attrs[0].myType = Double;
+        output << doubleSum << "|";
     }
-    Schema out_sch ("sum", 1, &parameters);
-    spare->ComposeRecord(&out_sch,output.str().c_str());
-    temp->MergeRecords(spare, end, 1, startint, paramA, along, 1);
-    opArgs->outPipe->Insert(temp);
-
-    opArgs->outPipe->ShutDown();
+    
+    for (int i = 0; i < gb->orderMaker->numAtts; ++i) {
+        Type curAttType = gb->orderMaker->whichTypes[i];
+        if (curAttType == Int) {
+            attrs[i + 1].name = "int";
+            attrs[i + 1].myType = Int;
+            int val = *((int*)(lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1]));
+            cout << "[i]: " << val << "|";
+            output << val << "|";
+        }
+        else if (curAttType == Double) {
+            attrs[i + 1].name = "double";
+            attrs[i + 1].myType = Double;
+            double val = *((double*)(lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1]));
+            cout << "[i]: " << val << "|";
+            output << val << "|";
+        }
+        else {
+            attrs[i + 1].name = "string";
+            attrs[i + 1].myType = String;
+            string val = lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1];
+            cout << "[i]: " << val << "|";
+            output << val << "|";
+        }
+    }
+    
+    Schema outSch("out_shema", gb->orderMaker->numAtts + 1, attrs);
+    outRec.ComposeRecord(&outSch, output.str().c_str());
+    gb->outPipe->Insert(&outRec);
+    
+    gb->outPipe->ShutDown();
     pthread_exit(NULL);
 }
+
+// void *GroupBy::workerThread(void *arg) {
+//     OpArgs* opArgs = (OpArgs*)arg;
+
+//     Record *temp = new Record;
+//     Record *spare = new Record;
+    
+//     Record arrayTemp[2];
+//     Record *start = NULL, *end = NULL;
+
+//     Type type;
+//     Pipe *pipe = new Pipe(100);
+//     BigQ bigq(*opArgs->inPipe, *pipe, *opArgs->orderMaker, 10);
+
+//     int along = (opArgs->orderMaker->numAtts)+1;
+
+//     int whichG = 0, totalSumInt = 0, tIntRec, paramA[along];
+//     double totalSumDoub=0, tDoubRec;
+
+//     paramA[0] = 0;
+
+//     for(int i = 1; i < along; i++)
+//         paramA[i] = opArgs->orderMaker->whichAtts[i-1];
+
+//     while(pipe->Remove(&arrayTemp[whichG%2]) == 1)
+//     {
+//         start = end;
+//         end = &arrayTemp[whichG%2];
+//         if(start != NULL && end != NULL)
+//         {
+//             if(opArgs->compEng->Compare(start, end, opArgs->orderMaker) != 0)
+//             {
+//                 opArgs->function->Apply(*start, tIntRec, tDoubRec);
+//                 if(opArgs->function->returnsInt == 1)
+//                 {
+//                     type = Int;
+//                     totalSumInt = totalSumInt + tIntRec;
+//                 }
+//                 else
+//                 {
+//                     type = Double;
+//                     totalSumDoub = totalSumDoub + tDoubRec;
+//                 }
+//                 int startint = ((int *)start->bits)[1]/sizeof(int) - 1;
+
+//                 Attribute parameters;
+//                 stringstream output;
+//                 if(type==Int){
+//                     parameters.name="int";
+//                     parameters.myType=Int;
+//                     output << totalSumInt << "|";
+//                 }
+//                 else{
+//                     parameters.name="double";
+//                     parameters.myType=Double;
+//                     output << totalSumDoub << "|";
+//                 }
+//                 Schema out_sch ("sum", 1, &parameters);
+//                 spare->ComposeRecord(&out_sch,output.str().c_str());
+//                 temp->MergeRecords(spare, start, 1, startint, paramA, along, 1);
+//                 opArgs->outPipe->Insert(temp);
+//                 totalSumInt = 0;
+//                 totalSumDoub = 0;
+//             }
+//             else
+//             {
+//                 opArgs->function->Apply(*start, tIntRec, tDoubRec);
+//                 if(opArgs->function->returnsInt == 1)
+//                 {
+//                     type = Int;
+//                     totalSumInt = totalSumInt + tIntRec;
+//                 }
+//                 else
+//                 {
+//                     type = Double;
+//                     totalSumDoub = totalSumDoub + tDoubRec;
+//                 }
+//             }
+//         }
+//         whichG++;
+//     }
+
+//     opArgs->function->Apply(*end, tIntRec, tDoubRec);
+//     if(opArgs->function->returnsInt == 1)
+//     {
+//         type = Int;
+//         totalSumInt = totalSumInt + tIntRec;
+//     }
+//     else
+//     {
+//         type = Double;
+//         totalSumDoub = totalSumDoub + tDoubRec;
+//     }
+//     int startint = ((int *)start->bits)[1]/sizeof(int) - 1;
+
+//     Attribute parameters;
+//     stringstream output;
+//     if(type==Int){
+//         parameters.name="int";
+//         parameters.myType=Int;
+//         output << totalSumInt << "|";
+//     }
+//     else{
+//         parameters.name="double";
+//         parameters.myType=Double;
+//         output << totalSumDoub << "|";
+//     }
+//     Schema out_sch ("sum", 1, &parameters);
+//     spare->ComposeRecord(&out_sch,output.str().c_str());
+//     temp->MergeRecords(spare, end, 1, startint, paramA, along, 1);
+//     opArgs->outPipe->Insert(temp);
+
+//     opArgs->outPipe->ShutDown();
+//     pthread_exit(NULL);
+// }
 
 void GroupBy::WaitUntilDone() {
     pthread_join(thread, NULL);

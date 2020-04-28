@@ -119,6 +119,7 @@ void JoinOperator::print() {
 };
 
 void JoinOperator :: run() {
+    cnf.numAnds = 1;
     j.Run(left->outPipe, right->outPipe, outPipe, cnf, literal);
 }
 
@@ -227,5 +228,6 @@ void GroupByOperator::print() {
 };
 
 void GroupByOperator :: run() {
+    // outPipe = Pipe(50);
     gb.Run(left->outPipe, outPipe, groupOrder, function);
 }
