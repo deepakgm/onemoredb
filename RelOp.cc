@@ -674,21 +674,21 @@ void *GroupBy::workerThread(void *args){
             attrs[i + 1].name = "int";
             attrs[i + 1].myType = Int;
             int val = *((int*)(lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1]));
-            cout << "[i]: " << val << "|";
+            // cout << "[i]: " << val << "|";
             output << val << "|";
         }
         else if (curAttType == Double) {
             attrs[i + 1].name = "double";
             attrs[i + 1].myType = Double;
             double val = *((double*)(lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1]));
-            cout << "[i]: " << val << "|";
+            // cout << "[i]: " << val << "|";
             output << val << "|";
         }
         else {
             attrs[i + 1].name = "string";
             attrs[i + 1].myType = String;
             string val = lastRec.bits + ((int *) lastRec.bits)[gb->orderMaker->whichAtts[i] + 1];
-            cout << "[i]: " << val << "|";
+            // cout << "[i]: " << val << "|";
             output << val << "|";
         }
     }

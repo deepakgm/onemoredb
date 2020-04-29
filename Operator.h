@@ -183,4 +183,46 @@ static string funcToString(FuncOperator *funcOperator)
     }
     return result;
 }
+
+static void funcToNameList(FuncOperator *funcOperator,NameList* nameList)
+{
+
+    if (funcOperator)
+    {
+        if (funcOperator->leftOperator)
+        {
+            //            result.append(funcToString(funcOperator->leftOperator));
+            if (nameList->name==NULL){
+                funcToNameList(funcOperator->leftOperator,nameList);
+            }
+            else{
+                auto  temp=new NameList;
+                temp->next=NULL;
+                temp->name=NULL;
+                nameList->next=temp;
+                funcToNameList(funcOperator->leftOperator,nameList->next);
+            }
+        }
+        if (funcOperator->leftOperand)
+        {
+            nameList->name=funcOperator->leftOperand->value;
+        }
+
+        if (funcOperator->right)
+        {
+//            result.append(funcToString(funcOperator->right));
+            if (nameList->name==NULL)
+                funcToNameList(funcOperator->right,nameList);
+            else{
+                auto  temp=new NameList;
+                temp->next=NULL;
+                temp->name=NULL;
+                nameList->next=temp;
+                funcToNameList(funcOperator->right,nameList->next);
+            }
+        }
+    }
+//    return result;
+}
+
 #endif

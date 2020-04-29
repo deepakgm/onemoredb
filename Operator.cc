@@ -21,7 +21,7 @@ void SelectFileOperator::print() {
 }
 
 void SelectFileOperator :: run() {
-    cout<<"DBfile location: "<<dbfilePath<<endl;
+    // cout<<"DBfile location: "<<dbfilePath<<endl;
     dbfile.Open(dbfilePath.c_str());
     sf.Run(dbfile, outPipe, cnf, literal);
     // sf.WaitUntilDone();

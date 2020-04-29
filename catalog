@@ -143,3 +143,9 @@ abc
 abc.tbl
 att1 Int
 END
+
+BEGIN
+abc
+abc.tbl
+att1 Int
+END

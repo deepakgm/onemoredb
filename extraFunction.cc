@@ -206,7 +206,7 @@ void MyFucntion ::WriteOutFunc(Operator *root, int outputSet, char *outputFile)
     else if (outputSet == 0)
     {
         printRecursively(root, 0);
-        // cout << "Back to writeOut" << endl;
+        cout << endl;
         Record rec;
         while (root->outPipe.Remove(&rec))
         {
