@@ -14,6 +14,7 @@
 #include "extraFunction.h"
 #include <unordered_map>
 #include <float.h>
+#include <cstdlib>
 
 extern "C"
 {
@@ -33,7 +34,7 @@ extern int distinctFunc;                   // 1 if there is a DISTINCT in an agg
 
 extern int queryType; // 1 for SELECT, 2 for CREATE, 3 for DROP,
 // 4 for INSERT, 5 for SET, 6 for EXIT
-// extern int outputType; // 0 for NONE, 1 for STDOUT, 2 for file output
+int outputType1; // 0 for NONE, 1 for STDOUT, 2 for file output
 
 extern char *outputVar;
 extern char *newtable;
@@ -101,7 +102,7 @@ int main()
             if (queryType == 1)
             {
                 // cout<<tables;
-                cout << "hi" << endl;
+                // cout << "hi" << endl;
                 loadSchema = myfunc.FireUpExistingDatabase();
                 // cout<<loadSchema[tableName]<<endl;
                 s.Read(input);
@@ -118,7 +119,7 @@ int main()
                         cerr << "Error: Table hasn't been created!" << endl;
                         return -1;
                     }
-                    cout << "Number of tables: " << loadSchema.count(cur->tableName);
+                    // cout << "Number of tables: " << loadSchema.count(cur->tableName);
                     s.CopyRel(cur->tableName, cur->aliasAs);
                     myfunc.copySchema(aliasSchemas, cur->tableName, cur->aliasAs);
                     seenTable.push_back(cur->aliasAs);
@@ -166,10 +167,10 @@ int main()
                         }
                     }
                 }
-                cout << endl
-                     << "MinResult: " << minRes << endl;
-                cout << endl
-                     << "indexofBestChoice: " << indexofBestChoice << endl;
+                // cout << endl
+                //      << "MinResult: " << minRes << endl;
+                // cout << endl
+                //      << "indexofBestChoice: " << indexofBestChoice << endl;
                 vector<string> chosenJoinOrder = joinOrder[indexofBestChoice];
 
                 Operator *left = new SelectFileOperator(boolean, aliasSchemas[chosenJoinOrder[0]], aliasName[chosenJoinOrder[0]]);
@@ -204,9 +205,19 @@ int main()
                 {
                     root = new ProjectOperator(left, attsToSelect);
                 }
-                outputVar = "STDOUT";
-                cout << "OutputVar: " << outputVar << endl;
-                myfunc.WriteOutFunc(root, 0, outputVar);
+                // outputVar = "STDOUT";
+                // cout << "OutputVar: " << outputVar << endl;
+                if (outputVar == "NONE"){
+                    outputType1 = 2;}
+                else if (outputVar == "STDOUT"){
+                    outputType1 = 0;}
+                else{
+                    outputType1 = 1;}
+                if (outputVar == NULL)
+                    outputType1 = 0;
+
+                myfunc.WriteOutFunc(root, outputType1, outputVar);
+                // continue;
             }
             else if (queryType == 2)
             {
@@ -307,18 +318,21 @@ int main()
                 {
                     cout << "Table schema already exists" << endl;
                 }
+                // continue;
             }
             else if (queryType == 3)
             {
-                char fileName[100];;
+                char fileName[100];
+                ;
                 sprintf(fileName, "test/%s.bin", tableName);
-                if(!remove(fileName)){
-                    cout<<"File does not exist";
+                if (!remove(fileName))
+                {
+                    cout << "File does not exist";
                 }
 
                 string schString = "", line = "";
                 ifstream fin(catalog);
-                char* tempfile = ".cata.tmp";
+                char *tempfile = ".cata.tmp";
                 ofstream fout(tempfile);
                 bool found = false;
                 while (getline(fin, line))
@@ -352,6 +366,7 @@ int main()
                 //update tableinfo
                 myfunc.UpdateTableInfo(tableName);
                 cout << "done drop";
+                // continue;
             }
             else if (queryType == 4)
             {
@@ -371,6 +386,7 @@ int main()
                 }
                 // myfunc.UpdateStatistics(tableName, tpchName);
                 cout << "done insert";
+                // continue;;
             }
             else if (queryType == 5)
             {
@@ -378,11 +394,13 @@ int main()
                 cout << "SET" << endl;
 
                 cout << outputVar << endl;
+                // continue;
             }
             else if (queryType == 6)
             {
 
                 cout << "EXIT" << endl;
+                exit(0);
             }
             queryType = 0;
             // string x;

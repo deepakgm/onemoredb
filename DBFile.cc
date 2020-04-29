@@ -69,8 +69,8 @@ int DBFile::Open(const char *f_path)
 
     if (f_path != metaInfo.binFilePath)
     {
-        cout << "input file: " << f_path << endl;
-        cout << "meta input file: " << metaInfo.binFilePath << endl;
+        // cout << "input file: " << f_path << endl;
+        // cout << "meta input file: " << metaInfo.binFilePath << endl;
 
         cout << "DbFile Open called without calling Create!!" << endl;
         WriteMetaInfo(f_path, heap, NULL);

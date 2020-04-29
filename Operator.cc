@@ -21,11 +21,11 @@ void SelectFileOperator::print() {
 }
 
 void SelectFileOperator :: run() {
-    cout<<"DBfile location: "<<dbfilePath;
+    cout<<"DBfile location: "<<dbfilePath<<endl;
     dbfile.Open(dbfilePath.c_str());
     sf.Run(dbfile, outPipe, cnf, literal);
-    sf.WaitUntilDone();
-    cout<<"After SelectFileRun"<<endl;
+    // sf.WaitUntilDone();
+    // cout<<"After SelectFileRun"<<endl;
 }
 
 SelectPipeOperator::SelectPipeOperator(Operator *child, AndList *selectList) {
@@ -74,7 +74,7 @@ void ProjectOperator::print() {
 
 void ProjectOperator :: run() {
     p.Run(left->outPipe, outPipe, keepMe, this->left->getSchema()->GetNumAtts(), this->outputSchema->GetNumAtts());
-    p.WaitUntilDone();
+    // p.WaitUntilDone();
     // cout<<endl<<"Outpipe: "<<endl;
 }
 

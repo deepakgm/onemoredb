@@ -52,7 +52,7 @@ MetaInfo GetMetaInfo() {
     init();
     json::JSON tmp;
     fstream t(meta_path);
-    cout<<"Meta Path: "<<meta_path<<endl;
+    // cout<<"Meta Path: "<<meta_path<<endl;
     string str((std::istreambuf_iterator<char>(t)),
                std::istreambuf_iterator<char>());
     tmp = tmp.Load(str);
@@ -81,7 +81,7 @@ void WriteMetaInfo(string path, fType type, void *startup) {
     FILE *out;
     json::JSON obj;
     obj["path"] = path;
-    cout<<"Meta path Write: "<<path<<endl;
+    // cout<<"Meta path Write: "<<path<<endl;
     if ((out = fopen(meta_path, "w")) != NULL) {
         if (type == sorted) {
             obj["type"] = "sorted";

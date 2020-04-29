@@ -137,3 +137,9 @@ att1 Int
 att2 Double
 att3 String
 END
+
+BEGIN
+abc
+abc.tbl
+att1 Int
+END

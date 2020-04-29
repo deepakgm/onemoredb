@@ -759,7 +759,7 @@ namespace json {
                     if ((value <= '9' && value >= '0') || value == '-')
                         return std::move(parse_number(str, offset));
             }
-            std::cerr << "ERROR: Parse: Unknown starting character '" << value << "'\n";
+            // std::cerr << "ERROR: Parse: Unknown starting character '" << value << "'\n";
             return JSON();
         }
     }

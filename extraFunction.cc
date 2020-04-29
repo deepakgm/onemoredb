@@ -49,33 +49,7 @@ void MyFucntion ::CopyAttrList(AttrList *attrList, vector<Attribute> &atts)
     }
 }
 
-void MyFucntion ::initSchemaMap(SchemaMap &map)
-{
-    ifstream ifs(catalog);
-    char str[100];
-    while (!ifs.eof())
-    {
-        ifs.getline(str, 100);
-        if (strcmp(str, "BEGIN") == 0)
-        {
-            ifs.getline(str, 100);
-            map[string(str)] = Schema(catalog, str);
-        }
-    }
-    ifs.close();
-}
 // typedef map<string, string> AliaseMap;
-
-void MyFucntion ::CopyTablesNamesAndAliases(TableList *tableList, Statistics &s, vector<char *> &tableNames, AliaseMap &map)
-{
-    while (tableList)
-    {
-        s.CopyRel(tableList->tableName, tableList->aliasAs);
-        map[tableList->aliasAs] = tableList->tableName;
-        tableNames.push_back(tableList->aliasAs);
-        tableList = tableList->next;
-    }
-}
 
 void MyFucntion ::UpdateTableInfo(char *tableName)
 {
@@ -131,7 +105,7 @@ int MyFucntion ::UpdateTable(char *tableName)
         myfile << endl
                << tableName;
     }
-    cout << "Count: " << count << endl;
+    // cout << "Count: " << count << endl;
     return count;
 }
 
@@ -227,12 +201,12 @@ void MyFucntion ::WriteOutFunc(Operator *root, int outputSet, char *outputFile)
              << "Selected Query Plan:" << endl;
         cout << endl
              << "*******************************************************" << endl;
-        traverse(root, 2);
+        printRecursively(root, 2);
     }
     else if (outputSet == 0)
     {
-        traverse(root, 0);
-        cout << "Back to writeOut" << endl;
+        printRecursively(root, 0);
+        // cout << "Back to writeOut" << endl;
         Record rec;
         while (root->outPipe.Remove(&rec))
         {
@@ -241,75 +215,77 @@ void MyFucntion ::WriteOutFunc(Operator *root, int outputSet, char *outputFile)
     }
     else
     {
-        traverse(root, 1);
+        printRecursively(root, 1);
         string outputPath = db_dir + outputFile;
+        cout<<"OutputPath: "<<outputPath<<endl;
         FILE *outFile = fopen(outputPath.c_str(), "w");
         wo.Run(root->outPipe, outFile, *root->getSchema());
         wo.WaitUntilDone();
-        fclose(outFile);
+        // cout<<"okay"<<endl;
+        // fclose(outFile);
     }
 }
 
-void MyFucntion ::traverse(Operator *root, int outputSet)
+void MyFucntion ::printRecursively(Operator *root, int outputSet)
 {
-    cout << "root type: " << root->getType() << endl;
+    // cout << "root type: " << root->getType() << endl;
     if (!root)
         return;
     switch (root->getType())
     {
     case SELECT_FILE:
-        cout << "Select file" << endl;
-        cout<<"OutputSet: "<<outputSet<<endl;
+        // cout << "Select file" << endl;
+        // cout<<"OutputSet: "<<outputSet<<endl;
         if (outputSet == 2){
-            cout<<"Q1"<<endl;
+            // cout<<"Q1"<<endl;
             ((SelectFileOperator *)root)->print();
-            cout<<"Q2"<<endl;
+            // cout<<"Q2"<<endl;
         }
         else
         {
             ((SelectFileOperator *)root)->run();
-            cout << "done" << endl;
+            // cout << "done" << endl;
         }
         break;
     case SELECT_PIPE:
-        traverse(((SelectPipeOperator *)root)->left, outputSet);
+        printRecursively(((SelectPipeOperator *)root)->left, outputSet);
         if (outputSet == 2)
             ((SelectPipeOperator *)root)->print();
         else
             ((SelectPipeOperator *)root)->run();
         break;
     case PROJECT:
-        cout << "Project" << endl;
-        traverse(((ProjectOperator *)root)->left, outputSet);
+        // cout << "Project" << endl;
+        printRecursively(((ProjectOperator *)root)->left, outputSet);
         if (outputSet == 2)
             ((ProjectOperator *)root)->print();
         else
             ((ProjectOperator *)root)->run();
         break;
     case GROUPBY:
-        traverse(((GroupByOperator *)root)->left, outputSet);
+        printRecursively(((GroupByOperator *)root)->left, outputSet);
         if (outputSet == 2)
             ((GroupByOperator *)root)->print();
         else
             ((GroupByOperator *)root)->run();
         break;
     case SUM:
-        traverse(((SumOperator *)root)->left, outputSet);
+        printRecursively(((SumOperator *)root)->left, outputSet);
         if (outputSet == 2)
             ((SumOperator *)root)->print();
         else
             ((SumOperator *)root)->run();
         break;
     case DUPLICATE_REMOVAL:
-        traverse(((DuplicateRemovalOperator *)root)->left, outputSet);
+        printRecursively(((DuplicateRemovalOperator *)root)->left, outputSet);
         if (outputSet == 2)
             ((DuplicateRemovalOperator *)root)->print();
         else
             ((DuplicateRemovalOperator *)root)->run();
         break;
     case JOIN:
-        traverse(((JoinOperator *)root)->left, outputSet);
-        traverse(((JoinOperator *)root)->right, outputSet);
+        printRecursively(((JoinOperator *)root)->left, outputSet);
+        printRecursively(((JoinOperator *)root)->right, outputSet);
         if (outputSet == 2)
             ((JoinOperator *)root)->print();
         else

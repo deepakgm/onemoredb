@@ -35,7 +35,7 @@ void *SelectFile::workerThread(void *arg) {
             }
         }
     // }
-    cout<<endl<<"SelectFile outPipe"<<endl;
+    // cout<<endl<<"SelectFile outPipe"<<endl;
     opArgs->outPipe->ShutDown();
     pthread_exit(NULL);
 }

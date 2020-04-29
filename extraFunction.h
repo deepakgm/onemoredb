@@ -50,14 +50,14 @@ const string db_dir = "temp/";
 
 void PrintNameList (NameList *nameList);
 void CopyAttrList(AttrList *attrList, vector<Attribute> &atts);
-void initSchemaMap (SchemaMap &map);
-void CopyTablesNamesAndAliases (TableList *tableList, Statistics &s, vector<char *> &tableNames, AliaseMap &map);
+// void initSchemaMap (SchemaMap &map);
+// void CopyTablesNamesAndAliases (TableList *tableList, Statistics &s, vector<char *> &tableNames, AliaseMap &map);
 map<string, Schema *> FireUpExistingDatabase();
 void copySchema(map<string, Schema *> &aliasSchemas, char *oldName, char *newName);
 void shuffleOrderHelper(vector<string> &seenTable, int index, vector<vector<string>> &res, vector<string> &tmpres);
 vector<vector<string>> shuffleOrder(vector<string> &seenTable);
 void WriteOutFunc(Operator *op, int outputSet, char* outputFile);
-void traverse(Operator *root ,int outputSet);
+void printRecursively(Operator *root ,int outputSet);
 int UpdateTable(char* c);
 void UpdateTableInfo(char* table);
 
