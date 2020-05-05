@@ -212,6 +212,8 @@ void MyFucntion ::WriteOutFunc(Operator *root, int outputSet, char *outputFile)
         {
             rec.Print(root->getSchema());
         }
+        // break;
+        // cout<<"fine here"<<endl;
     }
     else
     {
@@ -224,6 +226,8 @@ void MyFucntion ::WriteOutFunc(Operator *root, int outputSet, char *outputFile)
         // cout<<"okay"<<endl;
         // fclose(outFile);
     }
+    // cout<<"done"<<endl;
+    return;
 }
 
 void MyFucntion ::printRecursively(Operator *root, int outputSet)

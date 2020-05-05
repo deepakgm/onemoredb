@@ -1,0 +1,37 @@
+SET OUTPUT STDOUT
+_____
+
+CREATE TABLE nation (n_nationkey INTEGER, n_name STRING, n_regionkey INTEGER, n_comment STRING) AS HEAP
+CREATE TABLE region (r_regionkey INTEGER, r_name STRING, r_comment STRING) AS HEAP
+CREATE TABLE customer (c_custkey INTEGER, c_name STRING, c_address STRING, c_nationkey INTEGER, c_phone STRING, c_acctbal DOUBLE, c_mktsegment STRING, c_comment STRING) AS HEAP
+
+____
+
+INSERT 'customer.tbl' INTO customer
+INSERT 'region.tbl' INTO region
+INSERT 'nation.tbl' INTO nation
+
+____
+
+SELECT n.n_nationkey FROM nation AS n WHERE (n.n_name = 'UNITED STATES')
+SELECT n.n_name FROM nation AS n, region AS r WHERE (n.n_regionkey = r.r_regionkey) AND (n.n_nationkey > 5)
+SELECT SUM (n.n_nationkey) FROM nation AS n, region AS r WHERE (n.n_regionkey = r.r_regionkey) AND (n.n_name = 'UNITED STATES')
+
+_____
+
+SET OUTPUT 'trial.txt'
+
+_____
+
+SELECT SUM (n.n_regionkey) FROM nation AS n, region AS r WHERE (n.n_regionkey = r.r_regionkey) AND (n.n_name = 'UNITED STATES') GROUP BY n.n_regionkey
+SELECT SUM DISTINCT (n.n_nationkey + r.r_regionkey) FROM nation AS n, region AS r, customer AS c WHERE (n.n_regionkey = r.r_regionkey) AND (n.n_nationkey = c.c_nationkey) AND (n.n_nationkey > 10) GROUP BY r.r_regionkey
+
+_____
+
+DROP TABLE nation
+DROP TABLE region
+DROP TABLE customer
+
+___
+
+EXIT

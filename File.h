@@ -49,12 +49,13 @@ class File {
 private:
 
 	int myFilDes;
-	off_t curLength; //this was private in Chris's version
+	 //this was private in Chris's version
 
 public:
 
 	File ();
 	~File ();
+	off_t curLength;
 
 	// returns the current length of the file, in pages
 	off_t GetLength ();

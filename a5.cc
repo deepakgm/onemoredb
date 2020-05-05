@@ -14,6 +14,7 @@
 #include "extraFunction.h"
 #include <unordered_map>
 #include <float.h>
+extern int typeT;
 
 extern "C"
 {
@@ -87,8 +88,8 @@ int main()
     //    cout << "5. Exit" << endl
     //         << endl;
     //    cout << "Your choice: ";
-
-    // while (true)
+    // cleanup();
+    while (true)
     {
         //todo clear the variables
         cout << endl
@@ -101,7 +102,7 @@ int main()
             if (queryType == 1)
             {
                 // cout<<tables;
-                cout << "hi" << endl;
+                // cout << "hi" << endl;
                 loadSchema = myfunc.FireUpExistingDatabase();
                 // cout<<loadSchema[tableName]<<endl;
                 s.Read(input);
@@ -118,10 +119,10 @@ int main()
                         cerr << "Error: Table hasn't been created!" << endl;
                         return -1;
                     }
-                    cout << "Number of tables: " << loadSchema.count(cur->tableName);
+                    // cout << "Number of tables: " << loadSchema.count(cur->tableName);
                     s.CopyRel(cur->tableName, cur->aliasAs);
                     myfunc.copySchema(aliasSchemas, cur->tableName, cur->aliasAs);
-//                    seenTable.push_back(cur->aliasAs);
+                    //                    seenTable.push_back(cur->aliasAs);
                     seenTable.insert(seenTable.begin(), cur->aliasAs);
                     aliasName[cur->aliasAs] = cur->tableName;
                     cur = cur->next;
@@ -167,10 +168,10 @@ int main()
                         }
                     }
                 }
-                cout << endl
-                     << "MinResult: " << minRes << endl;
-                cout << endl
-                     << "indexofBestChoice: " << indexofBestChoice << endl;
+                // cout << endl
+                //      << "MinResult: " << minRes << endl;
+                // cout << endl
+                //      << "indexofBestChoice: " << indexofBestChoice << endl;
                 vector<string> chosenJoinOrder = joinOrder[indexofBestChoice];
 
                 Operator *left = new SelectFileOperator(boolean, aliasSchemas[chosenJoinOrder[0]], aliasName[chosenJoinOrder[0]]);
@@ -187,32 +188,31 @@ int main()
                 {
                     if (distinctAtts == 1 || distinctFunc == 1)
                     {
-                        attsToSelect=new NameList;
-                        attsToSelect->name=NULL;
-                        attsToSelect->next=NULL;
-                        funcToNameList(finalFunction,attsToSelect);
-                        cout << "debug: "<<endl;
-                        cout <<attsToSelect->name<<endl;
-                        cout <<attsToSelect->next->name<<endl;
-//                        attsToSelect->next->next=NULL;
+                        attsToSelect = new NameList;
+                        attsToSelect->name = NULL;
+                        attsToSelect->next = NULL;
+                        funcToNameList(finalFunction, attsToSelect);
+                        cout << "debug: " << endl;
+                        cout << attsToSelect->name << endl;
+                        cout << attsToSelect->next->name << endl;
+                        //                        attsToSelect->next->next=NULL;
                         root = new ProjectOperator(left, attsToSelect);
                         left = root;
-                        cout << "duplicate remover schema: "<<endl;
+                        cout << "duplicate remover schema: " << endl;
                         root = new DuplicateRemovalOperator(left);
                         left = root;
-                        cout << "duplicate remover schema2: "<<endl;
-                        attsToSelect=NULL;
+                        cout << "duplicate remover schema2: " << endl;
+                        attsToSelect = NULL;
                     }
 
                     root = new GroupByOperator(left, groupingAtts, finalFunction);
                     left = root;
 
-
                     NameList *sum = new NameList();
                     sum->name = "SUM";
                     sum->next = attsToSelect;
                     root = new ProjectOperator(left, sum);
-                    left=root;
+                    left = root;
                 }
                 else if (finalFunction)
                 {
@@ -223,29 +223,40 @@ int main()
                 {
                     root = new ProjectOperator(left, attsToSelect);
                 }
-//                if (distinctAtts == 1 || distinctFunc == 1)
-//                {
-////                    root = new ProjectOperator(left, attsToSelect);
-////                    left = root;
-//                    cout << "duplicate remover schema: "<<endl;
-//                    cout <<     attsToSelect->name <<endl;
-//                    root = new DuplicateRemovalOperator(left);
-//                    left = root;
-//                }
+                //                if (distinctAtts == 1 || distinctFunc == 1)
+                //                {
+                ////                    root = new ProjectOperator(left, attsToSelect);
+                ////                    left = root;
+                //                    cout << "duplicate remover schema: "<<endl;
+                //                    cout <<     attsToSelect->name <<endl;
+                //                    root = new DuplicateRemovalOperator(left);
+                //                    left = root;
+                //                }
                 // outputVar = "STDOUT";
                 // cout << "OutputVar: " << outputVar << endl;
                 // myfunc.WriteOutFunc(root, 0, outputVar);
-                int outputType1;
-                if (outputVar == "NONE"){
-                    outputType1 = 2;}
-                else if (outputVar == "STDOUT"){
-                    outputType1 = 0;}
-                else{
-                    outputType1 = 1;}
+                string ss = outputVar;
+                string s = myfunc.trim(ss);
+                // if(s == "NONE")
+                //     cout<<"hi";
+                int outputType1=0;
+                if (s == "NONE")
+                {
+                    outputType1 = 2;
+                }
+                else if (s == "STDOUT")
+                {
+                    outputType1 = 0;
+                }
+                else
+                {
+                    outputType1 = 1;
+                }
                 if (outputVar == NULL)
                     outputType1 = 0;
 
                 myfunc.WriteOutFunc(root, outputType1, outputVar);
+                // cout << "Done select" << endl;
             }
             else if (queryType == 2)
             {
@@ -315,7 +326,8 @@ int main()
 
                     ofs << "END" << endl;
                     s.Write(output);
-                    if (!attsToSort)
+                    cout<<"Type/Mode: "<<typeT<<endl;
+                    if (!attsToSort && typeT == 0)
                     {
                         // cout<<"hi";
                         if (file.Create(fileName, heap, NULL))
@@ -323,22 +335,23 @@ int main()
                             cout << "Created bin file";
                         }
                     }
-                    else
+                    else if(typeT == 2)
                     {
+                        Schema *newSchema = new Schema(catalog, tableName);
+
+                        loadSchema[tableName] = new Schema(catalog, tableName);
+
+                        file.Create(fileName, tree, (void *)newSchema);
+                    }else{
                         //todo change this part
-//                        Schema sch(catalog, tableName);
-//                        OrderMaker order;
-//                        order.growFromParseTree(attsToSort, &sch);
-//                        SortInfo info;
-//                        info.myOrder = &order;
-//                        info.runLength = 100;
-//                        file.Create(fileName, sorted, &info);
+                        //                        Schema sch(catalog, tableName);
+                        //                        OrderMaker order;
+                        //                        order.growFromParseTree(attsToSort, &sch);
+                        //                        SortInfo info;
+                        //                        info.myOrder = &order;
+                        //                        info.runLength = 100;
+                        //                        file.Create(fileName, sorted, &info);
 
-                         Schema *newSchema = new Schema(catalog, tableName);
-
-                         loadSchema[tableName] = new Schema(catalog, tableName);
-
-                         file.Create(fileName, tree, (void *)newSchema);
                     }
                     cout << "create completed.." << endl;
                 }
@@ -349,15 +362,16 @@ int main()
             }
             else if (queryType == 3)
             {
-                char fileName[100];;
+                char fileName[100];
                 sprintf(fileName, "test/%s.bin", tableName);
-                if(!remove(fileName)){
-                    cout<<"File does not exist";
+                if (!remove(fileName))
+                {
+                    cout << "File does not exist";
                 }
 
                 string schString = "", line = "";
                 ifstream fin(catalog);
-                char* tempfile = ".cata.tmp";
+                char *tempfile = ".cata.tmp";
                 ofstream fout(tempfile);
                 bool found = false;
                 while (getline(fin, line))
@@ -394,34 +408,39 @@ int main()
             }
             else if (queryType == 4)
             {
-                char fileName[100];
-                char tpchName[100];
+                char fileName[200];
+                char tpchName[200];
                 sprintf(fileName, "test/%s.bin", tableName);
-                sprintf(tpchName, "tcph/%s.txt", fileToInsert);
-                cout << tpchName;
-                DBFile file;
+                sprintf(tpchName, "tcph/%s", fileToInsert);
+                // cout << tpchName;
+                DBFile file1;
                 Schema sch(catalog, tableName);
                 sch.Print();
-                if (file.Open(fileName))
+                if (file1.Open(fileName))
                 {
                     // cout<<"Inside here";
-                    file.Load(sch, tpchName);
-                    file.Close();
+                    file1.Load(sch, tpchName);
+                    file1.Close();
                 }
                 // myfunc.UpdateStatistics(tableName, tpchName);
+                memset(fileName, 0, 200);
+                memset(tpchName, 0, 200);
                 cout << "done insert";
             }
             else if (queryType == 5)
             {
 
                 cout << "SET" << endl;
-
-                cout << outputVar << endl;
+                // string ss = outputVar;
+                // string s = myfunc.trim(ss);
+                // if(s == "NONE")
+                //     cout<<"hi";
             }
             else if (queryType == 6)
             {
 
                 cout << "EXIT" << endl;
+                return 0;
             }
             queryType = 0;
             // string x;
@@ -433,14 +452,15 @@ int main()
             // std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cin.clear();
         }
+        // cleanup();
     }
     return 0;
 }
 
-//CREATE TABLE test1 (att1 INTEGER, att2 DOUBLE, att3 STRING) AS HEAP
-//INSERT 'trial' INTO test1
+//CREATE TABLE test2 (att1 INTEGER, att2 DOUBLE, att3 STRING) AS HEAP
+//INSERT 'trial1.txt' INTO test2
 
-//CREATE TABLE table2 (n_nationkey INTEGER, n_name STRING, n_regionkey INTEGER, n_comment STRING) AS SORTED ON n_nationkey
-//INSERT '/home/deepak/Desktop/dbi/onemoredb/tcph/table2.txt' INTO table2
-// SELECT n.att1 FROM test1 AS n WHERE (n.att1 = 0)
-//DROP TABLE test1
+//CREATE TABLE table2 (n_nationkey INTEGER, n_name STRING, n_regionkey INTEGER, n_comment STRING) AS HEAP
+//INSERT 'table2.txt' INTO table2
+// SELECT n.att1 FROM test2 AS n WHERE (n.att1 = 0)
+//DROP TABLE test2

@@ -8,6 +8,7 @@ void SelectFile::Run(DBFile &inFile, Pipe &outPipe, CNF &selOp, Record &literal)
 void *SelectFile::workerThread(void *arg) {
     OpArgs *opArgs = (OpArgs *) arg;
     Record temp;
+    // cout<<"type: "<<opArgs->inFile->myInternalVar->myType<<endl;
 
     // if(opArgs->inFile->myInternalVar->myType==tree){
     //     cout << "binary tree: checking for fast search compatibility.. "<<endl;

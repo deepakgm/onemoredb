@@ -28,6 +28,7 @@
 
 	char *tableName;
 	char *fileToInsert;
+	int typeT;
 
 	struct AttrList *attsToCreate;
 	struct NameList *attsToSort;
@@ -68,6 +69,7 @@
 %token TABLE
 %token ON
 %token SORTED
+%token BTREE
 %token HEAP
 %token INSERT
 %token DROP
@@ -122,6 +124,7 @@ SQL: SELECT WhatIWant FROM Tables WHERE AndList
 	attsToCreate = $5;
 	attsToSort = NULL;
 	queryType = 2;
+	typeT = 0;
 }
 
 | CREATE TABLE Name '(' NewAtts ')' AS SORTED ON Atts
@@ -130,6 +133,16 @@ SQL: SELECT WhatIWant FROM Tables WHERE AndList
 	attsToCreate = $5;
 	attsToSort = $10;
 	queryType = 2;
+	typeT = 1;
+}
+
+| CREATE TABLE Name '(' NewAtts ')' AS BTREE
+{
+	tableName = $3;
+	attsToCreate = $5;
+	attsToSort = NULL;
+	queryType = 2;
+	typeT = 0;
 }
 
 | INSERT String INTO Name

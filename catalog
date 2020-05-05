@@ -106,46 +106,18 @@ att1 Int
 END
 
 BEGIN
-abc
-abc.tbl
-att1 Int
-END
-
-BEGIN
-abc
-abc.tbl
-att1 Int
-END
-
-BEGIN
-abc
-abc.tbl
-att1 Int
-END
-
-BEGIN
-abc
-abc.tbl
-att1 Int
-END
-
-
-BEGIN
-test1
-test/test1.tbl
+test2
+test/test2.tbl
 att1 Int
 att2 Double
 att3 String
 END
 
 BEGIN
-abc
-abc.tbl
-att1 Int
-END
-
-BEGIN
-abc
-abc.tbl
-att1 Int
+table2
+test/table2.tbl
+n_nationkey Int
+n_name String
+n_regionkey Int
+n_comment String
 END

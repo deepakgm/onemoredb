@@ -67,6 +67,8 @@ void yyerror(char*s);
 
 "SORTED"		return(SORTED);
 
+"BTREE"		return(BTREE);
+
 "INSERT"        return(INSERT);
 
 "INTO"          return(INTO);

@@ -1,9 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.5.1.  */
+/* A Bison parser, made by GNU Bison 3.0.4.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
-   Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,9 +29,6 @@
 
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
-
-/* Undocumented macros, especially those whose name start with YY_,
-   are private implementation details.  Do not rely on them.  */
 
 #ifndef YY_YY_Y_TAB_H_INCLUDED
 # define YY_YY_Y_TAB_H_INCLUDED
@@ -67,13 +63,14 @@ extern int yydebug;
     TABLE = 273,
     ON = 274,
     SORTED = 275,
-    HEAP = 276,
-    INSERT = 277,
-    DROP = 278,
-    INTO = 279,
-    SET = 280,
-    OUTPUT = 281,
-    EXIT = 282
+    BTREE = 276,
+    HEAP = 277,
+    INSERT = 278,
+    DROP = 279,
+    INTO = 280,
+    SET = 281,
+    OUTPUT = 282,
+    EXIT = 283
   };
 #endif
 /* Tokens.  */
@@ -95,19 +92,21 @@ extern int yydebug;
 #define TABLE 273
 #define ON 274
 #define SORTED 275
-#define HEAP 276
-#define INSERT 277
-#define DROP 278
-#define INTO 279
-#define SET 280
-#define OUTPUT 281
-#define EXIT 282
+#define BTREE 276
+#define HEAP 277
+#define INSERT 278
+#define DROP 279
+#define INTO 280
+#define SET 281
+#define OUTPUT 282
+#define EXIT 283
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+
 union YYSTYPE
 {
-#line 38 "Parser.y"
+#line 39 "Parser.y" /* yacc.c:1909  */
 
  	struct FuncOperand *myOperand;
 	struct FuncOperator *myOperator;
@@ -121,9 +120,9 @@ union YYSTYPE
 	char *actualChars;
 	char whichOne;
 
-#line 125 "y.tab.h"
-
+#line 124 "y.tab.h" /* yacc.c:1909  */
 };
+
 typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

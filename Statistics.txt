@@ -1,24 +1,15 @@
-11
-c:150000
+10
 customer:150000
 lineitem:6001215
-n:25
+n:0
 nation:25
 orders:1500000
 part:200000
 partsupp:800000
-r:5
 region:5
 supplier:10000
-11
-c c.c_acctbal 140187
-c c.c_address 150000
-c c.c_comment 149965
-c c.c_custkey 150000
-c c.c_mktsegment 5
-c c.c_name 150000
-c c.c_nationkey 25
-c c.c_phone 150000
+test2:0
+9
 customer c_acctbal 140187
 customer c_address 150000
 customer c_comment 149965
@@ -43,10 +34,6 @@ lineitem l_shipinstruct 4
 lineitem l_shipmode 7
 lineitem l_suppkey 10000
 lineitem l_tax 9
-n n.n_comment 25
-n n.n_name 25
-n n.n_nationkey 25
-n n.n_regionkey 5
 nation n_comment 25
 nation n_name 25
 nation n_nationkey 25
@@ -74,9 +61,6 @@ partsupp ps_comment 799123
 partsupp ps_partkey 200000
 partsupp ps_suppkey 10000
 partsupp ps_supplycost 99865
-r r.r_comment 5
-r r.r_name 5
-r r.r_regionkey 5
 region r_comment 5
 region r_name 5
 region r_regionkey 5

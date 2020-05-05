@@ -57,9 +57,9 @@ int DBFile::Create(const char *f_path, fType type, void *startup)
     {
         myInternalVar = new Sorted();
     }
-    // else{
-    //     myInternalVar= new BTree(f_path,(Schema*)startup);
-    // }
+    else{
+        myInternalVar= new BTree(f_path,(Schema*)startup);
+    }
     return myInternalVar->Create(f_path, type, startup);
 }
 
@@ -226,6 +226,7 @@ void Heap::Load(Schema &f_schema, const char *loadpath)
 
     Record tempRecord;
     long recordCount = 0;
+    file.curLength = 0;
     long pageCount = file.GetLength() - 1;
 
     int isNotFull = 0;
@@ -494,100 +495,100 @@ int Sorted::GetNext(Record &fetchme, CNF &cnf, Record &literal)
     return 0;
 }
 
-//BPPTREE
+// BPPTREE
 
-// BTree::BTree(const char *fpath,Schema* schema) {
-//     //todo change
-// //    this->mySchema=schema;
-//     this->fpath=fpath;
-//     this->mySchema=new Schema("/home/deepak/Desktop/dbi/onemoredb/catalog","nation");
-// }
+BTree::BTree(const char *fpath,Schema* schema) {
+    //todo change
+//    this->mySchema=schema;
+    this->fpath=fpath;
+    this->mySchema=new Schema("/home/deepak/Desktop/dbi/onemoredb/catalog","nation");
+}
 
-// void BTree::Create() {
-//     bdb = new bpt::bplus_tree(fpath, true);
-//     binFile=new BinFile();
-//     binFile->Open(0,(char *)(string(fpath)+".bin").c_str());
-// }
+void BTree::Create() {
+    bdb = new bpt::bplus_tree(fpath, true);
+    binFile=new BinFile();
+    binFile->Open(0,(char *)(string(fpath)+".bin").c_str());
+}
 
-// void BTree::writingMode() {
-//     if (mode == writing) return;
-//     mode = writing;
-// //    bigQ = new BigQ(inPipe, outPipe, *myOrder, runLength);
-// }
+void BTree::writingMode() {
+    if (mode == writing) return;
+    mode = writing;
+//    bigQ = new BigQ(inPipe, outPipe, *myOrder, runLength);
+}
 
-// //todo change
-// void BTree::readingMode() {
-//     if (mode == reading)
-//         return;
-//     mode = reading;
-// }
+//todo change
+void BTree::readingMode() {
+    if (mode == reading)
+        return;
+    mode = reading;
+}
 
-// void BTree::Load(Schema &schema, const char *loadpath) {
-//     FILE *tableFile = fopen(loadpath, "r");
-//     int numofRecords = 0;
-//     if (tableFile == NULL) {
-//         cerr << "invalid load_path" << loadpath << endl;
-//         exit(1);
-//     } else {
-//         Record tempRecord = Record();
-//         while (tempRecord.SuckNextRecord(&schema, tableFile)) {
-//             Add(tempRecord);
-//             tempRecord = Record();
-//             ++numofRecords;
-//         }
-//         fclose(tableFile);
-//         cout << "Loaded " << numofRecords << " records" << endl;
-//     }
-// }
+void BTree::Load(Schema &schema, const char *loadpath) {
+    FILE *tableFile = fopen(loadpath, "r");
+    int numofRecords = 0;
+    if (tableFile == NULL) {
+        cerr << "invalid load_path" << loadpath << endl;
+        exit(1);
+    } else {
+        Record tempRecord = Record();
+        while (tempRecord.SuckNextRecord(&schema, tableFile)) {
+            Add(tempRecord);
+            tempRecord = Record();
+            ++numofRecords;
+        }
+        fclose(tableFile);
+        cout << "Loaded " << numofRecords << " records" << endl;
+    }
+}
 
-// void BTree::Add(Record &rec) {
-//     int pointer = ((int *) rec.bits)[1];
-//     char key[32] = {0};
-//     int *myInt = (int *) &(rec.bits[pointer]);
-//     sprintf(key, "%d", *myInt);
+void BTree::Add(Record &rec) {
+    int pointer = ((int *) rec.bits)[1];
+    char key[32] = {0};
+    int *myInt = (int *) &(rec.bits[pointer]);
+    sprintf(key, "%d", *myInt);
 
-//     bpt::value_t location;
-//     cout << "inserting " << key << endl;
-//     binFile->Write(mySchema, &rec, &location);
-//     cout <<" updating curlen: "<<location.len<<endl;
-//     bdb->insert(key, location);
-// }
+    bpt::value_t location;
+    cout << "inserting " << key << endl;
+    binFile->Write(mySchema, &rec, &location);
+    cout <<" updating curlen: "<<location.len<<endl;
+    bdb->insert(key, location);
+}
 
-// void BTree::MoveFirst() {
-//     binFile->ResetReadOffset();
-// }
+void BTree::MoveFirst() {
+    binFile->ResetReadOffset();
+}
 
-// int BTree::GetKey(bpt::key_t key,Record &fetchme) {
-//     bpt::value_t val;
-//     int res=bdb->search(key,&val);
-//     if (res==-1)
-//         return res;
-//     binFile->Read(mySchema,&fetchme,val.len,val.offset);
-//     return 1;
-// }
+int BTree::GetKey(bpt::key_t key,Record &fetchme) {
+    bpt::value_t val;
+    int res=bdb->search(key,&val);
+    if (res==-1)
+        return res;
+    binFile->Read(mySchema,&fetchme,val.len,val.offset);
+    return 1;
+}
 
-// int BTree::GetNext(Record &fetchme) {
-//     return binFile->ReadNext(mySchema,&fetchme);
-// }
+int BTree::GetNext(Record &fetchme) {
+    return binFile->ReadNext(mySchema,&fetchme);
+}
 
-// int BTree::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
-//     //todo confirm it is the first attr
-//     if(cnf.orList[0][0].whichAtt1==0){
-//         cout <<"light speed" <<endl;
-//         int pointer = ((int *) literal.bits)[1];
-//         char key[32] = {0};
-//         int *myInt = (int *) &(literal.bits[pointer]);
-//         sprintf(key, "%d", *myInt);
-//         cout << "fetching......."<<key<<endl;
-// //        delete myInt;
-//         return GetKey(key,fetchme);
-//     }
-//     if (mode == writing)
-//         readingMode();
+int BTree::GetNext(Record &fetchme, CNF &cnf, Record &literal) {
+    //todo confirm it is the first attr
+    if(cnf.orList[0][0].whichAtt1==0){
+        cout <<"light speed" <<endl;
+        int pointer = ((int *) literal.bits)[1];
+        char key[32] = {0};
+        int *myInt = (int *) &(literal.bits[pointer]);
+        sprintf(key, "%d", *myInt);
+        cout << "fetching......."<<key<<endl;
+//        delete myInt;
+        return GetKey(key,fetchme);
+    }
+    if (mode == writing)
+        readingMode();
 
-//     while (GetNext(fetchme))
-//         if (compEngine.Compare(&fetchme, &literal, &cnf)) {
-//             return 1;
-//         }
-//     return 0;
-// }
+    while (GetNext(fetchme))
+        if (compEngine.Compare(&fetchme, &literal, &cnf)) {
+            return 1;
+        }
+    return 0;
+}
